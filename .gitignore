@@ -1,0 +1,11 @@
+# Ignore following directories
+/virtual_environments
+/vector_db
+/data
+/__pycache__
+
+# Ignore all pycache files
+*.pyc
+
+# Ignore env_setup.sh from download_manager 
+env_setup.sh
