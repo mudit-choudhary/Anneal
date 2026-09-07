@@ -8,7 +8,7 @@ import threading
 import requests
 
 from config import PROCESSED_DIR, REGISTRY_URL
-from embedding_manager import chunk_and_embed, query_embeddings
+from embeddings import chunk_and_embed, query_embeddings, list_embedded_files
 
 def chunks_and_embed_loop():  # ✅ Simple loop, NO uvicorn
     while True:
@@ -88,6 +88,10 @@ def healthcheck():
 def fetch_relevant_chunks(request: QueryRequest):
     response = query_embeddings(query = request.query, filename_filter=request.filenames)
     return response
+
+@embedding.get('/list_files')
+def list_files():
+    return {"files": list_embedded_files()}
 
 # def start_and_run():
 #     uvicorn.run("main:embedding", host="127.0.0.1", port=4001, reload=True)

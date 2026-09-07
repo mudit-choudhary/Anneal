@@ -1,94 +1,94 @@
-<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36" version="29.3.0">
-  <diagram name="Page-1" id="MmLhjsVWCg3JgB53RsAC">
-    <mxGraphModel grid="1" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
-      <root>
-        <mxCell id="0" />
-        <mxCell id="1" parent="0" />
-        <mxCell id="AeyciTAO7B4PmubfEo_D-35" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" target="EAvNlT-F51wdoYQBK7wu-13">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-36" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EAvNlT-F51wdoYQBK7wu-7">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-3" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" value="Download Manager" vertex="1">
-          <mxGeometry height="116" width="390" x="-116" y="100" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-4" parent="EAvNlT-F51wdoYQBK7wu-3" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" value="#Background Process&lt;div&gt;- Download Research Papers.&lt;/div&gt;&lt;div&gt;- Update the registry with the new list of research papers.&lt;/div&gt;&lt;div&gt;- Run in background unless stopped.&lt;/div&gt;" vertex="1">
-          <mxGeometry height="89" width="387" y="27" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-5" parent="1" style="swimlane;whiteSpace=wrap;html=1;align=center;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" value="Parse Manager" vertex="1">
-          <mxGeometry height="209" width="390" x="-116" y="300" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-6" parent="EAvNlT-F51wdoYQBK7wu-5" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" value="#Background Process&lt;div&gt;- Read PDFs based on status in Registry and parse them.&lt;/div&gt;&lt;div&gt;- Save the parsed text as a separate file in a new location.&lt;/div&gt;&lt;div&gt;- Update status in registry.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;#Background Process&lt;div&gt;- Read files from parsed directory.&lt;/div&gt;&lt;div&gt;- Process files for structure, spacing and paragraphing.&lt;/div&gt;&lt;div&gt;- Save files in &quot;processed&quot; dir. &amp;amp; update status in registry.&lt;/div&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="185" width="389" y="24" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-7" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#6a00ff, #a051bd);strokeColor=#3700CC;spacingLeft=4;fontSize=16;rotation=0;fontColor=#ffffff;spacingTop=1;spacingBottom=3;" value="Registry Manager" vertex="1">
-          <mxGeometry height="116" width="390" x="-594.5" y="529" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-8" parent="EAvNlT-F51wdoYQBK7wu-7" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;fontSize=16;spacingLeft=4;spacingTop=1;spacingBottom=3;" value="#API&lt;div&gt;- Maintain a local database.&lt;br&gt;&lt;div&gt;- Update status of files with filename as PRIMARY KEY.&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;- COLUMNS: Filename (without extension), status, .....&lt;/div&gt;" vertex="1">
-          <mxGeometry height="89" width="389" y="27" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-9" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" value="Embedding Manager" vertex="1">
-          <mxGeometry height="116" width="390" x="-116" y="779" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-10" parent="EAvNlT-F51wdoYQBK7wu-9" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" value="#Background Process + API for sim-search on Query&lt;div&gt;- Read files based on status in Registry and embed them.&lt;/div&gt;&lt;div&gt;- Save embeddings in a local vector DB.&lt;/div&gt;&lt;div&gt;- Update status on filenames in registry.&lt;/div&gt;" vertex="1">
-          <mxGeometry height="89" width="383" y="27" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-28" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="EAvNlT-F51wdoYQBK7wu-14">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-11" parent="1" style="swimlane;whiteSpace=wrap;html=1;rotation=0;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" value="Pruning Manager" vertex="1">
-          <mxGeometry height="116" width="390" x="-116" y="590" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-12" parent="EAvNlT-F51wdoYQBK7wu-11" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" value="#Background Process&lt;div&gt;- Read file status from registry.&lt;/div&gt;&lt;div&gt;- Delete files in previous stages whose status is different.&lt;/div&gt;&lt;div&gt;- Keep processed text (will be helpful in finetuning).&lt;/div&gt;" vertex="1">
-          <mxGeometry height="89" width="384" y="27" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-13" parent="1" style="swimlane;whiteSpace=wrap;html=1;rotation=0;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;fontSize=16;spacingTop=1;spacingBottom=3;" value="DATA" vertex="1">
-          <mxGeometry height="116" width="410" x="355.5" y="529" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-14" parent="EAvNlT-F51wdoYQBK7wu-13" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" value="#Directory&lt;div&gt;- raw_pdfs:&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;PDFs are downloaded into raw_pdfs&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- parsed: PDFs are&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;parsed and the text is saved here&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- processed: parsed files are processed for structure and &quot;\n&quot;.&lt;/div&gt;" vertex="1">
-          <mxGeometry height="89" width="408" y="27" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-15" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;gradientColor=#ffd966;fontSize=16;rotation=0;spacingTop=1;spacingBottom=3;" value="RAG Setup" vertex="1">
-          <mxGeometry height="116" width="560" x="-204.5" y="952" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-16" parent="EAvNlT-F51wdoYQBK7wu-15" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" value="#Main Process&lt;div&gt;- Hit Embedding API to get relevant Chunks from Embedding Manager&lt;/div&gt;&lt;div&gt;- Send Query and relevant Chunks to LLM for gen. resp.&lt;/div&gt;&lt;div&gt;- Reference to original texts in PDFs based on chunk metadata (Pending Feature 1)&lt;/div&gt;" vertex="1">
-          <mxGeometry height="89" width="551" y="27" as="geometry" />
-        </mxCell>
-        <mxCell id="EAvNlT-F51wdoYQBK7wu-19" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=16;spacingTop=1;spacingBottom=3;" target="EAvNlT-F51wdoYQBK7wu-15">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-10" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1.01;entryY=0.414;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=16;spacingTop=1;spacingBottom=3;" target="EAvNlT-F51wdoYQBK7wu-8">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-11" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fontSize=16;spacingTop=1;spacingBottom=3;" target="EAvNlT-F51wdoYQBK7wu-7">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-17" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#f5f5f5, #030303);strokeColor=#666666;gradientColor=light-dark(#b3b3b3, #ff0000);fontSize=16;startSize=58;align=center;verticalAlign=middle;spacingTop=3;spacingBottom=3;" value="&lt;h3&gt;&lt;span&gt;Pending Tasks&lt;/span&gt;&lt;/h3&gt;" vertex="1">
-          <mxGeometry height="432" width="566" x="938" y="167" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-18" parent="AeyciTAO7B4PmubfEo_D-17" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;rotation=0;strokeWidth=1;spacingLeft=6;fontSize=16;textDirection=ltr;spacingBottom=3;spacingTop=8;" value="- Improve processing or add logic to parsing that renders more structured text with&amp;nbsp;&lt;div&gt;&amp;nbsp; &amp;nbsp;understanding of header-footer, as well as paragraphing.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;div&gt;- Write a better chunking strategy to chunk only on paragraphs, worst case on&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;lines. Never in between lines or words leaving poor context.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;- YOLO Layout Detector to detect images; crop them; get text description generated.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- Implement BM25&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- Generate Finetuning Dataset from processed text.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;- LLM Response should show references based on Chunk Metadata (File&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;Name, Page Number, Paragraph Number).&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" vertex="1">
-          <mxGeometry height="288" width="566" y="72" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-20" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=#005700;fillColor=light-dark(#008a00, #00ff00);align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;fontColor=#ffffff;fontSize=32;spacingLeft=6;fontStyle=1;fontFamily=Roboto Mono;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRoboto%2BMono;" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Roboto+Mono&quot;&gt;&lt;span&gt;Research Paper RAG Setup&lt;/span&gt;&lt;/font&gt;" vertex="1">
-          <mxGeometry height="50" width="483" x="-812" y="-3" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-25" edge="1" parent="1" source="AeyciTAO7B4PmubfEo_D-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;spacingTop=3;spacingBottom=3;" target="EAvNlT-F51wdoYQBK7wu-16">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-24" parent="1" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;gradientColor=#ea6b66;strokeColor=#b85450;strokeWidth=3;spacingTop=3;spacingBottom=3;" value="" vertex="1">
-          <mxGeometry height="60" width="40" x="51" y="1112" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-26" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" target="EAvNlT-F51wdoYQBK7wu-9">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-27" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="EAvNlT-F51wdoYQBK7wu-8">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-        <mxCell id="AeyciTAO7B4PmubfEo_D-32" edge="1" parent="1" source="EAvNlT-F51wdoYQBK7wu-5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.002;entryY=0.629;entryDx=0;entryDy=0;entryPerimeter=0;" target="EAvNlT-F51wdoYQBK7wu-14">
-          <mxGeometry relative="1" as="geometry" />
-        </mxCell>
-      </root>
-    </mxGraphModel>
-  </diagram>
+<mxfile host="65bd71144e">
+    <diagram name="Page-1" id="MmLhjsVWCg3JgB53RsAC">
+        <mxGraphModel dx="2311" dy="1168" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" parent="1" source="EAvNlT-F51wdoYQBK7wu-3" target="EAvNlT-F51wdoYQBK7wu-13" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-36" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="EAvNlT-F51wdoYQBK7wu-3" target="EAvNlT-F51wdoYQBK7wu-7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-3" value="Download Manager" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="-116" y="100" width="390" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-4" value="#Background Process&lt;div&gt;- Download Research Papers.&lt;/div&gt;&lt;div&gt;- Update the registry with the new list of research papers.&lt;/div&gt;&lt;div&gt;- Run in background unless stopped.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-3" vertex="1">
+                    <mxGeometry y="27" width="387" height="89" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-5" value="Parse Manager" style="swimlane;whiteSpace=wrap;html=1;align=center;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="-116" y="300" width="390" height="209" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-6" value="#Background Process&lt;div&gt;- Read PDFs based on status in Registry and parse them.&lt;/div&gt;&lt;div&gt;- Save the parsed text as a separate file in a new location.&lt;/div&gt;&lt;div&gt;- Update status in registry.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;#Background Process&lt;div&gt;- Read files from parsed directory.&lt;/div&gt;&lt;div&gt;- Process files for structure, spacing and paragraphing.&lt;/div&gt;&lt;div&gt;- Save files in &quot;processed&quot; dir. &amp;amp; update status in registry.&lt;/div&gt;&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-5" vertex="1">
+                    <mxGeometry y="24" width="389" height="185" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-7" value="Registry Manager" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#6a00ff, #a051bd);strokeColor=#3700CC;spacingLeft=4;fontSize=16;rotation=0;fontColor=#ffffff;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="-594.5" y="529" width="390" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-8" value="#API&lt;div&gt;- Maintain a local database.&lt;br&gt;&lt;div&gt;- Update status of files with filename as PRIMARY KEY.&lt;br&gt;&lt;/div&gt;&lt;/div&gt;&lt;div&gt;- COLUMNS: Filename (without extension), status, .....&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;fontSize=16;spacingLeft=4;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-7" vertex="1">
+                    <mxGeometry y="27" width="389" height="89" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-9" value="Embedding Manager" style="swimlane;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="-116" y="779" width="390" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-10" value="#Background Process + API for sim-search on Query&lt;div&gt;- Read files based on status in Registry and embed them.&lt;/div&gt;&lt;div&gt;- Save embeddings in a local vector DB.&lt;/div&gt;&lt;div&gt;- Update status on filenames in registry.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-9" vertex="1">
+                    <mxGeometry y="27" width="383" height="89" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="EAvNlT-F51wdoYQBK7wu-11" target="EAvNlT-F51wdoYQBK7wu-14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-11" value="Pruning Manager" style="swimlane;whiteSpace=wrap;html=1;rotation=0;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="-116" y="590" width="390" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-12" value="#Background Process&lt;div&gt;- Read file status from registry.&lt;/div&gt;&lt;div&gt;- Delete files in previous stages whose status is different.&lt;/div&gt;&lt;div&gt;- Keep processed text (will be helpful in finetuning).&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-11" vertex="1">
+                    <mxGeometry y="27" width="384" height="89" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-13" value="DATA" style="swimlane;whiteSpace=wrap;html=1;rotation=0;fillColor=#6d8764;fontColor=#ffffff;strokeColor=#3A5431;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="355.5" y="529" width="414.5" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-14" value="#Directory&lt;div&gt;- raw_pdfs:&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;PDFs are downloaded into raw_pdfs&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- parsed: PDFs are&amp;nbsp;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;parsed and the text is saved here&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- processed: parsed files are processed for structure and &quot;\n&quot;.&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-13" vertex="1">
+                    <mxGeometry y="27" width="408" height="89" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-15" value="RAG Setup" style="swimlane;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;gradientColor=#ffd966;fontSize=16;rotation=0;spacingTop=1;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="-204.5" y="952" width="560" height="116" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-16" value="#Main Process&lt;div&gt;- Hit Embedding API to get relevant Chunks from Embedding Manager&lt;/div&gt;&lt;div&gt;- Send Query and relevant Chunks to LLM for gen. resp.&lt;/div&gt;&lt;div&gt;- Reference to original texts in PDFs based on chunk metadata (Pending Feature 1)&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;spacingLeft=4;fontSize=16;spacingTop=1;spacingBottom=3;" parent="EAvNlT-F51wdoYQBK7wu-15" vertex="1">
+                    <mxGeometry y="27" width="551" height="89" as="geometry"/>
+                </mxCell>
+                <mxCell id="EAvNlT-F51wdoYQBK7wu-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" source="EAvNlT-F51wdoYQBK7wu-10" target="EAvNlT-F51wdoYQBK7wu-15" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;entryX=1.01;entryY=0.414;entryDx=0;entryDy=0;entryPerimeter=0;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" source="EAvNlT-F51wdoYQBK7wu-12" target="EAvNlT-F51wdoYQBK7wu-8" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fontSize=16;spacingTop=1;spacingBottom=3;" parent="1" source="EAvNlT-F51wdoYQBK7wu-6" target="EAvNlT-F51wdoYQBK7wu-7" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-17" value="&lt;h3&gt;&lt;span&gt;Pending Tasks&lt;/span&gt;&lt;/h3&gt;" style="swimlane;whiteSpace=wrap;html=1;fillColor=light-dark(#f5f5f5, #030303);strokeColor=#666666;gradientColor=light-dark(#b3b3b3, #ff0000);fontSize=16;startSize=58;align=center;verticalAlign=middle;spacingTop=3;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="938" y="167" width="566" height="432" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-18" value="- Improve processing or add logic to parsing that renders more structured text with&amp;nbsp;&lt;div&gt;&amp;nbsp; &amp;nbsp;understanding of header-footer, as well as paragraphing.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;div&gt;- Write a better chunking strategy to chunk only on paragraphs, worst case on&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;lines. Never in between lines or words leaving poor context.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;- YOLO Layout Detector to detect images; crop them; get text description generated.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;- Implement BM25&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;&lt;br&gt;&lt;/span&gt;&lt;/div&gt;&lt;div&gt;- Generate Finetuning Dataset from processed text.&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;- LLM Response should show references based on Chunk Metadata (File&amp;nbsp;&lt;/div&gt;&lt;div&gt;&amp;nbsp; &amp;nbsp;Name, Page Number, Paragraph Number).&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;rotation=0;strokeWidth=1;spacingLeft=6;fontSize=16;textDirection=ltr;spacingBottom=3;spacingTop=8;" parent="AeyciTAO7B4PmubfEo_D-17" vertex="1">
+                    <mxGeometry y="72" width="566" height="288" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-20" value="&lt;font data-font-src=&quot;https://fonts.googleapis.com/css?family=Roboto+Mono&quot;&gt;&lt;span&gt;Research Paper RAG Setup&lt;/span&gt;&lt;/font&gt;" style="text;html=1;whiteSpace=wrap;strokeColor=#005700;fillColor=light-dark(#008a00, #00ff00);align=left;verticalAlign=middle;rounded=0;autosize=1;resizable=0;fontColor=#ffffff;fontSize=32;spacingLeft=6;fontStyle=1;fontFamily=Roboto Mono;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DRoboto%2BMono;" parent="1" vertex="1">
+                    <mxGeometry x="-812" y="-3" width="483" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;spacingTop=3;spacingBottom=3;" parent="1" source="AeyciTAO7B4PmubfEo_D-24" target="EAvNlT-F51wdoYQBK7wu-16" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-24" value="" style="shape=actor;whiteSpace=wrap;html=1;fillColor=#f8cecc;gradientColor=#ea6b66;strokeColor=#b85450;strokeWidth=3;spacingTop=3;spacingBottom=3;" parent="1" vertex="1">
+                    <mxGeometry x="51" y="1112" width="40" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-26" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" parent="1" source="EAvNlT-F51wdoYQBK7wu-14" target="EAvNlT-F51wdoYQBK7wu-9" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-27" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" parent="1" source="EAvNlT-F51wdoYQBK7wu-10" target="EAvNlT-F51wdoYQBK7wu-8" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="AeyciTAO7B4PmubfEo_D-32" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0.002;entryY=0.629;entryDx=0;entryDy=0;entryPerimeter=0;" parent="1" source="EAvNlT-F51wdoYQBK7wu-5" target="EAvNlT-F51wdoYQBK7wu-14" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
 </mxfile>

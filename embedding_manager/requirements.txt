@@ -2,4 +2,6 @@ sentence-transformers
 chromadb
 numpy
 fastapi
-langchain
+uvicorn
+langchain-text-splitters
+requests

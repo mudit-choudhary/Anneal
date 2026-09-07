@@ -1,4 +1,3 @@
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from chromadb.utils import embedding_functions
 import os
 import chromadb
@@ -6,32 +5,32 @@ from typing import List, Dict, Optional, Any
 import numpy as np
 from pathlib import Path
 
-from config import MODEL_NAME, EMBEDDING_VECTOR_PATH
+from config import MODEL_NAME, EMBEDDING_VECTOR_PATH, CHUNK_SIZE, CHUNK_OVERLAP_PCT
+from chunking import make_splitter
 if not os.path.exists(EMBEDDING_VECTOR_PATH):
     os.makedirs(EMBEDDING_VECTOR_PATH, exist_ok=True)
     
 client = chromadb.PersistentClient(path=EMBEDDING_VECTOR_PATH)
 
-# Initialize embedding function once (global reuse)
+# Initialize embedding function once (global reuse).
+# EMBED_DEVICE=cpu keeps VRAM free for the local LLM during daytime querying;
+# MiniLM embeds a single query on CPU in milliseconds. Use cuda for overnight
+# batch embedding.
 embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-    model_name=MODEL_NAME, device="cuda"
+    model_name=MODEL_NAME, device=os.environ.get("EMBED_DEVICE", "cuda")
 )
 
-def chunk_and_embed(file_path: str, chunk_size: int = 512, chunk_overlap_pct: float = 0.2) -> Dict[str, Any]:
+def chunk_and_embed(file_path: str, chunk_size: int = CHUNK_SIZE,
+                    chunk_overlap_pct: float = CHUNK_OVERLAP_PCT) -> Dict[str, Any]:
     """
     Process txt file: chunk -> embed -> store incrementally in ChromaDB.
-    
+
     Returns: {'filename': str, 'chunk_count': int, 'success': bool}
     """
     filename = Path(file_path).name  # e.g., "doc1.txt"
-    
+
     # Step 1: Chunk document
-    chunk_overlap = int(chunk_size * chunk_overlap_pct) + 1
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size, 
-        chunk_overlap=chunk_overlap,
-        separators=["\n\n", "\n", " ", ""]  # Better sentence boundaries [web:44]
-    )
+    splitter = make_splitter(chunk_size, chunk_overlap_pct)
     
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -66,6 +65,16 @@ def chunk_and_embed(file_path: str, chunk_size: int = 512, chunk_overlap_pct: fl
     except Exception as e:
         print(f"❌ Error processing {filename}: {str(e)}")
         return {"filename": filename, "chunk_count": 0, "success": False, "error": str(e)}
+
+def list_embedded_files() -> List[str]:
+    """Distinct source filenames present in the collection."""
+    try:
+        collection = client.get_collection(name="rag_documents")
+        metadatas = collection.get(include=["metadatas"])["metadatas"]
+        return sorted({m["filename"] for m in metadatas if m and "filename" in m})
+    except Exception:
+        return []
+
 
 # Query function for completeness
 def query_embeddings(query: str, n_results: int = 5, filename_filter: Optional[List[str]] = None) -> Dict:

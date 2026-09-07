@@ -1,2 +1,5 @@
-PyMuPDF
+PyMuPDF>=1.26
+ultralytics>=8.4
+torch>=2.0
+numpy
 requests

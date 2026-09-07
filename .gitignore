@@ -1,11 +1,27 @@
-# Ignore following directories
+# Virtual environments
 /virtual_environments
-/vector_db
-/data
-/__pycache__
 
-# Ignore all pycache files
+# Data & generated artifacts
+/data
+/vector_db
+/runs
+
+# Model weights & caches (too large for git)
+/models
+*.pt
+*.onnx
+
+# Python cache
+__pycache__/
 *.pyc
 
-# Ignore env_setup.sh from download_manager 
+# Local databases
+*.db
+
+# Secrets / env setup
 env_setup.sh
+.env
+
+# Local tool settings
+/.claude
+.pytest_cache

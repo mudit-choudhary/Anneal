@@ -1,6 +1,10 @@
 # --- Paths ---
-BASE_DIR = "/home/mudit/Desktop/PaperParsing/data"
+from pathlib import Path
+
+BASE_DIR = str(Path(__file__).resolve().parent.parent / "data")
 PDF_DIR = BASE_DIR + "/raw_pdfs"
+
+
 
 # --- AWS Bedrock Settings ---
 # Ensure your EC2 instance has an IAM role with Bedrock Access, 

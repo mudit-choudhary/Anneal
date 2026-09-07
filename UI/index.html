@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Paper RAG</title>
+<style>
+  :root {
+    --bg: #0f1117; --panel: #161a23; --panel2: #1d2230; --border: #2a3040;
+    --text: #e6e9f0; --muted: #8b93a7; --accent: #6ea8fe;
+    --user: #24304a; --ok: #3fb96b; --bad: #e05555; --warn: #d9a13b;
+    --code: #10131a; --chip: #2b3a5c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    height: 100vh; display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px; padding: 10px 18px;
+    background: var(--panel); border-bottom: 1px solid var(--border); flex-wrap: wrap;
+  }
+  header h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  header h1 span { color: var(--accent); }
+  .status { display: flex; gap: 14px; margin-left: auto; align-items: center; font-size: 12.5px; color: var(--muted); }
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--bad); margin-right: 5px; }
+  .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); }
+  select {
+    background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 8px; font-size: 13px;
+  }
+  main { display: flex; flex: 1; min-height: 0; }
+  /* Sidebar */
+  aside {
+    width: 270px; background: var(--panel); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 12px; gap: 8px;
+  }
+  aside h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0; }
+  aside input[type=search] {
+    background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+    border-radius: 6px; padding: 6px 8px; font-size: 13px; width: 100%;
+  }
+  #paperList { overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+  #paperList label {
+    display: flex; gap: 7px; align-items: flex-start; font-size: 12.5px; color: var(--muted);
+    padding: 5px 6px; border-radius: 6px; cursor: pointer; word-break: break-word;
+  }
+  #paperList label:hover { background: var(--panel2); color: var(--text); }
+  #paperList input { margin-top: 3px; accent-color: var(--accent); }
+  .hint { font-size: 11.5px; color: var(--muted); }
+  button.small {
+    background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 6px; padding: 3px 8px; font-size: 11.5px; cursor: pointer;
+  }
+  button.small:hover { color: var(--text); border-color: var(--muted); }
+  /* Chat */
+  .chat { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #messages { flex: 1; overflow-y: auto; padding: 24px 8%; display: flex; flex-direction: column; gap: 18px; }
+  .msg { max-width: 100%; }
+  .msg.user { align-self: flex-end; max-width: 80%; }
+  .msg.user .bubble { background: var(--user); border-radius: 12px 12px 4px 12px; padding: 10px 14px; white-space: pre-wrap; }
+  .msg.bot .bubble {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 4px 12px 12px 12px; padding: 14px 18px;
+  }
+  .msg .meta { font-size: 11.5px; color: var(--muted); margin-bottom: 4px; }
+  .bubble p { margin: 0 0 10px; } .bubble p:last-child { margin-bottom: 0; }
+  .bubble h1, .bubble h2, .bubble h3 { font-size: 15px; margin: 12px 0 6px; }
+  .bubble ul, .bubble ol { margin: 6px 0; padding-left: 22px; }
+  .bubble code { background: var(--code); border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; font-size: 13px; }
+  .bubble pre { background: var(--code); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; overflow-x: auto; }
+  .bubble pre code { background: none; border: none; padding: 0; }
+  .cursor { display: inline-block; width: 8px; height: 15px; background: var(--accent); animation: blink 1s step-end infinite; vertical-align: text-bottom; }
+  @keyframes blink { 50% { opacity: 0; } }
+  a.cite {
+    background: var(--chip); color: var(--accent); border-radius: 10px; padding: 0 7px;
+    font-size: 12px; text-decoration: none; cursor: pointer;
+  }
+  a.cite:hover { filter: brightness(1.2); }
+  details.sources { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 8px; }
+  details.sources summary { cursor: pointer; font-size: 12.5px; color: var(--muted); user-select: none; }
+  .source {
+    margin: 8px 0; padding: 8px 12px; background: var(--panel2); border-left: 3px solid var(--chip);
+    border-radius: 6px; font-size: 12.5px;
+  }
+  .source.hl { border-left-color: var(--accent); }
+  .source .src-head { color: var(--accent); font-weight: 600; margin-bottom: 3px; font-size: 12px; }
+  .source .src-text { color: var(--muted); white-space: pre-wrap; }
+  .error { color: var(--bad); font-size: 13.5px; }
+  /* Composer */
+  .composer { padding: 14px 8% 20px; background: var(--bg); }
+  .composer .box {
+    display: flex; gap: 10px; background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 12px; align-items: flex-end;
+  }
+  .composer .box:focus-within { border-color: var(--accent); }
+  textarea {
+    flex: 1; background: none; border: none; outline: none; color: var(--text); resize: none;
+    font: inherit; max-height: 160px;
+  }
+  #send {
+    background: var(--accent); color: #0b1220; border: none; border-radius: 8px;
+    padding: 8px 16px; font-weight: 600; cursor: pointer; font-size: 14px;
+  }
+  #send:disabled { opacity: .45; cursor: default; }
+  .filterNote { font-size: 11.5px; color: var(--muted); margin-top: 6px; text-align: center; }
+  @media (max-width: 780px) { aside { display: none; } #messages, .composer { padding-left: 16px; padding-right: 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Research Paper <span>RAG</span></h1>
+  <label style="font-size:12.5px;color:var(--muted)">Backend
+    <select id="backend">
+      <option value="local">local (Qwen3-4B)</option>
+      <option value="gemini">gemini</option>
+    </select>
+  </label>
+  <div class="status">
+    <span><i id="dotOllama" class="dot"></i>Ollama</span>
+    <span><i id="dotEmb" class="dot"></i>Embeddings</span>
+  </div>
+</header>
+<main>
+  <aside>
+    <h2>Filter papers</h2>
+    <input type="search" id="paperSearch" placeholder="Search papers…">
+    <div style="display:flex;gap:6px">
+      <button class="small" id="clearSel">Clear selection</button>
+      <button class="small" id="refreshPapers">Refresh</button>
+    </div>
+    <div id="paperList"><span class="hint">Loading…</span></div>
+    <span class="hint">Nothing selected = search all papers.</span>
+  </aside>
+  <div class="chat">
+    <div id="messages">
+      <div class="msg bot"><div class="meta">assistant</div>
+        <div class="bubble">Ask a question about your embedded research papers. Answers cite their sources — click a citation like <a class="cite">[1]</a> to see the chunk it came from.</div>
+      </div>
+    </div>
+    <div class="composer">
+      <div class="box">
+        <textarea id="input" rows="1" placeholder="Ask about your papers…  (Enter to send, Shift+Enter for newline)"></textarea>
+        <button id="send">Send</button>
+      </div>
+      <div class="filterNote" id="filterNote"></div>
+    </div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const messages = $("messages"), input = $("input"), send = $("send");
+let papers = [], selected = new Set(), busy = false;
+
+/* ---------- status + papers ---------- */
+async function refreshStatus() {
+  try {
+    const s = await (await fetch("/api/status")).json();
+    $("dotOllama").className = "dot " + (s.ollama ? (s.model_pulled ? "ok" : "warn") : "");
+    $("dotOllama").title = s.ollama ? (s.model_pulled ? s.model + " ready" : s.model + " not pulled") : "Ollama daemon unreachable";
+    $("dotEmb").className = "dot " + (s.embeddings ? "ok" : "");
+    if (!refreshStatus.init) { $("backend").value = s.default_backend; refreshStatus.init = true; }
+  } catch (e) { /* UI server itself unreachable; dots stay red */ }
+}
+async function loadPapers() {
+  const list = $("paperList");
+  try {
+    papers = (await (await fetch("/api/papers")).json()).files;
+    renderPapers();
+  } catch (e) { list.innerHTML = '<span class="hint">Embedding service offline.</span>'; }
+}
+function prettify(f) { return f.replace(/\.txt$/, "").replace(/_/g, " "); }
+function renderPapers() {
+  const q = $("paperSearch").value.toLowerCase();
+  const list = $("paperList");
+  list.innerHTML = "";
+  const shown = papers.filter(p => p.toLowerCase().includes(q));
+  if (!shown.length) { list.innerHTML = '<span class="hint">No embedded papers found.</span>'; return; }
+  for (const p of shown) {
+    const label = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox"; cb.checked = selected.has(p);
+    cb.onchange = () => { cb.checked ? selected.add(p) : selected.delete(p); updateFilterNote(); };
+    label.append(cb, document.createTextNode(prettify(p)));
+    list.append(label);
+  }
+}
+function updateFilterNote() {
+  $("filterNote").textContent = selected.size ? `Searching ${selected.size} selected paper(s)` : "";
+}
+$("paperSearch").oninput = renderPapers;
+$("clearSel").onclick = () => { selected.clear(); renderPapers(); updateFilterNote(); };
+$("refreshPapers").onclick = loadPapers;
+
+/* ---------- markdown (minimal, self-contained) ---------- */
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function md(src) {
+  const codeBlocks = [];
+  src = src.replace(/```([\s\S]*?)```/g, (_, c) => { codeBlocks.push(c.replace(/^\w*\n/, "")); return `\x00${codeBlocks.length - 1}\x00`; });
+  let html = esc(src)
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|\W)\*([^*\n]+)\*(?=\W|$)/g, "$1<em>$2</em>")
+    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+    .replace(/\[(\d+)\]/g, '<a class="cite" data-n="$1">[$1]</a>');
+  // lists
+  html = html.replace(/(^|\n)((?:[-*] .*(?:\n|$))+)/g, (_, pre, block) =>
+    pre + "<ul>" + block.trim().split("\n").map(l => "<li>" + l.replace(/^[-*] /, "") + "</li>").join("") + "</ul>");
+  html = html.replace(/(^|\n)((?:\d+\. .*(?:\n|$))+)/g, (_, pre, block) =>
+    pre + "<ol>" + block.trim().split("\n").map(l => "<li>" + l.replace(/^\d+\. /, "") + "</li>").join("") + "</ol>");
+  html = html.split(/\n{2,}/).map(p => /^<(h\d|ul|ol|pre)/.test(p.trim()) ? p : "<p>" + p.replace(/\n/g, "<br>") + "</p>").join("");
+  return html.replace(/\x00(\d+)\x00/g, (_, i) => "<pre><code>" + esc(codeBlocks[+i]) + "</code></pre>");
+}
+
+/* ---------- chat ---------- */
+function addMsg(cls, metaText) {
+  const msg = document.createElement("div");
+  msg.className = "msg " + cls;
+  msg.innerHTML = `<div class="meta">${metaText}</div><div class="bubble"></div>`;
+  messages.append(msg);
+  messages.scrollTop = messages.scrollHeight;
+  return msg.querySelector(".bubble");
+}
+function renderSources(bubble, sources) {
+  const det = document.createElement("details");
+  det.className = "sources";
+  det.innerHTML = `<summary>Sources (${sources.length})</summary>`;
+  for (const s of sources) {
+    const div = document.createElement("div");
+    div.className = "source"; div.id = bubble.dataset.mid + "-src-" + s.n;
+    div.innerHTML = `<div class="src-head">[${s.n}] ${esc(prettify(s.filename))}</div><div class="src-text">${esc(s.text)}</div>`;
+    det.append(div);
+  }
+  bubble.append(det);
+}
+messages.addEventListener("click", e => {
+  const cite = e.target.closest("a.cite");
+  if (!cite || !cite.dataset.n) return;
+  const bubble = cite.closest(".bubble");
+  const det = bubble.querySelector("details.sources");
+  if (!det) return;
+  det.open = true;
+  const src = document.getElementById(bubble.dataset.mid + "-src-" + cite.dataset.n);
+  if (src) {
+    src.scrollIntoView({ behavior: "smooth", block: "center" });
+    src.classList.add("hl"); setTimeout(() => src.classList.remove("hl"), 1600);
+  }
+});
+
+let mid = 0;
+async function ask() {
+  const q = input.value.trim();
+  if (!q || busy) return;
+  busy = true; send.disabled = true; input.value = ""; autosize();
+  addMsg("user", "you").textContent = q;
+  const backend = $("backend").value;
+  const bubble = addMsg("bot", "assistant · " + backend);
+  bubble.dataset.mid = "m" + (++mid);
+  const answerEl = document.createElement("div");
+  answerEl.innerHTML = '<span class="cursor"></span>';
+  bubble.append(answerEl);
+
+  let text = "", sources = null;
+  try {
+    const resp = await fetch("/api/query", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query: q, filenames: selected.size ? [...selected] : null, backend }),
+    });
+    const reader = resp.body.getReader(), dec = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let nl;
+      while ((nl = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, nl); buf = buf.slice(nl + 1);
+        if (!line.trim()) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === "sources") sources = ev.sources;
+        else if (ev.type === "delta") {
+          text += ev.text;
+          answerEl.innerHTML = md(text) + '<span class="cursor"></span>';
+          messages.scrollTop = messages.scrollHeight;
+        } else if (ev.type === "error") {
+          answerEl.innerHTML = `<div class="error">⚠ ${esc(ev.message)}</div>`;
+        }
+      }
+    }
+    if (text) answerEl.innerHTML = md(text);
+    if (sources && sources.length) renderSources(bubble, sources);
+    else if (sources) answerEl.innerHTML += '<p class="hint">No chunks retrieved — is anything embedded yet?</p>';
+  } catch (e) {
+    answerEl.innerHTML = `<div class="error">⚠ ${esc(String(e))} — is the UI server still running?</div>`;
+  }
+  messages.scrollTop = messages.scrollHeight;
+  busy = false; send.disabled = false; input.focus();
+}
+send.onclick = ask;
+input.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(); }
+});
+function autosize() { input.style.height = "auto"; input.style.height = Math.min(input.scrollHeight, 160) + "px"; }
+input.addEventListener("input", autosize);
+
+refreshStatus(); setInterval(refreshStatus, 10000);
+loadPapers();
+input.focus();
+</script>
+</body>
+</html>

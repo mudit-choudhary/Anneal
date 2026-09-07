@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="System Architecture" id="system-architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="arxiv" value="arXiv" style="ellipse;fillColor=#f8cecc;strokeColor=#b85450" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="100" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="dl" value="download_manager&#10;arXiv search + download&#10;per domain, checkpointed" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="220" y="70" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="rawpdf" value="data/raw_pdfs/" style="shape=cylinder3;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="460" y="65" width="120" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pm" value="parse_manager&#10;YOLOv11 layout detection&#10;stage 1: layout JSON&#10;stage 2: tagged text" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="640" y="55" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="parsed" value="data/parsed/&#10;layout JSON" style="shape=cylinder3;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="890" y="40" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="proc" value="data/processed/&#10;tagged text" style="shape=cylinder3;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="890" y="130" width="120" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="em" value="embedding_manager :4001&#10;chunk 512 / overlap 20%&#10;all-MiniLM-L6-v2 (GPU)" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="640" y="240" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="vdb" value="vector_db/&#10;ChromaDB (cosine, HNSW)" style="shape=cylinder3;whiteSpace=wrap;fillColor=#d5e8d4;strokeColor=#82b366" vertex="1" parent="1">
+          <mxGeometry x="460" y="235" width="130" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="rag" value="rag_setup&#10;retrieve chunks + Gemini answer" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="220" y="245" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="User" style="shape=actor;fillColor=#ffffff;strokeColor=#666666" vertex="1" parent="1">
+          <mxGeometry x="90" y="240" width="50" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="reg" value="registry_manager :4000&#10;SQLite file status:&#10;downloaded → parsed → processed → embedded" style="rounded=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656" vertex="1" parent="1">
+          <mxGeometry x="400" y="420" width="300" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pr" value="prune_manager&#10;deletes files whose status&#10;advanced past their stage" style="rounded=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf" vertex="1" parent="1">
+          <mxGeometry x="790" y="420" width="190" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a1" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="arxiv" target="dl"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a2" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="dl" target="rawpdf"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a3" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="rawpdf" target="pm"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a4" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="pm" target="parsed"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a5" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="pm" target="proc"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a6" value="poll" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1" edge="1" parent="1" source="proc" target="em"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a7" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="em" target="vdb"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a8" value="GET /get_chunks" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="rag" target="em"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a9" style="edgeStyle=orthogonalEdgeStyle;rounded=1" edge="1" parent="1" source="user" target="rag"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a10" value="status" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1" edge="1" parent="1" source="dl" target="reg"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a11" value="status" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1" edge="1" parent="1" source="pm" target="reg"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a12" value="status" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1" edge="1" parent="1" source="em" target="reg"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="a13" value="status" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1" edge="1" parent="1" source="pr" target="reg"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

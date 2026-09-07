@@ -1,4 +1,6 @@
-DATA_DIR = "/home/mudit/Desktop/PaperParsing/data"
+from pathlib import Path
+
+DATA_DIR = str(Path(__file__).resolve().parent.parent / "data")
 PDF_DIR = DATA_DIR + "/raw_pdfs"
 PARSED_DIR = DATA_DIR + "/parsed"
 PROCESSED_DIR = DATA_DIR + "/processed"

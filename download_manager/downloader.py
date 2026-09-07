@@ -237,7 +237,7 @@ from loguru import logger
 from config import PDF_DIR, DOMAINS, REGISTRY_URL
 
 # --- Configuration ---
-BACKFILL_DAYS = 1095  # Fallback if DB is empty (3 years)
+BACKFILL_DAYS = 32  # Fallback if DB is empty (3 years)
 CHECK_INTERVAL = 3600
 MAX_WORKERS = len(DOMAINS)
 
@@ -254,27 +254,27 @@ def get_smart_cutoff(domain):
     """
     Asks the Registry: 'When was the last paper I downloaded for this domain?'
     """
-    try:
-        response = requests.post(
-            f"{REGISTRY_URL}/get_last_checkpoint",
-            json={"domain": domain},
-            timeout=5
-        )
-        data = response.json()
-        date_str = data.get("last_checkpoint")
+    # try:
+    #     response = requests.post(
+    #         f"{REGISTRY_URL}/get_last_checkpoint",
+    #         json={"domain": domain},
+    #         timeout=5
+    #     )
+    #     data = response.json()
+    #     date_str = data.get("last_checkpoint")
         
-        if date_str:
-            # Convert string back to timezone-aware datetime
-            # ArXiv uses UTC, so we ensure this is UTC
-            checkpoint = datetime.fromisoformat(date_str)
-            if checkpoint.tzinfo is None:
-                checkpoint = checkpoint.replace(tzinfo=timezone.utc)
+    #     if date_str:
+    #         # Convert string back to timezone-aware datetime
+    #         # ArXiv uses UTC, so we ensure this is UTC
+    #         checkpoint = datetime.fromisoformat(date_str)
+    #         if checkpoint.tzinfo is None:
+    #             checkpoint = checkpoint.replace(tzinfo=timezone.utc)
             
-            logger.info(f"🧠 Smart Resume [{domain}]: Searching only after {checkpoint.date()}")
-            return checkpoint
+    #         logger.info(f"🧠 Smart Resume [{domain}]: Searching only after {checkpoint.date()}")
+    #         return checkpoint
         
-    except Exception as e:
-        logger.warning(f"⚠️ Could not fetch checkpoint for {domain}: {e}")
+    # except Exception as e:
+    #     logger.warning(f"⚠️ Could not fetch checkpoint for {domain}: {e}")
 
     # Fallback: 3 Years ago
     fallback = datetime.now(timezone.utc) - timedelta(days=BACKFILL_DAYS)
@@ -319,37 +319,40 @@ def process_domain(domain):
             # Check Registry for Duplicates
             # This is now CRITICAL because of the date overlap. 
             # We will encounter files we have already, so we must skip them efficiently.
-            try:
-                # Optimized: We send filename in body as per your server code
-                status_chk = requests.get(
-                    f"{REGISTRY_URL}/get_status", 
-                    json={"filename": filename},
-                    timeout=5
-                )
-                if status_chk.status_code == 200:
-                    status_data = status_chk.json()
-                    if status_data.get('status'):
-                        # logger.debug(f"⏭️  Already have: {filename}")
-                        continue
-            except Exception:
-                pass # If check fails, we proceed to download to be safe
+            # try:
+            #     # Optimized: We send filename in body as per your server code
+            #     status_chk = requests.get(
+            #         f"{REGISTRY_URL}/get_status", 
+            #         json={"filename": filename},
+            #         timeout=5
+            #     )
+            #     if status_chk.status_code == 200:
+            #         status_data = status_chk.json()
+            #         if status_data.get('status'):
+            #             # logger.debug(f"⏭️  Already have: {filename}")
+            #             continue
+            # except Exception:
+            #     pass # If check fails, we proceed to download to be safe
 
             # Download
             logger.info(f"⬇️  Downloading [{domain}]: {result.title[:40]}...")
             try:
                 result.download_pdf(dirpath=PDF_DIR, filename=filename)
                 
-                # Update Registry WITH Domain and Date
-                requests.post(
-                    f"{REGISTRY_URL}/update_status",
-                    json={
-                        "filename": filename, 
-                        "status": "downloaded",
-                        "domain": domain,
-                        "published_at": result.published.isoformat() 
-                    },
-                    timeout=10
-                )
+                # try:
+                #     # Update Registry WITH Domain and Date
+                #     requests.post(
+                #         f"{REGISTRY_URL}/update_status",
+                #         json={
+                #             "filename": filename, 
+                #             "status": "downloaded",
+                #             "domain": domain,
+                #             "published_at": result.published.isoformat() 
+                #         },
+                #         timeout=10
+                #     )
+                # except Exception as e:
+                #     print(e)
                 
                 total_downloads += 1
                 session_downloads += 1
