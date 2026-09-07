@@ -15,6 +15,7 @@ Output: data/processed/<name>.txt and <name>.json
 """
 
 import json
+import re
 from pathlib import Path
 
 import requests
@@ -76,7 +77,42 @@ def order_regions(regions, page_width):
     return ordered
 
 
-def join_lines(lines):
+_COMPOUND = re.compile(r"\b[A-Za-z]+(?:-[A-Za-z]+)+\b")
+
+
+def collect_hyphenated_vocab(layout):
+    """Hyphenated compounds that appear intact (mid-line) anywhere in the
+    document, lower-cased — e.g. {"edge-centric", "state-of-the-art"}. Used
+    to tell a real compound hyphen from a line-wrap hyphen."""
+    vocab = set()
+    for page in layout.get("pages", []):
+        for region in page.get("regions", []):
+            for line in region.get("lines", []):
+                vocab.update(m.lower() for m in _COMPOUND.findall(line))
+    return vocab
+
+
+def join_hyphenated(text, continuation, vocab=None):
+    """Join `text` (ending in '-') with the line/region continuing it.
+
+    A wrap hyphen is dropped before a lowercase continuation ("construc-" +
+    "tion" -> "construction") — unless the compound appears intact elsewhere
+    in the document ("Edge-" + "centric" -> "Edge-centric" when `vocab`
+    contains "edge-centric"). Before an uppercase continuation the hyphen is
+    kept ("non-" + "Euclidean").
+    """
+    if not continuation[0].islower():
+        return text + continuation
+    if vocab:
+        prev_word = text.rsplit(" ", 1)[-1]
+        next_word = continuation.split(" ", 1)[0]
+        compound = re.sub(r"[^A-Za-z-]", "", prev_word + next_word).lower()
+        if compound in vocab:
+            return text + continuation
+    return text[:-1] + continuation
+
+
+def join_lines(lines, vocab=None):
     """Join a region's lines into one string, de-hyphenating line wraps."""
     text = ""
     for line in lines:
@@ -86,9 +122,7 @@ def join_lines(lines):
         if not text:
             text = line
         elif text.endswith("-"):
-            # Line-wrap hyphen: drop it before a lowercase continuation,
-            # keep it (no space) before an uppercase one ("non-Euclidean").
-            text = text[:-1] + line if line[0].islower() else text + line
+            text = join_hyphenated(text, line, vocab)
         else:
             text += " " + line
     return text
@@ -107,10 +141,10 @@ def ends_terminally(text):
     return False
 
 
-def merge_paragraph(buffer, text):
+def merge_paragraph(buffer, text, vocab=None):
     """Append a continuation region to an open paragraph buffer."""
     if buffer.endswith("-") and text:
-        return buffer[:-1] + text if text[0].islower() else buffer + text
+        return join_hyphenated(buffer, text, vocab)
     return buffer + " " + text
 
 
@@ -122,7 +156,8 @@ class LayoutAssembler:
     heading forces a break; its block keeps the position where it started.
     """
 
-    def __init__(self):
+    def __init__(self, vocab=None):
+        self.vocab = vocab       # hyphenated compounds seen intact in the document
         self.blocks = []
         self.para_index = None   # index of the open paragraph's block
         self.para_text = ""
@@ -146,7 +181,7 @@ class LayoutAssembler:
 
     def add_region(self, region, page):
         label = region["label"]
-        text = join_lines(region.get("lines", []))
+        text = join_lines(region.get("lines", []), self.vocab)
         if not text and label not in ("Picture",):
             return
 
@@ -172,7 +207,7 @@ class LayoutAssembler:
                 self._open("list", text, page)
         else:  # Text (including fallback regions)
             if self.para_index is not None and not self.list_open and not ends_terminally(self.para_text):
-                self.para_text = merge_paragraph(self.para_text, text)
+                self.para_text = merge_paragraph(self.para_text, text, self.vocab)
             else:
                 self._flush()
                 self._open("paragraph", text, page)
@@ -224,7 +259,7 @@ def process_layout_json(input_json, output_txt=None, output_json=None):
     with open(input_json, "r", encoding="utf-8") as f:
         layout = json.load(f)
 
-    assembler = LayoutAssembler()
+    assembler = LayoutAssembler(collect_hyphenated_vocab(layout))
     dropped = {"page_headers": [], "page_footers": [], "picture_text": []}
 
     for page_entry in layout["pages"]:

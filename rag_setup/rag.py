@@ -32,22 +32,41 @@ SYSTEM_PROMPT = (
 )
 
 
-def fetch_chunks(query: str, filenames: Optional[List[str]] = None):
+def fetch_chunks(query: str, filenames: Optional[List[str]] = None,
+                 n_results: int = N_RESULTS):
     response = requests.get(
         f"{EMBEDDING_URL}/get_chunks",
-        json={"query": query, "filenames": filenames},
+        json={"query": query, "filenames": filenames, "n_results": n_results},
         timeout=90,
     )
     response.raise_for_status()
     return response.json()
 
 
+def source_label(meta: Optional[dict]) -> str:
+    """Human-readable provenance from chunk metadata: paper title (or
+    prettified filename), plus 1-indexed page(s) when known."""
+    meta = meta or {}
+    name = meta.get("title")
+    if not name:
+        name = meta.get("filename", "unknown")
+        if name.endswith(".txt"):
+            name = name[:-4]
+        name = name.replace("_", " ")
+    start, end = meta.get("page_start"), meta.get("page_end")
+    if start is not None:
+        pages = f"p.{start + 1}" if end in (None, start) else f"pp.{start + 1}-{end + 1}"
+        name = f"{name}, {pages}"
+    return name
+
+
 def build_context(documents: List[str], metadatas: List[dict]) -> str:
-    """Number each chunk and label it with its source paper for citation."""
+    """Number each chunk and label it with its source for citation. (Chunk
+    text already carries its heading path — title › section — as its first
+    line, so the label only adds the page.)"""
     parts = []
     for i, (doc, meta) in enumerate(zip(documents, metadatas), start=1):
-        source = meta.get("filename", "unknown").rsplit(".", 1)[0].replace("_", " ")
-        parts.append(f"[{i}] (from: {source})\n{doc}")
+        parts.append(f"[{i}] (from: {source_label(meta)})\n{doc}")
     return "\n\n".join(parts)
 
 

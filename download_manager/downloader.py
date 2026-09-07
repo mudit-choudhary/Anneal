@@ -1,406 +1,163 @@
-# # import arxiv
-# # import os
-# # import re
-# # from config import PDF_DIR, DOMAINS, REGISTRY_URL
-# # from loguru import logger
-# # import requests
+"""Download manager: crawls arXiv per domain and registers new PDFs.
 
+Each cycle, every domain is searched newest-first back to its checkpoint
+(the newest `published_at` the registry has for that domain, else
+BACKFILL_DAYS ago). Papers already known to the registry are skipped; new
+ones are downloaded into data/raw_pdfs/ and registered as "downloaded" with
+their domain and publish date, which is what the parse_manager loop picks up.
 
-# # def sanitize_filename(title):
-# #     return re.sub(r'[^a-zA-Z0-9_\- ]', '', title).replace(' ', '_')[:100]
+Requires the registry service (port 4000) — a cycle aborts if it's down,
+rather than downloading files the pipeline would never see.
+"""
 
-# # def download_papers(max_papers=5):
-# #     if not os.path.exists(PDF_DIR):
-# #         os.makedirs(PDF_DIR)
-
-# #     client = arxiv.Client()
-
-# #     for domain in DOMAINS:
-# #         logger.info(f"🔍 Searching: {domain}")
-# #         search = arxiv.Search(
-# #             query=f'ti:"{domain}" OR abs:"{domain}"',
-# #             max_results=max_papers,
-# #             sort_by=arxiv.SortCriterion.SubmittedDate
-# #         )
-
-# #         for result in client.results(search):
-# #             paper_id = result.entry_id.split('/')[-1] # Extract ArXiv ID
-# #             file = sanitize_filename(result.title)
-# #             filename = file + ".pdf"
-            
-# #             try:
-# #                 data = {"filename": file}
-                
-# #                 response = requests.get(
-# #                     f"{REGISTRY_URL}/get_status",
-# #                     json=data,
-# #                     timeout=20
-# #                 )
-# #                 response_data = response.json()
-# #                 # print("Response Data: ", response_data)
-# #                 status = response_data['status']
-# #             except Exception as e:
-# #                 raise e
-            
-# #             if status:
-# #                 logger.info(f"⏭️  Skipping {paper_id} ({status})")
-# #                 continue
-
-# #             logger.info(f"⬇️  Downloading: {result.title}")
-# #             try:
-# #                 result.download_pdf(dirpath=PDF_DIR, filename=filename)
-# #                 print("Downloaded")
-# #                 data = {"filename": file,
-# #                         "status": "downloaded"}
-                
-# #                 response = requests.post(
-# #                     f"{REGISTRY_URL}/update_status",
-# #                     json=data,
-# #                     timeout=20
-# #                 )
-# #                 # print("Response: ", response)
-# #                 response_data = response.json()
-# #                 # print(f"Response Data: {response_data}")
-# #                 if not response_data['success']:
-# #                     raise
-# #             except Exception as e:
-# #                 logger.error(f"❌ Failed {result.title}: {e}")
-
-# # if __name__ == "__main__":
-# #     download_papers(max_papers=3)
-
-# import arxiv
-# import os
-# import re
-# import time
-# import random
-# import requests
-# from datetime import datetime, timedelta, timezone
-# from concurrent.futures import ThreadPoolExecutor, as_completed
-# from loguru import logger
-# from config import PDF_DIR, DOMAINS, REGISTRY_URL
-
-# # --- Configuration ---
-# BACKFILL_DAYS = 1095       # ~3 years (previously YEARS=3)
-# CHECK_INTERVAL = 3600      # Main loop checks every hour
-
-# # --- Anti-Abuse / Jitter Configuration ---
-# MAX_WORKERS = len(DOMAINS) # One thread per domain
-# START_JITTER_RANGE = (5, 60)   # Random delay before a thread starts (seconds)
-# DOWNLOAD_SLEEP_RANGE = (3, 10) # Random pause between individual downloads
-# BREAK_AFTER_RANGE = (10, 20)    # Take a long break after downloading X papers
-# BREAK_DURATION_RANGE = (45, 120)# How long the "long break" lasts (seconds)
-
-# def sanitize_filename(title):
-#     return re.sub(r'[^a-zA-Z0-9_\- ]', '', title).replace(' ', '_')[:100]
-
-# def get_cutoff_date(days):
-#     return datetime.now(timezone.utc) - timedelta(days=days)
-
-# def process_domain(domain, cutoff_date):
-#     """
-#     Handles search & download for a domain with randomized delays.
-#     """
-    
-#     # 1. DESYNC START: Sleep randomly so all threads don't hit the API at the exact same second
-#     start_delay = random.uniform(*START_JITTER_RANGE)
-#     logger.info(f"⏳ [Jitter] {domain} waiting {start_delay:.2f}s to start...")
-#     time.sleep(start_delay)
-
-#     # Initialize Client with a baseline delay
-#     client = arxiv.Client(
-#         page_size=100, 
-#         delay_seconds=3.0, 
-#         num_retries=5
-#     )
-    
-#     logger.info(f"🚀 [Start] Scanning: {domain}")
-    
-#     search = arxiv.Search(
-#         query=f'ti:"{domain}" OR abs:"{domain}"',
-#         max_results=None,
-#         sort_by=arxiv.SortCriterion.SubmittedDate
-#     )
-
-#     # Counters for the "Long Break" logic
-#     session_downloads = 0
-#     next_break_threshold = random.randint(*BREAK_AFTER_RANGE)
-    
-#     total_downloads = 0
-#     checked_count = 0
-
-#     try:
-#         for result in client.results(search):
-#             checked_count += 1
-            
-#             # --- DATE GUARDRAIL ---
-#             if result.published < cutoff_date:
-#                 break
-            
-#             paper_id = result.entry_id.split('/')[-1]
-#             file_clean = sanitize_filename(result.title)
-#             filename = file_clean + ".pdf"
-
-#             # --- REGISTRY CHECK ---
-#             try:
-#                 check_resp = requests.get(
-#                     f"{REGISTRY_URL}/get_status",
-#                     json={"filename": file_clean},
-#                     timeout=10
-#                 )
-#                 if check_resp.status_code == 200 and check_resp.json().get('status'):
-#                     continue 
-#             except Exception:
-#                 pass 
-
-#             # --- DOWNLOAD ---
-#             logger.info(f"⬇️  Downloading [{domain}]: {result.title[:30]}...")
-#             try:
-#                 result.download_pdf(dirpath=PDF_DIR, filename=filename)
-                
-#                 requests.post(
-#                     f"{REGISTRY_URL}/update_status",
-#                     json={"filename": file_clean, "status": "downloaded"},
-#                     timeout=10
-#                 )
-                
-#                 total_downloads += 1
-#                 session_downloads += 1
-                
-#                 # --- RANDOM SLEEP LOGIC ---
-                
-#                 # Check if we need a "Long Break"
-#                 if session_downloads >= next_break_threshold:
-#                     break_time = random.uniform(*BREAK_DURATION_RANGE)
-#                     logger.warning(f"☕ [{domain}] Taking a break for {break_time:.1f}s after {session_downloads} downloads...")
-#                     time.sleep(break_time)
-                    
-#                     # Reset counters for next batch
-#                     session_downloads = 0
-#                     next_break_threshold = random.randint(*BREAK_AFTER_RANGE)
-#                 else:
-#                     # Standard short sleep between files
-#                     short_sleep = random.uniform(*DOWNLOAD_SLEEP_RANGE)
-#                     time.sleep(short_sleep)
-
-#             except Exception as e:
-#                 logger.error(f"❌ Failed [{domain}] {result.title[:20]}: {e}")
-
-#     except Exception as e:
-#         logger.error(f"⚠️ Error in thread {domain}: {e}")
-        
-#     logger.success(f"✅ [Done] {domain}: Checked {checked_count}, Downloaded {total_downloads}")
-#     return domain
-
-# def main_loop():
-#     if not os.path.exists(PDF_DIR):
-#         os.makedirs(PDF_DIR)
-
-#     logger.info(f"🔥 Starting Parallel Monitor (Workers: {MAX_WORKERS}, Backfill: {BACKFILL_DAYS} days)")
-
-#     while True:
-#         cycle_start = time.time()
-#         cutoff_date = get_cutoff_date(BACKFILL_DAYS)
-        
-#         with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-#             future_to_domain = {
-#                 executor.submit(process_domain, domain, cutoff_date): domain 
-#                 for domain in DOMAINS
-#             }
-            
-#             for future in as_completed(future_to_domain):
-#                 domain = future_to_domain[future]
-#                 try:
-#                     future.result() 
-#                 except Exception as exc:
-#                     logger.error(f"Thread for {domain} crashed: {exc}")
-
-#         elapsed = time.time() - cycle_start
-#         logger.info(f"💤 Cycle complete in {elapsed:.2f}s. Sleeping for {CHECK_INTERVAL}s...")
-#         time.sleep(CHECK_INTERVAL)
-
-# if __name__ == "__main__":
-#     try:
-#         main_loop()
-#     except KeyboardInterrupt:
-#         logger.info("🛑 Monitor stopped.")
-
-import arxiv
 import os
+import random
 import re
 import time
-import random
-import requests
-from datetime import datetime, timedelta, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timedelta, timezone
+
+import arxiv
+import requests
 from loguru import logger
-from config import PDF_DIR, DOMAINS, REGISTRY_URL
 
-# --- Configuration ---
-BACKFILL_DAYS = 32  # Fallback if DB is empty (3 years)
-CHECK_INTERVAL = 3600
-MAX_WORKERS = len(DOMAINS)
+from config import (
+    BACKFILL_DAYS,
+    CHECK_INTERVAL,
+    DOMAINS,
+    MAX_PAPERS_PER_DOMAIN,
+    PDF_DIR,
+    REGISTRY_URL,
+)
 
-# Jitter Config
+# Jitter so 10 domain threads don't hit arXiv in lockstep
 START_JITTER = (5, 60)
 DOWNLOAD_SLEEP = (3, 10)
 BREAK_AFTER = (5, 12)
 BREAK_DURATION = (30, 90)
 
+
 def sanitize_filename(title):
-    return re.sub(r'[^a-zA-Z0-9_\- ]', '', title).replace(' ', '_')[:100]
+    """Title -> registry key / PDF stem. Must stay in sync with the rest of the
+    pipeline, which keys everything on the PDF's stem."""
+    return re.sub(r"[^a-zA-Z0-9_\- ]", "", title).replace(" ", "_")[:100]
+
+
+def registry_status(stem):
+    r = requests.get(f"{REGISTRY_URL}/get_status", json={"filename": stem}, timeout=10)
+    r.raise_for_status()
+    return r.json().get("status")
+
+
+def register_download(stem, domain, published):
+    r = requests.post(
+        f"{REGISTRY_URL}/update_status",
+        json={"filename": stem, "status": "downloaded", "domain": domain,
+              "published_at": published.isoformat()},
+        timeout=10,
+    )
+    return r.ok and r.json().get("success", False)
+
 
 def get_smart_cutoff(domain):
-    """
-    Asks the Registry: 'When was the last paper I downloaded for this domain?'
-    """
-    # try:
-    #     response = requests.post(
-    #         f"{REGISTRY_URL}/get_last_checkpoint",
-    #         json={"domain": domain},
-    #         timeout=5
-    #     )
-    #     data = response.json()
-    #     date_str = data.get("last_checkpoint")
-        
-    #     if date_str:
-    #         # Convert string back to timezone-aware datetime
-    #         # ArXiv uses UTC, so we ensure this is UTC
-    #         checkpoint = datetime.fromisoformat(date_str)
-    #         if checkpoint.tzinfo is None:
-    #             checkpoint = checkpoint.replace(tzinfo=timezone.utc)
-            
-    #         logger.info(f"🧠 Smart Resume [{domain}]: Searching only after {checkpoint.date()}")
-    #         return checkpoint
-        
-    # except Exception as e:
-    #     logger.warning(f"⚠️ Could not fetch checkpoint for {domain}: {e}")
-
-    # Fallback: 3 Years ago
+    """Newest publish date already downloaded for this domain, else a
+    BACKFILL_DAYS fallback. Same-day papers are re-checked (and skipped via
+    the registry) so nothing published on the checkpoint day is missed."""
+    try:
+        r = requests.post(f"{REGISTRY_URL}/get_last_checkpoint", json={"domain": domain}, timeout=5)
+        date_str = r.json().get("last_checkpoint") if r.ok else None
+        if date_str:
+            checkpoint = datetime.fromisoformat(date_str)
+            if checkpoint.tzinfo is None:
+                checkpoint = checkpoint.replace(tzinfo=timezone.utc)
+            logger.info(f"🧠 [{domain}] resuming from {checkpoint.date()}")
+            return checkpoint
+    except (requests.RequestException, ValueError) as e:
+        logger.warning(f"⚠️ [{domain}] checkpoint lookup failed ({e}); using backfill")
     fallback = datetime.now(timezone.utc) - timedelta(days=BACKFILL_DAYS)
-    logger.info(f"🔙 Full Backfill [{domain}]: Starting from {fallback.date()}")
+    logger.info(f"🔙 [{domain}] backfill from {fallback.date()}")
     return fallback
 
+
 def process_domain(domain):
-    # 1. Random Start Delay
-    start_delay = random.uniform(*START_JITTER)
-    time.sleep(start_delay)
+    time.sleep(random.uniform(*START_JITTER))
 
-    # 2. Get Dynamic Cutoff Date
-    cutoff_date = get_smart_cutoff(domain)
-    
+    try:
+        registry_status("__healthcheck__")
+    except requests.RequestException as e:
+        logger.error(f"❌ [{domain}] registry unreachable ({e}); skipping this cycle")
+        return f"{domain}: registry down"
+
+    cutoff = get_smart_cutoff(domain)
     client = arxiv.Client(page_size=100, delay_seconds=3.0, num_retries=5)
-    
-    # Search descending (Newest first)
-    search = arxiv.Search(
-        query=f'ti:"{domain}" OR abs:"{domain}"',
-        max_results=None,
-        sort_by=arxiv.SortCriterion.SubmittedDate
-    )
+    search = arxiv.Search(query=f'ti:"{domain}" OR abs:"{domain}"',
+                          max_results=None, sort_by=arxiv.SortCriterion.SubmittedDate)
 
-    session_downloads = 0
+    downloads = session = 0
     next_break = random.randint(*BREAK_AFTER)
-    total_downloads = 0
 
     try:
         for result in client.results(search):
-            # --- THE SMART GUARDRAIL ---
-            # If result.published < cutoff_date:  (Stops BEFORE the date)
-            # This ensures we re-check papers published on the exact same second/day 
-            # as the checkpoint to catch anything missed.
-            if result.published < cutoff_date:
-                logger.success(f"🛑 Caught up on {domain} (reached {result.published.date()})")
+            if result.published < cutoff:
+                logger.success(f"🛑 [{domain}] caught up (reached {result.published.date()})")
                 break
-            
-            paper_id = result.entry_id.split('/')[-1]
-            file_clean = sanitize_filename(result.title)
-            filename = file_clean + ".pdf"
+            if MAX_PAPERS_PER_DOMAIN and downloads >= MAX_PAPERS_PER_DOMAIN:
+                logger.info(f"⏸ [{domain}] per-cycle cap of {MAX_PAPERS_PER_DOMAIN} reached")
+                break
 
-            # Check Registry for Duplicates
-            # This is now CRITICAL because of the date overlap. 
-            # We will encounter files we have already, so we must skip them efficiently.
-            # try:
-            #     # Optimized: We send filename in body as per your server code
-            #     status_chk = requests.get(
-            #         f"{REGISTRY_URL}/get_status", 
-            #         json={"filename": filename},
-            #         timeout=5
-            #     )
-            #     if status_chk.status_code == 200:
-            #         status_data = status_chk.json()
-            #         if status_data.get('status'):
-            #             # logger.debug(f"⏭️  Already have: {filename}")
-            #             continue
-            # except Exception:
-            #     pass # If check fails, we proceed to download to be safe
-
-            # Download
-            logger.info(f"⬇️  Downloading [{domain}]: {result.title[:40]}...")
+            stem = sanitize_filename(result.title)
             try:
-                result.download_pdf(dirpath=PDF_DIR, filename=filename)
-                
-                # try:
-                #     # Update Registry WITH Domain and Date
-                #     requests.post(
-                #         f"{REGISTRY_URL}/update_status",
-                #         json={
-                #             "filename": filename, 
-                #             "status": "downloaded",
-                #             "domain": domain,
-                #             "published_at": result.published.isoformat() 
-                #         },
-                #         timeout=10
-                #     )
-                # except Exception as e:
-                #     print(e)
-                
-                total_downloads += 1
-                session_downloads += 1
-                
-                # Sleep / Break Logic
-                if session_downloads >= next_break:
-                    sleep_time = random.uniform(*BREAK_DURATION)
-                    logger.info(f"☕ [{domain}] Break for {sleep_time:.1f}s...")
-                    time.sleep(sleep_time)
-                    session_downloads = 0
-                    next_break = random.randint(*BREAK_AFTER)
-                else:
-                    time.sleep(random.uniform(*DOWNLOAD_SLEEP))
+                if registry_status(stem):
+                    continue
+            except requests.RequestException as e:
+                logger.error(f"❌ [{domain}] registry unreachable mid-cycle ({e}); stopping")
+                break
 
+            pdf_path = os.path.join(PDF_DIR, stem + ".pdf")
+            try:
+                if not os.path.exists(pdf_path):
+                    logger.info(f"⬇️  [{domain}] {result.title[:50]}…")
+                    result.download_pdf(dirpath=PDF_DIR, filename=stem + ".pdf")
+                if not register_download(stem, domain, result.published):
+                    logger.error(f"❌ [{domain}] registry rejected {stem}")
+                    continue
+                downloads += 1
+                session += 1
             except Exception as e:
-                logger.error(f"❌ Failed {result.title[:20]}: {e}")
+                logger.error(f"❌ [{domain}] failed {result.title[:40]}: {e}")
+                continue
 
+            if session >= next_break:
+                pause = random.uniform(*BREAK_DURATION)
+                logger.info(f"☕ [{domain}] break {pause:.0f}s")
+                time.sleep(pause)
+                session, next_break = 0, random.randint(*BREAK_AFTER)
+            else:
+                time.sleep(random.uniform(*DOWNLOAD_SLEEP))
     except Exception as e:
-        logger.error(f"⚠️ Crash {domain}: {e}")
-        
-    return f"{domain}: {total_downloads} new"
+        logger.error(f"⚠️ [{domain}] crashed: {e}")
+
+    return f"{domain}: {downloads} new"
+
 
 def main_loop():
-    if not os.path.exists(PDF_DIR):
-        os.makedirs(PDF_DIR, exist_ok=True)
-        
-    logger.info(f"🔥 Starting Smart Monitor (Workers: {MAX_WORKERS})")
-
+    os.makedirs(PDF_DIR, exist_ok=True)
+    logger.info(f"🔥 downloader up — {len(DOMAINS)} domains, cap {MAX_PAPERS_PER_DOMAIN}/domain/cycle")
     while True:
-        cycle_start = time.time()
-        
-        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-            # We don't pass cutoff_date anymore; process_domain fetches it per thread
-            future_to_domain = {executor.submit(process_domain, d): d for d in DOMAINS}
-            
-            for future in as_completed(future_to_domain):
+        start = time.time()
+        with ThreadPoolExecutor(max_workers=len(DOMAINS)) as pool:
+            futures = {pool.submit(process_domain, d): d for d in DOMAINS}
+            for f in as_completed(futures):
                 try:
-                    res = future.result()
-                    # logger.info(res) 
+                    logger.info(f.result())
                 except Exception as e:
-                    logger.error(f"Thread Error: {e}")
-
-        elapsed = time.time() - cycle_start
-        logger.success(f"💤 Cycle done in {elapsed:.1f}s. Next check in {CHECK_INTERVAL}s")
+                    logger.error(f"thread error [{futures[f]}]: {e}")
+        logger.success(f"💤 cycle done in {time.time() - start:.0f}s; next in {CHECK_INTERVAL}s")
         time.sleep(CHECK_INTERVAL)
+
 
 if __name__ == "__main__":
     try:
         main_loop()
     except KeyboardInterrupt:
-        logger.info("🛑 Monitor stopped.")
+        logger.info("🛑 downloader stopped")

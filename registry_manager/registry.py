@@ -14,7 +14,7 @@
 #             conn.execute("""
 #                 CREATE TABLE IF NOT EXISTS file_status_table (
 #                     filename TEXT PRIMARY KEY,
-#                     status TEXT CHECK(status IN ('downloaded', 'parsed', 'embedded', 'error')),
+#                     status TEXT CHECK(status IN ('downloaded', 'parsed', 'processed', 'embedded', 'error')),
 #                     error_count INTEGER DEFAULT 0,
 #                     last_error TEXT,
 #                     downloaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -103,7 +103,7 @@ class FileRegistry:
                 CREATE TABLE IF NOT EXISTS file_status_table (
                     filename TEXT PRIMARY KEY,
                     domain TEXT,
-                    status TEXT CHECK(status IN ('downloaded', 'parsed', 'embedded', 'error')),
+                    status TEXT CHECK(status IN ('downloaded', 'parsed', 'processed', 'embedded', 'error')),
                     error_count INTEGER DEFAULT 0,
                     last_error TEXT,
                     published_at TIMESTAMP, 

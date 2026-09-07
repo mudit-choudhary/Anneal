@@ -6,8 +6,10 @@ straight into txt_processor.
 
 from txt_processor import (
     LayoutAssembler,
+    collect_hyphenated_vocab,
     ends_terminally,
     join_lines,
+    merge_paragraph,
     order_regions,
     render_txt,
 )
@@ -70,6 +72,29 @@ class TestJoinLines:
 
     def test_plain_join(self):
         assert join_lines(["one two", "three"]) == "one two three"
+
+    def test_compound_hyphen_kept_when_seen_intact_elsewhere(self):
+        vocab = {"edge-centric", "state-of-the-art"}
+        assert join_lines(["the Edge-", "centric method"], vocab) == "the Edge-centric method"
+        assert join_lines(["a state-of-the-", "art model."], vocab) == "a state-of-the-art model."
+        # same words, no evidence it's a compound -> wrap hyphen dropped
+        assert join_lines(["the Edge-", "centric method"]) == "the Edgecentric method"
+
+    def test_compound_lookup_ignores_punctuation(self):
+        assert join_lines(["(Edge-", "centric)."], {"edge-centric"}) == "(Edge-centric)."
+
+    def test_merge_paragraph_uses_vocab(self):
+        assert merge_paragraph("uses multi-", "scale features.", {"multi-scale"}) == "uses multi-scale features."
+        assert merge_paragraph("uses multi-", "scale features.") == "uses multiscale features."
+
+
+class TestHyphenVocab:
+    def test_collects_intact_compounds_only(self):
+        layout = {"pages": [{"regions": [
+            {"lines": ["Edge-centric methods [1] and state-of-the-art", "results; a non-"]},
+            {"lines": ["Euclidean space"]},
+        ]}]}
+        assert collect_hyphenated_vocab(layout) == {"edge-centric", "state-of-the-art"}
 
 
 class TestEndsTerminally:

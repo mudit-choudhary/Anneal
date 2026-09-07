@@ -95,6 +95,10 @@ def query(request: QueryRequest):
         sources = [{
             "n": i + 1,
             "filename": (m or {}).get("filename", "unknown"),
+            "title": (m or {}).get("title"),
+            "section": (m or {}).get("section"),
+            "page_start": (m or {}).get("page_start"),
+            "page_end": (m or {}).get("page_end"),
             "text": d,
             "distance": distances[i] if i < len(distances) else None,
         } for i, (d, m) in enumerate(zip(documents, metadatas))]
@@ -121,4 +125,6 @@ def query(request: QueryRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=4002, reload=True)
+    # reload=False: the auto-reloader forks a child that outlives a plain
+    # kill of the recorded PID and keeps the port (see stop_services.sh).
+    uvicorn.run("main:app", host="127.0.0.1", port=4002, reload=False)

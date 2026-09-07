@@ -70,37 +70,56 @@ def cmd_parse(args):
 
 
 # --------------------------------------------------------------- stage 2
+CHARS_PER_TOKEN = 5.1   # measured for bge tokenizer on paper text
+TOKEN_WINDOW = 512
+
+
 def cmd_chunks(args):
     use_package("embedding_manager")
-    from chunking import chunk_text
-    from config import PROCESSED_DIR, CHUNK_SIZE, CHUNK_OVERLAP_PCT
+    from chunking import chunk_file
+    from config import PROCESSED_DIR, CHUNK_TARGET_CHARS, CHUNK_MAX_CHARS
 
     p = Path(args.file)
-    if not p.exists():
-        for candidate in (Path(PROCESSED_DIR) / p.name, Path(PROCESSED_DIR) / f"{p.stem}.txt"):
-            if candidate.exists():
+    if not p.exists() or p.suffix != ".json":
+        for candidate in (Path(PROCESSED_DIR) / p.name, Path(PROCESSED_DIR) / f"{p.stem}.json"):
+            if candidate.exists() and candidate.suffix == ".json":
                 p = candidate
                 break
         else:
-            sys.exit(f"'{args.file}' not found (also looked in {PROCESSED_DIR})")
+            sys.exit(f"'{args.file}' not found as a processed .json (looked in {PROCESSED_DIR})")
 
-    size = args.chunk_size or CHUNK_SIZE
-    overlap = args.overlap if args.overlap is not None else CHUNK_OVERLAP_PCT
-    text = p.read_text(encoding="utf-8")
-    chunks = chunk_text(text, size, overlap)
+    target = args.target or CHUNK_TARGET_CHARS
+    maximum = args.max or CHUNK_MAX_CHARS
+    chunks, skipped = chunk_file(p, target, maximum)
+    if not chunks:
+        sys.exit("No embeddable blocks in this file.")
 
-    lengths = [len(c) for c in chunks]
+    lengths = [c["metadata"]["n_chars"] for c in chunks]
+    full = [len(c["text"]) for c in chunks]
+    prose = [c for c in chunks if c["metadata"]["block_types"] == "paragraph"]
+    mid = sum(1 for c in prose if c["body"].rstrip()[-1] not in ".!?\"')]”")
+    sections = {c["metadata"]["section"] for c in chunks}
+    over = sum(1 for n in full if n / CHARS_PER_TOKEN > TOKEN_WINDOW * 0.95)
+
     print(f"{RULE}\nSTAGE 2 SUMMARY — {p.name}\n{RULE}")
-    print(f"chunk_size={size} chars, overlap={overlap:.0%}  ->  {len(chunks)} chunks")
-    print(f"Chunk lengths: min={min(lengths)}, avg={sum(lengths)//len(lengths)}, max={max(lengths)}")
-    mid_sentence = sum(1 for c in chunks if c and c[-1].isalnum())
-    print(f"Chunks ending mid-word/mid-sentence: {mid_sentence}/{len(chunks)}")
+    print(f"target={target} chars, max={maximum} chars  ->  {len(chunks)} chunks "
+          f"({len(skipped)} blocks not embedded: authors, footnotes, bare equation numbers)")
+    print(f"Body length: min={min(lengths)}, avg={sum(lengths)//len(lengths)}, max={max(lengths)}"
+          f"   (embedded text incl. heading: max={max(full)} chars ≈ {int(max(full)/CHARS_PER_TOKEN)} tokens)")
+    print(f"Chunks near/over the {TOKEN_WINDOW}-token window: {over}")
+    print(f"Prose chunks ending mid-sentence: {mid}/{len(prose)}")
+    print(f"Sections covered: {len(sections)}")
+    types = Counter(c["metadata"]["block_types"] for c in chunks)
+    print("By block type:", dict(types.most_common()))
 
     show = chunks if args.show is None else chunks[:args.show]
     print(f"\nShowing {len(show)} of {len(chunks)} chunks:\n")
-    for i, c in enumerate(show):
-        print(f"┌── chunk {i} ({len(c)} chars) " + "─" * 40)
-        print(c)
+    for c in show:
+        m = c["metadata"]
+        pages = f"p{m['page_start']}" + (f"-{m['page_end']}" if m["page_end"] != m["page_start"] else "")
+        print(f"┌── chunk {m['chunk_index']} · {m['n_chars']} chars · {pages} · {m['block_types']} "
+              + "─" * 20)
+        print(c["text"])
         print("└" + "─" * 66 + "\n")
 
 
@@ -112,7 +131,8 @@ def _get_chunks(question, k, files):
 
     try:
         r = requests.get(f"{EMBEDDING_URL}/get_chunks",
-                         json={"query": question, "filenames": files}, timeout=90)
+                         json={"query": question, "filenames": files, "n_results": k or 8},
+                         timeout=90)
         r.raise_for_status()
         return r.json()
     except requests.RequestException as e:
@@ -130,16 +150,20 @@ def cmd_retrieve(args):
     print("(cosine distance: 0 = identical, ~1 = unrelated; "
           "watch for a big jump between consecutive ranks)\n")
     for i, (doc, meta, dist) in enumerate(zip(docs, metas, dists), 1):
-        name = (meta or {}).get("filename", "?")
-        print(f"#{i}  dist={dist:.4f}  {name} (chunk {meta.get('chunk_id', '?')})")
+        meta = meta or {}
+        name = meta.get("title") or meta.get("filename", "?")
+        where = f" › {meta['section']}" if meta.get("section") else ""
+        page = f"  p.{meta['page_start'] + 1}" if meta.get("page_start") is not None else ""
+        print(f"#{i}  dist={dist:.4f}  {name}{where}{page}  (chunk {meta.get('chunk_index', '?')})")
         print(f"    {doc[:400]}{' …' if len(doc) > 400 else ''}\n")
 
 
 # --------------------------------------------------------------- stage 4
 def cmd_answer(args):
-    result = _get_chunks(args.question, None, args.files)  # rag_setup now on path
-    import rag
+    use_package("rag_setup")
     from config import N_RESULTS
+    result = _get_chunks(args.question, N_RESULTS, args.files)
+    import rag
 
     docs = result["documents"][:N_RESULTS]
     metas = result["metadatas"][:N_RESULTS]
@@ -147,7 +171,7 @@ def cmd_answer(args):
 
     print(f"{RULE}\nSTAGE 4 — backend: {args.backend}\n{RULE}")
     for i, m in enumerate(metas, 1):
-        print(f"  [{i}] {(m or {}).get('filename', '?')}")
+        print(f"  [{i}] {rag.source_label(m)}")
     print(f"{THIN}\n")
     if args.backend == "local":
         for delta in rag.stream_local(context, args.question):
@@ -170,10 +194,10 @@ def main():
     p.set_defaults(fn=cmd_parse)
 
     c = sub.add_parser("chunks", help="stage 2: preview how a processed file would be chunked")
-    c.add_argument("file", help="processed .txt path, filename, or bare stem")
-    c.add_argument("--chunk-size", type=int, default=None)
-    c.add_argument("--overlap", type=float, default=None, help="fraction, e.g. 0.2")
-    c.add_argument("--show", type=int, default=10, help="chunks to print (omit for default 10)")
+    c.add_argument("file", help="processed .json path, filename, or bare stem")
+    c.add_argument("--target", type=int, default=None, help="pack paragraphs up to N chars")
+    c.add_argument("--max", type=int, default=None, help="split a single block only beyond N chars")
+    c.add_argument("--show", type=int, default=10, help="chunks to print")
     c.set_defaults(fn=cmd_chunks)
 
     r = sub.add_parser("retrieve", help="stage 3: show ranked chunks for a question")

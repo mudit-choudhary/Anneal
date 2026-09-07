@@ -62,8 +62,14 @@ timestamps, error counts, paper domain, and publish date. Endpoints:
 (latest downloaded paper date per domain, used to resume downloads).
 
 ### download_manager
-Searches arXiv per configured domain, downloads PDFs into `data/raw_pdfs/`,
-and registers them as `downloaded`.
+Searches arXiv per configured domain (one thread each), newest-first back to
+the domain's checkpoint (the newest `published_at` the registry holds, else
+`BACKFILL_DAYS`). Papers the registry already knows are skipped; new ones
+are downloaded into `data/raw_pdfs/` and registered as `downloaded` with
+domain and publish date. `MAX_PAPERS_PER_DOMAIN` caps each cycle so an
+overnight run stays bounded. Aborts a cycle if the registry is down rather
+than downloading files the pipeline would never see. PDFs added by hand are
+registered with `scripts/register_pdfs.py`.
 
 ### parse_manager
 Two-stage, layout-aware parsing driven by a fine-tuned YOLOv11 document-layout
@@ -72,11 +78,17 @@ stage 2 (`txt_processor.py`) assembles reading-ordered, tagged text. See
 [parse_manager.md](parse_manager.md) for the full design.
 
 ### embedding_manager (FastAPI, port 4001)
-Background loop chunks each processed `.txt`
-(RecursiveCharacterTextSplitter, 512 chars, 20% overlap — `\n\n` is the first
-separator, which matches the paragraph boundaries the parser emits) and embeds
-with `sentence-transformers/all-MiniLM-L6-v2` on GPU into a persistent
-ChromaDB collection (cosine/HNSW). Serves `GET /get_chunks` for retrieval.
+Background loop chunks each processed paper's `.json` blocks with a
+**structure-aware chunker** (`chunking.py`: heading path prefixed to every
+chunk, whole paragraphs packed to ~1500 chars, sentence-boundary splits only
+for oversized paragraphs, captions travel with their tables, formulas inline,
+authors/footnotes excluded) and embeds with **`BAAI/bge-base-en-v1.5`**
+(512-token window, normalized, query-side instruction) into a persistent
+ChromaDB collection (cosine/HNSW). Each chunk carries filterable, editable
+metadata — `filename`, `title`, `section`, `page_start`/`page_end`,
+`block_types`, `chunk_index` — that is stored alongside the vector, never
+embedded. Serves `GET /get_chunks` (retrieval, `n_results` + filename
+filter) and `GET /list_files`.
 
 ### rag_setup
 Query-side CLI: retrieves top chunks from the embedding service and answers
@@ -95,9 +107,11 @@ local/gemini backend toggle, and live health dots for Ollama and the
 embedding service. Single self-contained HTML page, no build step.
 
 ### prune_manager
-Periodically deletes files from `raw_pdfs/`, `parsed/`, and `processed/` once
-the registry shows the paper has advanced past that stage, keeping disk usage
-bounded.
+Every `PRUNE_INTERVAL` (30 min) deletes `data/parsed/` files once a paper is
+`processed`/`embedded` and `data/processed/` files once `embedded`. **Raw
+PDFs are kept** (`PRUNE_RAW_PDFS = False`): they are the only input the
+pipeline can be rebuilt from, and the planned VLM pass over figures/tables
+needs their page images. Flip the flag if disk is genuinely scarce.
 
 ## Directory layout
 
@@ -125,7 +139,7 @@ RAGSetup/
 The GPU is time-shared, not partitioned:
 
 - **Overnight (ingestion)**: YOLO layout model (small, batch 4 at imgsz 1024)
-  and the sentence-transformer embedder run on CUDA. The layout detector
+  and the bge-base embedder (~1GB peak) run on CUDA. The layout detector
   automatically falls back to CPU when CUDA memory is exhausted (e.g., while
   a training job is running).
 - **Daytime (querying)**: Qwen3-4B Q4 (~2.5GB weights + 8K KV cache) gets the

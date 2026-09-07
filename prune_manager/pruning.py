@@ -1,117 +1,73 @@
-# Runs every 30 minutes to check if any file from any directory has moved up from it's directorial status.
-# directory:::::::StatusExpected:::::::::StatusForDeletion
-# ===========================================================================
-# raw_pdfs::::::::::downloaded::::::::::::parsed, processed, embedded
-# parsed::::::::::::::parsed::::::::::::::processed, embedded
-# processed:::::::::processed:::::::::::::embedded
+"""Prune manager: deletes intermediate files once the pipeline has moved a
+paper past the stage that produced them.
+
+    directory        deleted once status is in
+    data/parsed      processed, embedded
+    data/processed   embedded
+    data/raw_pdfs    parsed, processed, embedded   (only if PRUNE_RAW_PDFS)
+
+Runs one sweep every PRUNE_INTERVAL seconds. Files the registry doesn't know
+about are left alone.
+"""
 
 import os
-import requests
-import threading
 import time
-from config import PROCESSED_DIR, PARSED_DIR, PDF_DIR, REGISTRY_URL
+
+import requests
+
+from config import (
+    PARSED_DIR,
+    PDF_DIR,
+    PROCESSED_DIR,
+    PRUNE_INTERVAL,
+    PRUNE_RAW_PDFS,
+    REGISTRY_URL,
+)
+
+RULES = [
+    (PARSED_DIR, {"processed", "embedded"}),
+    (PROCESSED_DIR, {"embedded"}),
+]
+if PRUNE_RAW_PDFS:
+    RULES.append((PDF_DIR, {"parsed", "processed", "embedded"}))
 
 
-def check_downloads_directory():
-    while True:
-        if os.path.exists(PDF_DIR):
-            try:
-                file_list = os.listdir(PDF_DIR)
+def get_status(stem):
+    r = requests.get(f"{REGISTRY_URL}/get_status", json={"filename": stem}, timeout=20)
+    r.raise_for_status()
+    return r.json().get("status")
 
-                for file in file_list:
-                    filename = file.split('.')[0]
-                    response = requests.get(
-                                f"{REGISTRY_URL}/get_status",
-                                json={"filename": filename},
-                                timeout=20
-                            )
-                    if response.status_code != 200:
-                        print(f"Registry error for {filename}: {response.status_code}")
-                        continue
-                                
-                    response_data = response.json()
-                    status = response_data.get('status')
 
-                    if status not in ["downloaded", "error"]:
-                        filepath = PDF_DIR + "/" + file
-                        os.remove(filepath)
-            except Exception as e:
-                print(e)
-                continue
-        else:
-             continue
-        
+def sweep(directory, delete_when):
+    if not os.path.isdir(directory):
+        return 0
+    deleted = 0
+    for file in sorted(os.listdir(directory)):
+        stem = os.path.splitext(file)[0]
+        try:
+            status = get_status(stem)
+        except requests.RequestException as e:
+            print(f"[prune] registry unreachable ({e}); sweep aborted")
+            return deleted
+        if status in delete_when:
+            os.remove(os.path.join(directory, file))
+            deleted += 1
+    return deleted
 
-def check_parsed_directory():
-    while True:
-        if os.path.exists(PARSED_DIR):
-            try:
-                file_list = os.listdir(PARSED_DIR)
 
-                for file in file_list:
-                    filename = file.split('.')[0]
-                    response = requests.get(
-                                f"{REGISTRY_URL}/get_status",
-                                json={"filename": filename},
-                                timeout=20
-                            )
-                    if response.status_code != 200:
-                        print(f"Registry error for {filename}: {response.status_code}")
-                        continue
-                                
-                    response_data = response.json()
-                    status = response_data.get('status')
-
-                    if status not in ["downloaded", "parsed", "error"]:
-                        filepath = PARSED_DIR + "/" + file
-                        os.remove(filepath)
-            except Exception as e:
-                print(e)
-                continue
-        else:
-             continue
-            
-def check_processed_directory():
-    while True:
-        if os.path.exists(PROCESSED_DIR):
-            try:
-                file_list = os.listdir(PROCESSED_DIR)
-
-                for file in file_list:
-                    filename = file.split('.')[0]
-                    response = requests.get(
-                                f"{REGISTRY_URL}/get_status",
-                                json={"filename": filename},
-                                timeout=20
-                            )
-                    if response.status_code != 200:
-                        print(f"Registry error for {filename}: {response.status_code}")
-                        continue
-                                
-                    response_data = response.json()
-                    status = response_data.get('status')
-
-                    if status not in ["downloaded", "parsed", "processed", "error"]:
-                        filepath = PROCESSED_DIR + "/" + file
-                        os.remove(filepath)
-            except Exception as e:
-                print(e)
-                continue
-        else:
-             continue
-            
 def deletion_loop():
-    t1 = threading.Thread(target=check_downloads_directory, daemon=True)
-    t2 = threading.Thread(target=check_parsed_directory, daemon=True)
-    t3 = threading.Thread(target=check_processed_directory, daemon=True)
+    print(f"[prune] up — sweeping every {PRUNE_INTERVAL}s; raw PDFs "
+          f"{'INCLUDED' if PRUNE_RAW_PDFS else 'kept'}")
+    while True:
+        for directory, delete_when in RULES:
+            n = sweep(directory, delete_when)
+            if n:
+                print(f"[prune] removed {n} files from {directory}")
+        time.sleep(PRUNE_INTERVAL)
 
-    t1.start()
-    t2.start()
-    t3.start()
 
+if __name__ == "__main__":
     try:
-        # Keep main thread alive until manually stopped
-        while True:
-            time.sleep(1800)
+        deletion_loop()
     except KeyboardInterrupt:
-        print("Shutting down...")
+        print("[prune] stopped")

@@ -53,31 +53,45 @@ was dropped — check `dropped` in the JSON if you suspect lost content).
 
 ## Stage 2 — Chunking quality
 
-**No services needed.** Previews exactly how the embedder would split a
-processed file — without embedding anything:
+**No services needed.** Previews exactly the chunks the embedder would
+produce from a processed paper — without embedding anything:
 
 ```bash
-python scripts/rag_inspect.py chunks Some_Paper                  # bare stem: looked up in data/processed/
-python scripts/rag_inspect.py chunks Some_Paper --chunk-size 768 # experiment without touching config
-python scripts/rag_inspect.py chunks Some_Paper --overlap 0.1 --show 30
+python scripts/rag_inspect.py chunks Some_Paper               # bare stem: looked up in data/processed/
+python scripts/rag_inspect.py chunks Some_Paper --target 1000 # experiment without touching config
+python scripts/rag_inspect.py chunks Some_Paper --max 2400 --show 30
 ```
 
-**What to check:**
+Chunking is **structure-aware** (`embedding_manager/chunking.py`): it reads
+the typed blocks from `data/processed/<name>.json`, not the flat text.
+Headings never form a chunk — the heading path (`Paper › 1. Introduction`)
+is prefixed to every chunk and stored as metadata. Whole paragraphs are
+packed up to `target` chars; a paragraph is split only if it alone exceeds
+`max`, at sentence boundaries with one-sentence overlap. Captions and tables
+are standalone chunks (a caption travels with its table), formulas are
+packed inline with the prose explaining them, lists split at item
+boundaries, and authors/footnotes are never embedded.
 
-- **Mid-sentence endings** — the summary counts chunks ending mid-word or
-  mid-sentence. High counts mean the splitter is cutting inside paragraphs;
-  a paragraph that fits whole in a chunk embeds much better.
-- **Orphaned headings** — a chunk that ends with `## Method` puts the heading
-  in one chunk and its content in the next; retrieval for "method" then
-  fetches the useless one.
-- **Tiny chunks** (< ~100 chars) — usually a lone heading or `[CAPTION]`;
-  they embed poorly and waste retrieval slots.
-- **Tag noise** — `[TABLE]` rows split across chunks lose meaning.
+**What to check in the summary:**
 
-**Knobs**: `CHUNK_SIZE` and `CHUNK_OVERLAP_PCT` in
-`embedding_manager/config.py` (defaults 512 / 0.2). Experiment via the CLI
-flags first; when you settle on values, write them into the config —
-`chunk_and_embed` uses the same constants.
+- **Prose chunks ending mid-sentence** should be ~0. A non-zero count means
+  a paragraph the parser emitted doesn't end with punctuation — usually a
+  stage-1 problem (a paragraph cut by a misdetected region), not a chunking
+  one.
+- **Chunks near/over the 512-token window** must be 0 — anything beyond is
+  silently truncated by the embedder. Lower `--max` if not.
+- **Sections covered** should match the paper's section count; a low number
+  means headings weren't detected (stage 1).
+- **Body length distribution** — very small prose chunks (< ~150 chars)
+  are usually stray fragments worth tracing back to the parse.
+- **By block type** — sanity-check that tables show up as `caption,table`
+  (caption attached) rather than orphaned `table` chunks.
+
+**Knobs**: `CHUNK_TARGET_CHARS` / `CHUNK_MAX_CHARS` in
+`embedding_manager/config.py` (defaults 1500 / 2000 — bge-base's 512-token
+window holds ~2,600 chars of paper text). Experiment via the CLI flags first;
+when you settle on values, write them into the config — `chunk_and_embed`
+uses the same constants.
 
 > After changing chunking (or re-parsing papers), the vector store must be
 > rebuilt — see "Re-ingesting" below.
@@ -148,20 +162,21 @@ citations.
 
 ## Re-ingesting after parser/chunking changes
 
-Embeddings are snapshots of whatever the parser + chunker produced at embed
-time. After improving either, rebuild:
+Embeddings are snapshots of whatever the parser + chunker + embedding model
+produced at embed time. After changing any of them, rebuild everything from
+the raw PDFs with one command:
 
 ```bash
-# 1. Stop the embedding service. Then:
-rm -rf vector_db/
-# 2. Reset registry statuses so the pipeline re-runs (with registry service stopped):
-sqlite3 registry_manager/rag_registry.db \
-  "UPDATE file_status_table SET status='downloaded', parsed_at=NULL, embedded_at=NULL;"
-# 3. Clear stale intermediate outputs:
-rm -f data/parsed/* data/processed/*
-# 4. Start registry, parse_manager, and embedding_manager and let them run
-#    (overnight for a large corpus — GPU is used by YOLO + the embedder).
+scripts/fresh_start.sh          # purge + register PDFs + start all services
 ```
+
+See [FRESH_START.md](FRESH_START.md) for what it does step by step, how to
+watch progress (`scripts/pipeline_status.py`), and the day-2 operations that
+*don't* need a purge (adding papers, re-parsing one paper).
+
+Re-embedding a single paper is idempotent: `chunk_and_embed` replaces that
+paper's existing chunks, so re-parsing one paper and letting the loop pick it
+up is safe without a full reset.
 
 ## Suggested iteration loop
 

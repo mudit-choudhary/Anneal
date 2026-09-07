@@ -11,9 +11,17 @@
 | Service | Port | Started with | Needed for |
 |---|---|---|---|
 | registry_manager | 4000 | `cd registry_manager && python main.py` | status tracking (all pipeline services) |
+| parse_manager | — | `cd parse_manager && python main.py` | PDFs → layout JSON → tagged text |
 | embedding_manager | 4001 | `cd embedding_manager && python main.py` | embedding + retrieval (stages 3–4, UI) |
+| prune_manager | — | `cd prune_manager && python pruning.py` | deletes parsed/processed intermediates once embedded (raw PDFs kept) |
+| download_manager | — | `cd download_manager && python downloader.py` | new papers from arXiv (optional; capped per domain) |
 | UI | 4002 | `cd UI && python main.py` | web querying |
 | Ollama daemon | 11434 | systemd (automatic after install) | local LLM answers |
+
+**`scripts/fresh_start.sh` starts everything except the downloader** in the
+background with logs in `run/logs/` — see [FRESH_START.md](FRESH_START.md).
+Note that after a fresh registry DB, PDFs must be *registered*
+(`scripts/register_pdfs.py`) before the parse loop will touch them.
 
 Parsing (stages 1–2) and the `rag_inspect.py` tool's `parse`/`chunks`
 commands need **no services at all** — a missing registry only prints a
@@ -45,6 +53,9 @@ variant. To fetch the pretrained fallback instead:
 ```bash
 python scripts/download_layout_model.py n   # n | s | m
 ```
+
+The embedding model (`BAAI/bge-base-en-v1.5`, ~440MB) downloads itself from
+Hugging Face the first time the embedding service starts.
 
 ## Local LLM (default query backend)
 
@@ -143,6 +154,8 @@ python -m pytest tests/ -q
 | UI dot for Ollama is amber | Daemon up but `qwen3:4b-instruct` not pulled — `ollama pull qwen3:4b-instruct`. |
 | Answers contain reasoning rambling | You're on the hybrid `qwen3:4b` model; use `qwen3:4b-instruct` (see Local LLM above). |
 | Retrieval returns nothing | Nothing embedded yet, or the embedding service points at an empty `vector_db/` — run the ingestion pipeline first. |
+| `fresh_start.sh` says "Registry unreachable" right after starting it, or "port 4000 is already in use" | A stale service from an earlier run still holds the port and shadows the new one. `scripts/stop_services.sh` sweeps such orphans (by pid file, by process name, and by port); run it and retry. `run/logs/registry.log` will show `address already in use` for the shadowed start. |
+| Changed the embedding model / chunking and results look stale | The collection name is tied to the model (`COLLECTION_NAME` in `embedding_manager/config.py`); run `scripts/reset_ingestion.py --yes` and re-ingest. |
 
 Heuristics tests run in milliseconds without a GPU. The end-to-end test needs
 the layout model and a PDF in `data/raw_pdfs/` (2 pages, CPU-safe), and skips

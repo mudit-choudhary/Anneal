@@ -3,5 +3,4 @@ chromadb
 numpy
 fastapi
 uvicorn
-langchain-text-splitters
 requests

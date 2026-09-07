@@ -231,7 +231,13 @@ function renderSources(bubble, sources) {
   for (const s of sources) {
     const div = document.createElement("div");
     div.className = "source"; div.id = bubble.dataset.mid + "-src-" + s.n;
-    div.innerHTML = `<div class="src-head">[${s.n}] ${esc(prettify(s.filename))}</div><div class="src-text">${esc(s.text)}</div>`;
+    const name = s.title || prettify(s.filename);
+    const where = [
+      s.section ? "› " + s.section : "",
+      s.page_start != null ? (s.page_end != null && s.page_end !== s.page_start
+        ? `pp.${s.page_start + 1}–${s.page_end + 1}` : `p.${s.page_start + 1}`) : "",
+    ].filter(Boolean).join(" · ");
+    div.innerHTML = `<div class="src-head">[${s.n}] ${esc(name)}${where ? ' <span class="hint">' + esc(where) + '</span>' : ''}</div><div class="src-text">${esc(s.text)}</div>`;
     det.append(div);
   }
   bubble.append(det);

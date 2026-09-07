@@ -69,7 +69,7 @@
 
 
 # if __name__ == "__main__":
-#     uvicorn.run("main:registry", host="127.0.0.1", port=4000, reload=True)
+#     uvicorn.run("main:registry", host="127.0.0.1", port=4000, reload=False)
 
 import uvicorn
 from fastapi import FastAPI
@@ -126,4 +126,4 @@ def get_last_checkpoint(request: GetCheckpoint):
     return {"last_checkpoint": last_date}
 
 if __name__ == "__main__":
-    uvicorn.run("main:registry", host="127.0.0.1", port=4000, reload=True)
+    uvicorn.run("main:registry", host="127.0.0.1", port=4000, reload=False)

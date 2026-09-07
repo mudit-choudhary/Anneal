@@ -25,3 +25,6 @@ env_setup.sh
 # Local tool settings
 /.claude
 .pytest_cache
+
+# Service logs and PID files (scripts/fresh_start.sh)
+/run

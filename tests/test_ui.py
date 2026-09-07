@@ -14,7 +14,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture(scope="module")
-def client():
+def ui():
     # UI/main.py inserts rag_setup on sys.path and imports its config; clear
     # any parse_manager `config` already cached by other tests first.
     saved = {k: sys.modules.pop(k) for k in ("config", "rag") if k in sys.modules}
@@ -26,7 +26,12 @@ def client():
         for k in ("config", "rag"):
             sys.modules.pop(k, None)
         sys.modules.update(saved)
-    return TestClient(module.app)
+    return module
+
+
+@pytest.fixture(scope="module")
+def client(ui):
+    return TestClient(ui.app)
 
 
 def test_index_serves_html(client):
@@ -49,7 +54,14 @@ def test_papers_empty_when_service_down(client):
     assert isinstance(r.json()["files"], list)
 
 
-def test_query_reports_unreachable_embedding_service(client):
+def test_query_reports_unreachable_embedding_service(client, ui, monkeypatch):
+    # Deterministic regardless of whether a real embedding service is up.
+    import requests
+
+    def down(*args, **kwargs):
+        raise requests.ConnectionError("connection refused")
+
+    monkeypatch.setattr(ui.rag, "fetch_chunks", down)
     r = client.post("/api/query", json={"query": "what is x?"})
     assert r.status_code == 200
     first = r.text.strip().split("\n")[0]
