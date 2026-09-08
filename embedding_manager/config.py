@@ -7,9 +7,10 @@ MODEL_NAME = "BAAI/bge-base-en-v1.5"
 # bge v1.5 takes an optional instruction on the *query* side only.
 QUERY_INSTRUCTION = "Represent this sentence for searching relevant passages: "
 
-# Collection name is tied to the model: embedding dimensions differ between
-# models, so switching models means a new collection (and re-ingestion).
-COLLECTION_NAME = "papers_bge_base_v1"
+# Collection names are tied to the model: embedding dimensions differ between
+# models, so switching models means new collections (and re-ingestion).
+COLLECTION_NAME = "papers_bge_base_v1"        # paper chunks
+CHATS_COLLECTION_NAME = "chats_bge_base_v1"   # saved conversations (kept separate: model output, not evidence)
 
 dir_path = Path(__file__).resolve().parent
 EMBEDDING_VECTOR_PATH = dir_path.parent / 'vector_db'

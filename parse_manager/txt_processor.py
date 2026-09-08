@@ -54,9 +54,12 @@ def order_regions(regions, page_width):
             return sorted(regions, key=lambda r: (r["bbox"][1], r["bbox"][0]))
 
     ordered = []
-    band = []
+    band = []          # accumulating two-column content
+    separators = []    # a run of vertically-overlapping separator regions
 
     def flush_band():
+        """Emit the accumulated two-column band: left column top-to-bottom,
+        then right column."""
         mid = page_width / 2
         left = [r for r in band if (r["bbox"][0] + r["bbox"][2]) / 2 < mid]
         right = [r for r in band if (r["bbox"][0] + r["bbox"][2]) / 2 >= mid]
@@ -64,14 +67,42 @@ def order_regions(regions, page_width):
         ordered.extend(sorted(right, key=lambda r: r["bbox"][1]))
         band.clear()
 
+    def flush_separators():
+        """Emit a run of separators. Several that sit side by side (the usual
+        3-across author block) form one row and are read left-to-right;
+        stacked ones keep top-to-bottom order."""
+        ordered.extend(sorted(separators, key=lambda r: (r["bbox"][0] if _row_shared(separators) else r["bbox"][1],
+                                                         r["bbox"][1])))
+        separators.clear()
+
+    def _row_shared(group):
+        """True when every region in the group overlaps the first one
+        vertically — i.e. they are laid out across the page, not stacked."""
+        top, bottom = group[0]["bbox"][1], group[0]["bbox"][3]
+        return all(r["bbox"][1] < bottom and r["bbox"][3] > top for r in group)
+
+    def is_separator(r):
+        # A separator interrupts the column flow and is read on its own.
+        # Full-width regions span both columns — including a mid-page column
+        # merge that YOLO detected as one wide `Text` block, which is exactly
+        # right: the columns above it are finished before it is read, and the
+        # columns below it start after. `Authors` boxes sit in the title band
+        # and are narrow, so they need naming explicitly or they would be
+        # sorted into a body column.
+        return is_full_width(r) or r["label"] == "Authors"
+
     for region in sorted(regions, key=lambda r: (r["bbox"][1], r["bbox"][0])):
-        # Authors boxes sit in the title band, not in the body columns; treat
-        # them like full-width separators so they aren't pushed into a column.
-        if is_full_width(region) or region["label"] == "Authors":
+        if is_separator(region):
             flush_band()
-            ordered.append(region)
+            # keep consecutive, vertically-overlapping separators together so
+            # they can be read across rather than down
+            if separators and not _row_shared(separators + [region]):
+                flush_separators()
+            separators.append(region)
         else:
+            flush_separators()
             band.append(region)
+    flush_separators()
     flush_band()
 
     return ordered
@@ -253,7 +284,7 @@ def resolve_layout_json(arg):
     raise FileNotFoundError(f"'{arg}' not found (also tried {PARSED_DIR / p.name})")
 
 
-def process_layout_json(input_json, output_txt=None, output_json=None):
+def process_layout_json(input_json, output_txt=None, output_json=None, update_registry=True):
     """Assemble one layout JSON into processed text. Returns the txt path."""
     input_json = Path(input_json)
     with open(input_json, "r", encoding="utf-8") as f:
@@ -293,22 +324,21 @@ def process_layout_json(input_json, output_txt=None, output_json=None):
             "blocks": blocks,
         }, f, indent=2)
 
-    _update_registry(stem)
+    if update_registry:
+        _update_registry(stem)
     print(f"[processor] {stem}: {len(blocks)} blocks -> {output_txt.name}")
     return output_txt
 
 
 def _update_registry(filename):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    from common.registry_client import RegistryClient, RegistryUnavailable
     try:
-        response = requests.post(
-            f"{REGISTRY_URL}/update_status",
-            json={"filename": filename, "status": "processed"},
-            timeout=20,
-        )
-        if not response.json().get("success"):
-            print(f"[processor] registry rejected status update for {filename}")
-    except requests.RequestException as e:
-        print(f"[processor] registry unreachable ({e}); status not updated")
+        if not RegistryClient().set_status(filename, "processed"):
+            print(f"[processor] registry rejected status update for {filename} (not registered?)")
+    except RegistryUnavailable as e:
+        print(f"[processor] {e}; status not updated")
 
 
 if __name__ == "__main__":

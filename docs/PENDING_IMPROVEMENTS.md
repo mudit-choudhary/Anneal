@@ -14,7 +14,12 @@ matters, and a candidate direction — not a committed design.
 
 ## 1. Tables and figures lose structure/meaning in the parsed output
 
-**Status:** Shelved, not started.
+**Status:** Partly addressed 2026-09-09 — decision: **no VLM** for now (user
+choice). Tables: `scripts/rag_inspect.py tables` verifies number
+preservation and saves crops; the Docling backend
+(`parse_manager/docling_backend.py`, `PARSER_BACKEND = "docling"`) emits
+tables as Markdown via TableFormer — see `scripts/docling_compare.py` for
+the side-by-side benchmark. Figures still contribute only their captions.
 
 ### What's confirmed working
 
@@ -42,7 +47,7 @@ clustered into y-bands and sorted left-to-right within each band — then
 joined with `\n` (`txt_processor.py:163-164`). For a table like:
 
 ```
-                Cora           Citeseer         Pubmed
+                            Cora          Citeseer         Pubmed
 Degree centrality       91.67 ± 0.92    92.24 ± 1.62    82.70 ± 1.76
 Betweenness centrality  91.88*± 0.74    94.20 ± 1.98    83.12*± 1.96
 Closeness centrality    91.24 ± 1.36    93.46 ± 1.52    82.22 ± 2.12
@@ -220,7 +225,12 @@ body text (e.g. a lone equation numeral, a table row label).
 
 ## 3. No service ever records `status = error`
 
-**Status:** Not started. Small.
+**Status:** ✅ Resolved 2026-09-09. Every stage loop (`parse_manager/main.py`,
+`embedding_manager/main.py`) now reports failures through
+`RegistryClient.report_error`, which sets `status = error` with the message
+and increments `error_count`; loops select work by status so errored papers
+are skipped; `scripts/register_pdfs.py --retry-errors` resets them; the
+Ingestion page and `pipeline_status.py` list them. Kept below for the record.
 
 ### What's wrong
 
@@ -246,6 +256,97 @@ already increments `error_count`. Loops then skip papers with status
 errors up to N times (the `error_count` column exists for exactly this)
 before giving up. Requires deciding how a paper gets *out* of `error` —
 simplest: `register_pdfs.py --retry-errors` resets them to `downloaded`.
+
+---
+
+## 4. AGPL dependencies block commercial use as-is
+
+**Status:** **ultralytics removed 2026-09-09** — layout inference now runs on
+onnxruntime (MIT), verified as an exact behavioural swap (407/407 regions,
+mean IoU 0.9999). ultralytics is uninstalled and needed only to re-run
+`scripts/export_onnx.py` after retraining. **PyMuPDF remains** and is the
+next swap (planned: `pypdfium2`), deferred until the current work is
+committed. Commercialization is still not a current goal, but this is
+recorded because it constrains library choices made *now*.
+
+### What's wrong
+
+Licenses of the installed dependencies (from `pip show`):
+
+| Component | License |
+|---|---|
+| ~~**ultralytics**~~ (removed — build-time only now) | ~~AGPL-3.0~~ |
+| **PyMuPDF** — the one remaining copyleft dependency | **AGPL-3.0** or a paid Artifex commercial licence |
+| onnxruntime, opencv-python | MIT / Apache-2.0 |
+| chromadb, sentence-transformers, transformers, requests, huggingface-hub | Apache-2.0 |
+| torch, uvicorn, numpy | BSD |
+| fastapi, pydantic, arxiv, loguru, Ollama, Docling | MIT |
+| bge-base-en-v1.5 weights | MIT |
+| Qwen3 weights | Apache-2.0 |
+
+AGPL is network copyleft: shipping or *hosting* a product built on these
+requires releasing the whole work under AGPL, or buying commercial licences.
+The two AGPL components sit at the heart of parsing, so nothing else being
+permissive helps.
+
+### Why it matters now
+
+Every additional parsing dependency chosen today either preserves or
+forecloses the option. DocLayout-YOLO, for instance, is also AGPL, whereas
+Docling is MIT — that difference is worth knowing before standardising on a
+backend.
+
+### Does fine-tuning your own weights avoid it?
+
+**No** — for two independent reasons, and the first is the decisive one:
+
+1. **The runtime dependency.** Inference calls `import ultralytics`. AGPL
+   §13 covers network use, so serving answers from software that loads an
+   AGPL library triggers the obligation regardless of whose weights it runs.
+2. **Weights lineage.** The fine-tunes descend from
+   `Armaggheddon/yolo11-document-layout`, itself a fine-tune of Ultralytics'
+   AGPL-licensed checkpoints. Ultralytics' own position is that models
+   trained from their weights are derivative works. This point is more
+   arguable than (1), but it doesn't need to be won — (1) already applies.
+
+(Not legal advice; a lawyer should confirm before anything commercial.)
+
+### Candidate direction
+
+Only if commercialization becomes real:
+
+**Replacing ultralytics — done.** The ONNX route was taken: export once at
+build time, run with onnxruntime. The shipped pipeline imports no AGPL code
+for layout detection. What remains is only the *weights-lineage* argument
+(the fine-tunes descend from Ultralytics checkpoints), which is genuinely
+unsettled rather than a certainty. If that ambiguity ever needs to go:
+
+| Option | Licence | Effort | Note |
+|---|---|---|---|
+| Retrain on **YOLOX** | Apache-2.0 | medium — convert the YOLO-format dataset to COCO, retrain | genuinely permissive YOLO family |
+| Retrain on **RT-DETR** (HF `RTDetrForObjectDetection`) | Apache-2.0 | medium | strong on document layout |
+| Use **Docling's** layout model | MIT | already wired (`PARSER_BACKEND="docling"`) | loses the fine-tuning and the `Authors` class |
+| Ultralytics Enterprise licence | paid | none | only needed if you want to ship ultralytics itself |
+
+Avoid **DocLayout-YOLO** (AGPL, built on ultralytics) and **LayoutLMv3**
+(CC-BY-NC, non-commercial).
+
+**Replacing PyMuPDF** — smaller than it sounds: only three files import
+`fitz`, for three jobs. `pypdfium2` (Apache-2.0/BSD-3, bindings to Chrome's
+PDFium) covers all of them alone:
+
+| Job | Where | PyMuPDF | Replacement |
+|---|---|---|---|
+| Page → image | `layout_detector.py` | `page.get_pixmap(dpi=)` | `pypdfium2` `page.render(scale=)` |
+| Word boxes | `pdf_parser.py` | `page.get_text("words")` | `pypdfium2` char boxes grouped into words, or `pdfplumber.extract_words()` (MIT) |
+| Region crops | `rag_inspect.py` | `get_pixmap(clip=)`, `fitz.Rect` | render page, crop with Pillow |
+
+Note `pdf2image`'s backend, poppler, is **GPL-2** — the wrapper being MIT
+doesn't change that, so it isn't an escape route.
+
+The separate practical point: software running on a customer's machine has
+no technical anti-piracy guarantee — obfuscation and licence keys raise
+effort, only a hosted service actually prevents redistribution.
 
 ---
 

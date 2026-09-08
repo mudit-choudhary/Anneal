@@ -63,7 +63,7 @@ def main():
 
     print("\nembedding service:")
     try:
-        files = requests.get("http://127.0.0.1:4001/list_files", timeout=5).json()["files"]
+        files = requests.get("http://127.0.0.1:4001/v1/papers", timeout=5).json()["papers"]
         print(f"  {len(files)} papers in the vector store")
     except requests.RequestException:
         print("  not reachable on :4001")

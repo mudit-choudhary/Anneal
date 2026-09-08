@@ -1,8 +1,10 @@
-"""YOLOv11 document-layout detection over PDF pages.
+"""Document-layout detection over PDF pages.
 
-Renders each PDF page with PyMuPDF, runs batched YOLO inference, and returns
-detections mapped back into PDF coordinate space (points, origin top-left) so
-they can be intersected with PyMuPDF text extraction output.
+Renders each page with PyMuPDF and runs the fine-tuned YOLOv11 layout model
+through **onnxruntime** — ultralytics is not imported at runtime (see
+scripts/export_onnx.py and docs/PENDING_IMPROVEMENTS.md item 4). Detections
+come back mapped into PDF coordinate space (points, origin top-left) so they
+can be intersected with PyMuPDF text extraction.
 
 Model classes (DocLayNet + fine-tuned "Authors"):
     Caption, Footnote, Formula, List-item, Page-footer, Page-header,
@@ -15,61 +17,65 @@ import numpy as np
 from config import (
     MODEL_CANDIDATES,
     RENDER_DPI,
-    YOLO_IMGSZ,
-    YOLO_CONF,
     YOLO_BATCH,
+    YOLO_CONF,
+    YOLO_IMGSZ,
+    YOLO_IOU,
 )
+from onnx_detector import OnnxYolo
+
+
+def resolve_model(model_path=None):
+    """First existing entry of MODEL_CANDIDATES, preferring its .onnx form."""
+    if model_path is not None:
+        return model_path
+    for candidate in MODEL_CANDIDATES:
+        onnx = candidate.with_suffix(".onnx")
+        if onnx.exists():
+            return onnx
+        if candidate.exists():
+            raise FileNotFoundError(
+                f"{candidate} has no ONNX export. Build it once with:\n"
+                f"  python scripts/export_onnx.py\n"
+                f"(that script is the only place ultralytics is used)")
+    raise FileNotFoundError(
+        f"No layout model found; tried: {[str(p.with_suffix('.onnx')) for p in MODEL_CANDIDATES]}")
 
 
 class LayoutDetector:
-    def __init__(self, model_path=None, device=None):
-        from ultralytics import YOLO
-        import torch
-
-        if model_path is None:
-            model_path = next((p for p in MODEL_CANDIDATES if p.exists()), None)
-            if model_path is None:
-                raise FileNotFoundError(
-                    f"No layout model found; tried: {[str(p) for p in MODEL_CANDIDATES]}"
-                )
-            if model_path != MODEL_CANDIDATES[0]:
-                print(f"[layout] preferred model missing, using {model_path}")
-
-        self.device = device if device is not None else (
-            0 if torch.cuda.is_available() else "cpu"
-        )
-        self.model = YOLO(str(model_path))
+    def __init__(self, model_path=None, providers=None):
+        path = resolve_model(model_path)
+        self.model = OnnxYolo(path, providers=providers)
+        self.model_path = path
         self.class_names = self.model.names
+        if path != MODEL_CANDIDATES[0].with_suffix(".onnx"):
+            print(f"[layout] preferred model missing, using {path}")
 
-    def _predict(self, images):
-        """Run inference, dropping to CPU if the GPU is full (4GB card may be
-        shared with a training job)."""
-        import torch
-
-        try:
-            return self.model.predict(
-                images, imgsz=YOLO_IMGSZ, conf=YOLO_CONF,
-                device=self.device, verbose=False,
-            )
-        except RuntimeError as e:
-            # Covers torch.OutOfMemoryError and CUBLAS/CUDA allocation errors.
-            msg = str(e)
-            if self.device == "cpu" or ("CUDA" not in msg and "out of memory" not in msg):
-                raise
-            print("[layout] CUDA out of memory; falling back to CPU")
-            torch.cuda.empty_cache()
-            self.device = "cpu"
-            return self.model.predict(
-                images, imgsz=YOLO_IMGSZ, conf=YOLO_CONF,
-                device=self.device, verbose=False,
-            )
+    @property
+    def provider(self):
+        return self.model.provider
 
     @staticmethod
     def _render_page(page):
         """Rasterize a page to an RGB numpy array at RENDER_DPI."""
         pix = page.get_pixmap(dpi=RENDER_DPI, colorspace=fitz.csRGB, alpha=False)
-        img = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, 3)
-        return img
+        return np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.height, pix.width, 3)
+
+    def _predict(self, images):
+        """Run inference, dropping to CPU if the GPU is full (the 4GB card may
+        be shared with the embedder or a warm LLM)."""
+        try:
+            return self.model.predict(images, conf=YOLO_CONF, iou=YOLO_IOU, imgsz=YOLO_IMGSZ,
+                                      fixed_batch=YOLO_BATCH)
+        except Exception as e:
+            if "CPUExecutionProvider" in str(self.model.session.get_providers()):
+                raise
+            if not any(s in str(e).lower() for s in ("memory", "cuda", "cudnn", "cublas")):
+                raise
+            print(f"[layout] GPU inference failed ({type(e).__name__}); falling back to CPU")
+            self.model = OnnxYolo(self.model_path, providers=["CPUExecutionProvider"])
+            return self.model.predict(images, conf=YOLO_CONF, iou=YOLO_IOU, imgsz=YOLO_IMGSZ,
+                                      fixed_batch=YOLO_BATCH)
 
     def detect_pdf(self, pdf_path, max_pages=None):
         """Run layout detection on every page of a PDF.
@@ -86,19 +92,15 @@ class LayoutDetector:
 
         for start in range(0, n_pages, YOLO_BATCH):
             batch_pages = [doc[i] for i in range(start, min(start + YOLO_BATCH, n_pages))]
-            # Ultralytics expects BGR arrays when given raw numpy images.
-            images = [self._render_page(p)[:, :, ::-1] for p in batch_pages]
+            images = [self._render_page(p) for p in batch_pages]
             results = self._predict(images)
 
-            for page, result in zip(batch_pages, results):
-                regions = []
-                for box in result.boxes:
-                    x0, y0, x1, y1 = (box.xyxy[0] * scale).tolist()
-                    regions.append({
-                        "label": self.class_names[int(box.cls)],
-                        "conf": round(float(box.conf), 4),
-                        "bbox": [round(x0, 2), round(y0, 2), round(x1, 2), round(y1, 2)],
-                    })
+            for page, detections in zip(batch_pages, results):
+                regions = [{
+                    "label": d["label"],
+                    "conf": d["conf"],
+                    "bbox": [round(v * scale, 2) for v in d["bbox"]],
+                } for d in detections]
                 pages_out.append({
                     "page": page.number,
                     "width": page.rect.width,

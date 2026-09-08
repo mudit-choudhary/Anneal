@@ -1,62 +1,70 @@
 """Embedding manager service (port 4001).
 
-Background loop: every processed paper (data/processed/<name>.json) whose
-registry status is "processed" is chunked (structure-aware, see chunking.py),
-embedded, and stored in ChromaDB; status becomes "embedded".
-API: GET /get_chunks (retrieval), GET /list_files, POST /healthcheck.
+Background loop: every paper with registry status "processed" is chunked
+(structure-aware, see chunking.py), embedded, and stored in ChromaDB;
+status becomes "embedded" — or "error" (with the message) if it fails.
+
+    GET    /v1/health
+    POST   /v1/search        {query, n_results, filenames?, sources?, n_chat_results?}
+    GET    /v1/papers        embedded paper stems
+    POST   /v1/chats         {chat_id, title, created_at, pairs:[{question, answer}]}
+    DELETE /v1/chats/{id}
 """
 
 import os
+import sys
 import threading
 import time
-from typing import List, Optional
+from pathlib import Path
+from typing import Dict, List, Optional
 
-import requests
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel, field_validator
 
-from config import PROCESSED_DIR, REGISTRY_URL
-from embeddings import chunk_and_embed, list_embedded_files, query_embeddings
+from common.logsetup import get_logger
+from common.registry_client import RegistryClient, RegistryUnavailable
+from config import PROCESSED_DIR
+from embeddings import chunk_and_embed, delete_chat, embed_chat, list_embedded_files, search
 
-
-def get_status(filename):
-    try:
-        r = requests.get(f"{REGISTRY_URL}/get_status", json={"filename": filename}, timeout=20)
-        return r.json().get("status") if r.ok else None
-    except requests.RequestException as e:
-        print(f"[registry] unreachable: {e}")
-        return None
+log = get_logger("embedding")
 
 
 def chunks_and_embed_loop(poll_interval=60):
+    registry = RegistryClient()
     while True:
         try:
-            for file in sorted(os.listdir(PROCESSED_DIR)):
-                if not file.endswith(".json"):
+            for paper in registry.list_papers(status="processed"):
+                stem = paper["filename"]
+                json_path = Path(PROCESSED_DIR) / f"{stem}.json"
+                if not json_path.exists():
+                    registry.report_error(stem, f"processed JSON missing: {json_path.name}")
                     continue
-                filename = os.path.splitext(file)[0]
-                if get_status(filename) != "processed":
+                try:
+                    result = chunk_and_embed(json_path)
+                except Exception as e:
+                    log.exception("embedding failed for %s", stem)
+                    registry.report_error(stem, f"embedding: {e}")
                     continue
-
-                result = chunk_and_embed(os.path.join(PROCESSED_DIR, file))
-                if not result["success"]:
-                    print(f"[embed] failed {filename}: {result.get('error')}")
-                    continue
-
-                r = requests.post(f"{REGISTRY_URL}/update_status",
-                                  json={"filename": filename, "status": "embedded"}, timeout=20)
-                if not r.json().get("success"):
-                    print(f"[embed] registry rejected status update for {filename}")
-        except Exception as e:
-            print(f"[embed] loop error: {e}")
+                if result["success"]:
+                    registry.set_status(stem, "embedded")
+                else:
+                    registry.report_error(stem, f"embedding: {result.get('error')}")
+        except RegistryUnavailable as e:
+            log.warning("%s", e)
+        except Exception:
+            log.exception("embed loop error")
         time.sleep(poll_interval)
 
 
-class QueryRequest(BaseModel):
+class SearchRequest(BaseModel):
     query: str
-    filenames: Optional[List[str]] = None
     n_results: int = 8
+    filenames: Optional[List[str]] = None
+    sources: List[str] = ["papers"]
+    n_chat_results: int = 2
 
     @field_validator("query")
     @classmethod
@@ -67,31 +75,44 @@ class QueryRequest(BaseModel):
         return v
 
 
-embedding = FastAPI()
+class ChatEmbedRequest(BaseModel):
+    chat_id: str
+    title: str
+    created_at: str
+    pairs: List[Dict[str, str]]
 
 
-@embedding.get("/")
-def read_root():
-    return {"Welcome": " to embedding manager!"}
+embedding = FastAPI(title="embedding_manager", version="1")
 
 
-@embedding.post("/healthcheck")
-def healthcheck():
-    return {"Status": "Okay"}
+@embedding.get("/v1/health")
+def health():
+    return {"status": "ok"}
 
 
-@embedding.get("/get_chunks")
-def fetch_relevant_chunks(request: QueryRequest):
-    return query_embeddings(query=request.query, n_results=request.n_results,
-                            filename_filter=request.filenames)
+@embedding.post("/v1/search")
+def search_endpoint(req: SearchRequest):
+    return {"query": req.query,
+            "results": search(req.query, req.n_results, req.filenames, req.sources, req.n_chat_results)}
 
 
-@embedding.get("/list_files")
-def list_files():
-    return {"files": list_embedded_files()}
+@embedding.get("/v1/papers")
+def papers():
+    return {"papers": list_embedded_files()}
+
+
+@embedding.post("/v1/chats")
+def embed_chat_endpoint(req: ChatEmbedRequest):
+    return {"embedded": embed_chat(req.chat_id, req.title, req.created_at, req.pairs)}
+
+
+@embedding.delete("/v1/chats/{chat_id}")
+def delete_chat_endpoint(chat_id: str):
+    delete_chat(chat_id)
+    return {"success": True}
 
 
 if __name__ == "__main__":
     os.makedirs(PROCESSED_DIR, exist_ok=True)
     threading.Thread(target=chunks_and_embed_loop, daemon=True).start()
-    uvicorn.run("main:embedding", host="127.0.0.1", port=4001, reload=False)
+    uvicorn.run("main:embedding", host="127.0.0.1", port=4001, reload=False, log_level="warning")

@@ -26,5 +26,9 @@ env_setup.sh
 /.claude
 .pytest_cache
 
-# Service logs and PID files (scripts/fresh_start.sh)
+# Service logs and PID files (scripts/ops.py)
 /run
+
+# Web UI: dependencies and build output (rebuild with: cd UI/frontend && npm install && npm run build)
+/UI/frontend/node_modules
+/UI/static

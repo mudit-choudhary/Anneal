@@ -9,11 +9,11 @@ python scripts/rag_inspect.py <stage> ...
 ```
 
 Run it from anywhere with `globalragsetup_env` active. Stages: `parse`,
-`chunks`, `retrieve`, `answer`.
+`tables`, `chunks`, `retrieve`, `answer`.
 
 ```
-PDF ──stage 1──▶ tagged text ──stage 2──▶ chunks ──stage 3──▶ retrieved chunks ──stage 4──▶ answer
-     parsing              chunking              retrieval                 generation
+PDF ──stage 1──▶ tagged text ──stage 2──▶ chunks ──stage 3──▶ retrieved excerpts ──stage 4──▶ answer
+     parsing              chunking              retrieval                   generation
 ```
 
 A defect at any stage poisons every stage after it, so always fix the
@@ -36,18 +36,44 @@ python scripts/rag_inspect.py parse Some_Paper.pdf --show 20  # print more block
 
 | Signal | Healthy | Suspicious |
 |---|---|---|
-| Region detections | mostly `Text`, one `Title`, several `Section-header` | many `fallback` regions → YOLO missing content (raise `--pages`? check `YOLO_CONF`) |
-| Fallback Text regions | 0–2 per doc | high count → model misses; consider lowering `YOLO_CONF` (0.30 → 0.25) |
-| Words swallowed | small (figure labels, running headers) | huge count → body text being eaten by an oversized `Picture` box |
+| Region detections | mostly `Text`, one `Title`, several `Section-header` | many `fallback` regions → YOLO missing content |
+| Fallback Text regions | 0–2 per doc | high count → consider lowering `YOLO_CONF` (0.30 → 0.25) |
+| Words swallowed | small (figure labels, running headers) | huge count → body text eaten by an oversized `Picture` box |
 | Blocks of text | headings marked `##`, abstract one paragraph | paragraphs split mid-sentence, figure text in body, interleaved columns |
 
-**Knobs** (in `parse_manager/config.py`): `YOLO_CONF`, `RENDER_DPI`,
-`FULL_WIDTH_FRACTION`, `SINGLE_COLUMN_FRACTION`. See
-[parse_manager.md](parse_manager.md) for what each does.
+**Knobs** (`parse_manager/config.py`): `YOLO_CONF`, `RENDER_DPI`,
+`FULL_WIDTH_FRACTION`, `SINGLE_COLUMN_FRACTION`, `MODEL_CANDIDATES`. See
+[parse_manager.md](parse_manager.md).
 
-Full outputs land in `data/parsed/<name>.json` (raw regions) and
-`data/processed/<name>.txt` + `.json` (assembled blocks, plus everything that
-was dropped — check `dropped` in the JSON if you suspect lost content).
+Outputs: `data/parsed/<name>.json` (raw regions) and
+`data/processed/<name>.txt` + `.json` (assembled blocks plus everything
+that was dropped — check `dropped` if you suspect lost content).
+
+### Stage 1b — Tables
+
+```bash
+python scripts/rag_inspect.py tables Some_Paper.pdf
+```
+
+For every `Table` region: saves a crop image to
+`data/debug/tables/<paper>/table_p<page>_<n>.png` and checks that every
+numeric token PyMuPDF sees inside the box survived into the extracted text.
+`MISSING` lines name the lost numbers. Open the crop next to the printed
+rows to judge column alignment by eye — that is what the number check
+can't see.
+
+### Trying Docling instead of YOLO
+
+```bash
+python scripts/docling_compare.py Paper_A.pdf Paper_B.pdf --docling-native
+```
+
+Runs both backends on the same PDFs and reports pages/s, peak VRAM, block
+and table counts, and the first table's text from each; outputs land in
+`data/debug/docling_compare/{yolo,docling}/`. Docling's TableFormer emits
+tables as Markdown rows, which is the main thing to compare. To switch the
+pipeline: `PARSER_BACKEND = "docling"` in `parse_manager/config.py`, then
+a fresh start.
 
 ---
 
@@ -74,24 +100,18 @@ boundaries, and authors/footnotes are never embedded.
 
 **What to check in the summary:**
 
-- **Prose chunks ending mid-sentence** should be ~0. A non-zero count means
-  a paragraph the parser emitted doesn't end with punctuation — usually a
-  stage-1 problem (a paragraph cut by a misdetected region), not a chunking
-  one.
+- **Prose chunks ending mid-sentence** should be ~0 — a non-zero count is
+  usually a stage-1 problem.
 - **Chunks near/over the 512-token window** must be 0 — anything beyond is
   silently truncated by the embedder. Lower `--max` if not.
-- **Sections covered** should match the paper's section count; a low number
-  means headings weren't detected (stage 1).
+- **Sections covered** should match the paper's section count.
 - **Body length distribution** — very small prose chunks (< ~150 chars)
   are usually stray fragments worth tracing back to the parse.
-- **By block type** — sanity-check that tables show up as `caption,table`
-  (caption attached) rather than orphaned `table` chunks.
+- **By block type** — tables should show up as `caption,table`.
 
 **Knobs**: `CHUNK_TARGET_CHARS` / `CHUNK_MAX_CHARS` in
 `embedding_manager/config.py` (defaults 1500 / 2000 — bge-base's 512-token
-window holds ~2,600 chars of paper text). Experiment via the CLI flags first;
-when you settle on values, write them into the config — `chunk_and_embed`
-uses the same constants.
+window holds ~2,600 chars of paper text).
 
 > After changing chunking (or re-parsing papers), the vector store must be
 > rebuilt — see "Re-ingesting" below.
@@ -100,92 +120,65 @@ uses the same constants.
 
 ## Stage 3 — Retrieval quality
 
-**Needs the embedding service** (`cd embedding_manager && python main.py`)
-with papers already embedded:
+**Needs the embedding service** with papers embedded:
 
 ```bash
 python scripts/rag_inspect.py retrieve "How does AgentReuse evaluate request similarity?"
 python scripts/rag_inspect.py retrieve "..." -k 12
-python scripts/rag_inspect.py retrieve "..." --files Paper_A.txt Paper_B.txt
+python scripts/rag_inspect.py retrieve "..." --files Paper_A Paper_B
+python scripts/rag_inspect.py retrieve "..." --chats        # also saved conversations
 ```
 
 **How to read the output:** each hit shows its cosine distance
-(0 = identical, ~1 = unrelated). Judge with a handful of questions you know
-the answers to:
+(0 = identical, ~1 = unrelated). Judge with questions you know the answers to:
 
-- **Is the right paper in the top 3?** If not, the problem is upstream:
-  noisy parse or bad chunk boundaries — go back a stage.
-- **Distance cliff** — a jump like 0.42, 0.45, 0.48, **0.71** … means only
-  the first three hits are real; consider whether `N_RESULTS` (in
-  `rag_setup/config.py`) should be lowered so junk never reaches the LLM.
+- **Is the right paper in the top 3?** If not, the problem is upstream.
+- **Distance cliff** — 0.42, 0.45, 0.48, **0.71** … means only the first
+  three hits are real; lower "paper chunks per question" in Settings.
 - **Same paper dominating all k slots** with near-duplicate chunks →
-  overlap too high, or you may want more diverse retrieval.
-- **Right content, wrong granularity** (a caption instead of the explaining
-  paragraph) → revisit chunk size.
+  consider more diverse retrieval.
+- **Right content, wrong granularity** → revisit chunk size.
 
 ---
 
 ## Stage 4 — Answer quality
 
-**Needs the embedding service + Ollama** (daemon runs automatically after
-install; the model loads on first use):
+**Needs the embedding service + the answering model** (Ollama, or the
+OpenAI-compatible API configured in Settings):
 
 ```bash
 python scripts/rag_inspect.py answer "How does AgentReuse evaluate request similarity?"
-python scripts/rag_inspect.py answer "..." --backend gemini   # quality comparison
+python scripts/rag_inspect.py answer "..." --web              # add web pages to the excerpts
+python scripts/rag_inspect.py answer "..." --backend openai   # override the configured backend
 ```
 
-The sources are printed before the answer streams, so you can verify each
-`[n]` citation against what was actually retrieved.
+Sources are printed before the answer streams, so you can verify each `[n]`.
 
-**What to check:**
+**What to check:** every claim cited? faithful to the excerpts? "The
+excerpts do not contain…" when retrieval looked right → chunks too
+fragmented. Compare backends on the same question to separate model limits
+from retrieval problems.
 
-- **Every claim cited?** Uncited claims from a 4B model deserve suspicion.
-- **Faithful to the chunks?** Spot-check a citation: does chunk `[2]` really
-  say that?
-- **"The excerpts do not contain..."** answers — if retrieval (stage 3)
-  looked good for the same question, the chunks may be too fragmented for
-  the model to connect; consider larger chunks.
-- **Local vs Gemini** — run both backends on the same question. If Gemini
-  answers well from the same chunks and Qwen doesn't, it's a model limit
-  (acceptable for lookups, use `--backend gemini` for synthesis). If both
-  fail, the problem is retrieval or parsing, not the LLM.
-
-**Knobs**: `N_RESULTS`, `OLLAMA_MODEL`, `temperature` (in
-`rag_setup/rag.py`'s `_local_payload`), and the `SYSTEM_PROMPT` itself.
-
-The same stage-4 experience is available in the web UI
-(`cd UI && python main.py` → http://127.0.0.1:4002) with clickable
-citations.
+**Knobs**: Settings page (retrieval counts, model, temperature, context),
+and `SYSTEM_PROMPT` in `rag_setup/rag.py`.
 
 ---
 
 ## Re-ingesting after parser/chunking changes
 
-Embeddings are snapshots of whatever the parser + chunker + embedding model
-produced at embed time. After changing any of them, rebuild everything from
-the raw PDFs with one command:
-
 ```bash
 scripts/fresh_start.sh          # purge + register PDFs + start all services
 ```
 
-See [FRESH_START.md](FRESH_START.md) for what it does step by step, how to
-watch progress (`scripts/pipeline_status.py`), and the day-2 operations that
-*don't* need a purge (adding papers, re-parsing one paper).
-
-Re-embedding a single paper is idempotent: `chunk_and_embed` replaces that
-paper's existing chunks, so re-parsing one paper and letting the loop pick it
-up is safe without a full reset.
+See [FRESH_START.md](FRESH_START.md). Re-embedding a single paper is
+idempotent (`python scripts/register_pdfs.py --force Paper.pdf`).
 
 ## Suggested iteration loop
 
-1. `parse` 3–5 representative papers → fix parsing knobs until block output
-   reads clean.
-2. `chunks` on the same papers → tune `CHUNK_SIZE`/overlap until few
-   mid-sentence cuts.
-3. Re-ingest the corpus overnight.
-4. `retrieve` with ~10 questions you can verify → confirm the right chunks
-   surface in the top k.
-5. `answer` the same questions → judge grounding; compare `--backend gemini`.
+1. `parse` and `tables` on 3–5 representative papers → fix parsing knobs
+   until the output reads clean.
+2. `chunks` on the same papers → tune size until few mid-sentence cuts.
+3. Re-ingest.
+4. `retrieve` with ~10 questions you can verify.
+5. `answer` the same questions; compare backends.
 6. Only then trust day-to-day answers in the UI.

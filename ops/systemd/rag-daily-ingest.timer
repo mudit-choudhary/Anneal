@@ -1,0 +1,13 @@
+[Unit]
+Description=RAGSetup: run the daily ingest every day at __TIME__ (catches up after a missed run)
+
+[Timer]
+OnCalendar=*-*-* __TIME__:00
+# If the machine was off at the scheduled time, run as soon as it's back…
+Persistent=true
+# …but not before the desktop has settled.
+OnBootSec=5min
+Unit=rag-daily-ingest.service
+
+[Install]
+WantedBy=timers.target

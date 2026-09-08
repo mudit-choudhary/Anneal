@@ -1,12 +1,10 @@
+import sys
 from pathlib import Path
 
-# --- Paths ---
-BASE_DIR = str(Path(__file__).resolve().parent.parent / "data")
-PDF_DIR = BASE_DIR + "/raw_pdfs"
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from common.paths import PDF_DIR, REGISTRY_URL  # noqa: E402,F401
 
-REGISTRY_URL = 'http://127.0.0.1:4000'
-
-# --- Domains to Download ---
+# --- Domains searched on arXiv (each is one thread per cycle) ---
 DOMAINS = [
     "Generative AI",
     "Large Language Models",
@@ -22,6 +20,5 @@ DOMAINS = [
 
 # --- Crawl budget ---
 BACKFILL_DAYS = 32            # how far back to search when the registry has no checkpoint for a domain
-CHECK_INTERVAL = 3600         # seconds between crawl cycles
+CHECK_INTERVAL = 3600         # seconds between cycles when running as a loop
 MAX_PAPERS_PER_DOMAIN = 20    # new downloads per domain per cycle; None = unlimited
-                              # (keeps an overnight ingestion bounded on a single 4GB GPU)

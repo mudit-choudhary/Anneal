@@ -156,7 +156,7 @@ let papers = [], selected = new Set(), busy = false;
 /* ---------- status + papers ---------- */
 async function refreshStatus() {
   try {
-    const s = await (await fetch("/api/status")).json();
+    const s = await (await fetch("/v1/status")).json();
     $("dotOllama").className = "dot " + (s.ollama ? (s.model_pulled ? "ok" : "warn") : "");
     $("dotOllama").title = s.ollama ? (s.model_pulled ? s.model + " ready" : s.model + " not pulled") : "Ollama daemon unreachable";
     $("dotEmb").className = "dot " + (s.embeddings ? "ok" : "");
@@ -166,7 +166,7 @@ async function refreshStatus() {
 async function loadPapers() {
   const list = $("paperList");
   try {
-    papers = (await (await fetch("/api/papers")).json()).files;
+    papers = (await (await fetch("/v1/papers")).json()).files;
     renderPapers();
   } catch (e) { list.innerHTML = '<span class="hint">Embedding service offline.</span>'; }
 }
@@ -271,7 +271,7 @@ async function ask() {
 
   let text = "", sources = null;
   try {
-    const resp = await fetch("/api/query", {
+    const resp = await fetch("/v1/query", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query: q, filenames: selected.size ? [...selected] : null, backend }),
     });

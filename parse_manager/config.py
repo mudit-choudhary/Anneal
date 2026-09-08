@@ -11,17 +11,22 @@ REGISTRY_URL = "http://127.0.0.1:4000"
 
 # --- YOLO layout detection ---
 # Tried in order; first existing wins. All fine-tuned at imgsz=1024 on
-# research-paper layouts except the last (pretrained
-# Armaggheddon/yolo11-document-layout, via scripts/download_layout_model.py).
+# research-paper layouts (12 classes incl. Authors).
 MODEL_CANDIDATES = [
-    REPO_ROOT / "models" / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt",
-    REPO_ROOT / "models" / "yolo11n_doc_layout_imgsz_1024" / "weights" / "best.pt",
-    REPO_ROOT / "models" / "yolo11n_doc_layout.pt",
+    REPO_ROOT / "models" / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt",       # primary
+    REPO_ROOT / "models" / "yolo11_doc_layout_v2224_imgsz_1024" / "weights" / "best.pt",  # 1st fallback
+    REPO_ROOT / "models" / "yolo11n_doc_layout_imgsz_1024" / "weights" / "best.pt",       # last fallback
 ]
 
-RENDER_DPI = 150          # page raster resolution fed to YOLO
+# Parser backend: "yolo" (this pipeline) or "docling" (IBM Docling trial,
+# parse_manager/docling_backend.py — same processed-JSON output contract).
+PARSER_BACKEND = "yolo"
+
+RENDER_DPI = 150          # page raster resolution fed to the layout model
 YOLO_IMGSZ = 1024         # must match fine-tuning imgsz
 YOLO_CONF = 0.30          # detection confidence threshold
+YOLO_IOU = 0.70           # NMS IoU threshold (ultralytics' predict default,
+                          # which is what the corpus was parsed with)
 YOLO_BATCH = 4            # pages per inference batch (fits a 4GB GPU)
 
 # --- Reading-order / assembly heuristics ---

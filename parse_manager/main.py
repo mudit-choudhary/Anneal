@@ -1,68 +1,68 @@
 """Parse manager service.
 
 Two polling loops share one process:
-- parser_loop:    raw_pdfs/*.pdf with registry status "downloaded" -> layout
-                  JSON in parsed/ (status becomes "parsed")
-- processor_loop: parsed/*.json with registry status "parsed" -> assembled
-                  text in processed/ (status becomes "processed")
+- parser_loop:    papers with status "downloaded" -> layout JSON in parsed/
+                  (status "parsed")
+- processor_loop: papers with status "parsed" -> assembled text in processed/
+                  (status "processed")
+A paper whose stage raises gets status "error" with the message and is left
+alone until re-registered (scripts/register_pdfs.py --retry-errors).
 """
 
-import time
+import sys
 import threading
+import time
+from pathlib import Path
 
-import requests
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from config import PDF_DIR, PARSED_DIR, PROCESSED_DIR, REGISTRY_URL
+from common.logsetup import get_logger
+from common.registry_client import RegistryClient, RegistryUnavailable
+from config import PARSED_DIR, PDF_DIR, PROCESSED_DIR
 from pdf_parser import parse
 from txt_processor import process_layout_json
 
+log = get_logger("parse")
 
-def get_status(filename):
-    try:
-        response = requests.get(
-            f"{REGISTRY_URL}/get_status",
-            json={"filename": filename},
-            timeout=20,
-        )
-        return response.json().get("status")
-    except requests.RequestException as e:
-        print(f"[registry] unreachable: {e}")
-        return None
+
+def _loop(status, directory, suffix, work, poll_interval):
+    registry = RegistryClient()
+    while True:
+        try:
+            for paper in registry.list_papers(status=status):
+                stem = paper["filename"]
+                path = directory / f"{stem}{suffix}"
+                if not path.exists():
+                    registry.report_error(stem, f"input missing: {path.name}")
+                    continue
+                try:
+                    work(path)
+                except Exception as e:
+                    log.exception("%s failed for %s", work.__name__, stem)
+                    registry.report_error(stem, f"{work.__name__}: {e}")
+        except RegistryUnavailable as e:
+            log.warning("%s", e)
+        except Exception:
+            log.exception("loop error")
+        time.sleep(poll_interval)
 
 
 def parser_loop(poll_interval=5):
-    while True:
-        for pdf_path in sorted(PDF_DIR.glob("*.pdf")):
-            if get_status(pdf_path.stem) != "downloaded":
-                continue
-            try:
-                parse(pdf_path)
-            except Exception as e:
-                print(f"[parser] error on {pdf_path.name}: {e}")
-        time.sleep(poll_interval)
+    _loop("downloaded", PDF_DIR, ".pdf", parse, poll_interval)
 
 
 def processor_loop(poll_interval=5):
-    while True:
-        for json_path in sorted(PARSED_DIR.glob("*.json")):
-            if get_status(json_path.stem) != "parsed":
-                continue
-            try:
-                process_layout_json(json_path)
-            except Exception as e:
-                print(f"[processor] error on {json_path.name}: {e}")
-        time.sleep(poll_interval)
+    _loop("parsed", PARSED_DIR, ".json", process_layout_json, poll_interval)
 
 
 if __name__ == "__main__":
     for d in (PDF_DIR, PARSED_DIR, PROCESSED_DIR):
         d.mkdir(parents=True, exist_ok=True)
-
     threading.Thread(target=parser_loop, daemon=True).start()
     threading.Thread(target=processor_loop, daemon=True).start()
-
+    log.info("parse manager up")
     try:
         while True:
             time.sleep(60)
     except KeyboardInterrupt:
-        print("Shutting down...")
+        log.info("shutting down")

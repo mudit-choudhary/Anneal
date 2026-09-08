@@ -47,5 +47,14 @@ Copy the run directory into the repo (git-ignored):
 cp -r /media/mudit/DarkDwine1/ResearchPapersYOLO_FT/models/yolo11n_doc_layout_imgsz_1024 models/
 ```
 
-`parse_manager` picks up `models/yolo11n_doc_layout_imgsz_1024/weights/best.pt`
-automatically.
+Then export it to ONNX, which is what the pipeline actually loads
+(`parse_manager` never imports ultralytics at runtime — see
+[PENDING_IMPROVEMENTS.md](PENDING_IMPROVEMENTS.md) item 4):
+
+```bash
+python scripts/export_onnx.py        # every model in MODEL_CANDIDATES
+```
+
+`parse_manager` then picks up `<dir>/weights/best.onnx` automatically, in the
+`MODEL_CANDIDATES` order. The `.pt` files can stay for future retraining but
+are not used at inference time.

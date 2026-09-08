@@ -89,7 +89,7 @@ Two design ideas explain almost everything else:
 | `parse_manager` stage 2 (`txt_processor.py`) | loop (same process) | — | every 5 s: status `parsed` | `data/parsed/*.json` | `data/processed/*.{txt,json}`, status `processed` | embedder |
 | `embedding_manager` ingest loop | loop | — | every 60 s: status `processed` | `data/processed/*.json`, bge-base | ChromaDB, status `embedded` | queryable |
 | `embedding_manager` API | FastAPI | 4001 | a question | ChromaDB | — | rag.py |
-| `rag_setup/rag.py` | library + CLI | — | UI request / CLI input | :4001, Ollama or Gemini | stdout / stream | user |
+| `rag_setup/rag.py` | library + CLI | — | UI request / CLI input | :4001, Ollama or an OpenAI-compatible API, optional web search | stdout / stream | user |
 | `UI/` | FastAPI + HTML | 4002 | user in browser | rag.py, :4001, Ollama | ndjson stream | user |
 | Ollama daemon | systemd service | 11434 | first chat request | model blobs | — | — |
 | `prune_manager` | loop | — | every 1800 s | registry statuses | deletes `parsed/`, `processed/` | — |
@@ -111,16 +111,17 @@ script deletes the file instead of clearing rows):
 | column | set by | meaning |
 |---|---|---|
 | `filename` (PK) | downloader / register_pdfs | the PDF stem — the universal key |
-| `status` | every stage | `downloaded` → `parsed` → `processed` → `embedded` (`error` exists in the CHECK constraint but nothing sets it; see §11) |
+| `status` | every stage | `downloaded` → `parsed` → `processed` → `embedded` (any stage may set `error` with its message; the paper is then skipped until retried) |
 | `domain`, `published_at` | downloader only | which arXiv search found it, when it was published — `published_at` is what the downloader's checkpoint (`get_last_domain_date`) is computed from |
 | `downloaded_at`, `parsed_at`, `processed_at`, `embedded_at` | each stage's `update_status` | timestamps |
-| `error_count`, `last_error` | (unused today) | — |
+| `error_count`, `last_error` | the failing stage | incremented and stored on `error`; shown by the Ingestion page and `pipeline_status.py` |
 
 **Why a service and not a shared file?** Five independent processes write
 to it. SQLite handles concurrent access from one process well and from
 several badly; a single FastAPI owner serialises writes and gives the
-others a trivial HTTP contract (`GET /get_status`, `POST /update_status`,
-`POST /get_last_checkpoint`). The read-only scripts (`pipeline_status.py`,
+others a trivial REST contract (`GET /v1/papers/{stem}`, `PUT
+/v1/papers/{stem}/status`, `GET /v1/domains/{d}/checkpoint`, `GET /v1/stats`),
+wrapped by `common/registry_client.py`. The read-only scripts (`pipeline_status.py`,
 `wait_for_ingestion.py`) open the SQLite file directly with `mode=ro`,
 which is safe.
 
@@ -155,7 +156,7 @@ impossible to get wrong silently.
 
 | what | where | who fetches it |
 |---|---|---|
-| YOLOv11 layout weights (fine-tuned small, nano; pretrained fallback) | `models/…/weights/best.pt`, `models/yolo11n_doc_layout.pt` | you (copied from the training drive) / `scripts/download_layout_model.py` |
+| YOLOv11 layout weights (fine-tuned small, v2224, nano) | `models/…/weights/best.onnx` (exported from `best.pt` by `scripts/export_onnx.py`) | you (copied from the training drive), then the one-time ONNX export |
 | `bge-base-en-v1.5` | `~/.cache/huggingface/hub/models--BAAI--bge-base-en-v1.5` | sentence-transformers, automatically on first embedding-service start |
 | `qwen3:4b-instruct` | `/usr/share/ollama/.ollama/models` (Ollama's own store) | `ollama pull` |
 
@@ -219,19 +220,19 @@ Take `A_Plan_Reuse_Mechanism_for_LLM-Driven_Agent.pdf`.
 `DOMAINS`. Each thread: sleeps a random 5–60 s (so ten threads don't hit
 arXiv in lockstep), probes the registry (aborts the cycle if it's down —
 *why*: a downloaded-but-unregistered PDF would sit invisible forever),
-asks `POST /get_last_checkpoint` for the newest `published_at` it already
+asks `GET /v1/domains/{d}/checkpoint` for the newest `published_at` it already
 holds for this domain (falls back to `BACKFILL_DAYS` = 32 days), then
 walks arXiv results newest-first. For each result it stops at the
 checkpoint, stops at `MAX_PAPERS_PER_DOMAIN` (20 — *why*: one 4 GB machine
 can't absorb thousands of papers overnight), derives the stem with
-`sanitize_filename(title)`, skips it if `GET /get_status` says the registry
+`sanitize_filename(title)`, skips it if the registry says it already
 already knows it, downloads to `data/raw_pdfs/<stem>.pdf`, and
-`POST /update_status {downloaded, domain, published_at}`. Sleeps 3–10 s
+`PUT /v1/papers/{stem}/status {downloaded, domain, published_at}`. Sleeps 3–10 s
 between papers and takes 30–90 s breaks every 5–12 downloads (politeness
 to arXiv).
 
 **Via `scripts/register_pdfs.py`** for PDFs you copied in: for each PDF,
-`GET /get_status`; if unknown, `POST /update_status {downloaded}`. Same end
+a status lookup; if unknown, sets `downloaded`. Same end
 state, no `domain`/`published_at`. `fresh_start.sh` runs this after
 recreating the registry DB.
 
@@ -246,7 +247,8 @@ recreating the registry DB.
 **Why this stage exists**: plain text extraction can't tell a paragraph
 from a figure label, a running header from body text, or which column
 comes first. So the page is treated as an *image* first. The fine-tuned
-YOLOv11 (`models/yolo11s_doc_layout_imgsz_1024/weights/best.pt`, 12
+YOLOv11 (`models/yolo11s_doc_layout_imgsz_1024/weights/best.onnx`, run via
+onnxruntime — ultralytics is build-time only, see PENDING_IMPROVEMENTS item 4; 12
 classes: Text, Title, Section-header, Authors, List-item, Caption, Table,
 Formula, Footnote, Picture, Page-header, Page-footer) labels every region
 with a box. Text is then read *through* those boxes.
@@ -276,7 +278,7 @@ with a box. Text is then read *through* those boxes.
 6. Empty non-visual regions are dropped; Picture/Table/Formula anchors
    are kept even when empty.
 7. Written to `data/parsed/<stem>.json` (format in §10), then
-   `POST /update_status parsed`.
+   status `parsed` (or `error` with the message if the stage raised).
 
 *What follows*: within 5 s `processor_loop` notices.
 
@@ -322,8 +324,7 @@ parse`) without re-running YOLO.
 5. `finish()` yields `blocks: [{type, page, text}]`; `render_txt()` renders
    them with tags (`#`, `##`, `[AUTHORS]`, `[CAPTION]`, `[TABLE]…[/TABLE]`,
    `[FORMULA]`, `[FOOTNOTE]`) into `data/processed/<stem>.txt`, and the
-   blocks plus `dropped` into `<stem>.json`. Then `POST /update_status
-   processed`.
+   blocks plus `dropped` into `<stem>.json`. Then status `processed`.
 
 *What follows*: within 60 s the embedder notices; prune will delete
 `parsed/<stem>.json` on its next sweep.
@@ -375,7 +376,7 @@ filter) now includes it.
 
 **Trigger**: `prune_manager/pruning.py:deletion_loop`, every
 `PRUNE_INTERVAL` (1800 s). For each rule `(directory, delete_when)` in
-`RULES` it lists files, asks `GET /get_status` for each stem, and deletes
+`RULES` it lists files, looks each stem up in the registry, and deletes
 the file if the status is in the set: `parsed/` once processed/embedded,
 `processed/` once embedded, `raw_pdfs/` only if `PRUNE_RAW_PDFS` is True
 (default False — *why*: PDFs are the only input `fresh_start.sh` can rebuild
@@ -423,7 +424,8 @@ prompt in `rag_setup/rag.py`.
    ignores `think:false`) and each text delta is forwarded as `{type:
    "delta", text}`; the server ends with `{type: "done"}`. Any exception at
    any point becomes `{type: "error", message}` so the page never hangs.
-   With `backend: "gemini"`, `rag.answer_gemini()` is called instead and
+   With `backend: "openai"` (any OpenAI-compatible API configured in
+   Settings), `rag._openai_stream()` is used instead and
    the whole answer is sent as one delta (requires `GEMINI_API_KEY`).
 6. **Rendering.** `index.html` appends deltas, renders minimal markdown,
    turns `[n]` into chips; clicking a chip opens the sources panel and
@@ -478,16 +480,16 @@ fresh one — hence the orphan sweeps and the port check
 | file | knob | default | effect |
 |---|---|---|---|
 | `parse_manager/config.py` | `MODEL_CANDIDATES` | small → nano → pretrained | which YOLO weights |
-| | `RENDER_DPI` / `YOLO_IMGSZ` / `YOLO_CONF` / `YOLO_BATCH` | 150 / 1024 / 0.30 / 4 | raster resolution, model input size (must match training), detection threshold, pages per batch |
+| | `RENDER_DPI` / `YOLO_IMGSZ` / `YOLO_CONF` / `YOLO_IOU` / `YOLO_BATCH` | 150 / 1024 / 0.30 / 0.70 / 4 | raster resolution, model input size (must match training), detection threshold, NMS IoU, pages per batch (also the fixed shape short batches pad to) |
 | | `FULL_WIDTH_FRACTION` / `SINGLE_COLUMN_FRACTION` | 0.6 / 0.7 | reading-order heuristics |
 | | `SWALLOW_LABELS` | Picture, Page-header, Page-footer | whose words are excluded from the flow |
 | `embedding_manager/config.py` | `MODEL_NAME` / `QUERY_INSTRUCTION` / `COLLECTION_NAME` | bge-base-en-v1.5 / bge instruction / `papers_bge_base_v1` | embedder, query-side prefix, Chroma collection |
 | | `CHUNK_TARGET_CHARS` / `CHUNK_MAX_CHARS` | 1500 / 2000 | chunk packing budget / split threshold |
 | env | `EMBED_DEVICE` | `cuda` | where the embedder runs (`cpu` for daytime) |
-| `rag_setup/config.py` | `LLM_BACKEND` (env) | `local` | `local` (Ollama) or `gemini` |
+| `data/settings.json` (UI Settings, env-seeded) | `llm.backend` | `local` | `local` (Ollama) or `openai` (any OpenAI-compatible API) |
 | | `OLLAMA_MODEL` (env) / `OLLAMA_NUM_CTX` / `OLLAMA_KEEP_ALIVE` | `qwen3:4b-instruct` / 6144 / 30m | model, context window (VRAM!), warm time |
 | | `N_RESULTS` | 6 | chunks handed to the LLM |
-| | `GEMINI_API_KEY` (env) / `GEMINI_MODEL` | — / gemini-2.5-flash | optional backend |
+| | `llm.openai.base_url` / `api_key` / `model` | — | the OpenAI-compatible backend |
 | `download_manager/config.py` | `DOMAINS` / `BACKFILL_DAYS` / `CHECK_INTERVAL` / `MAX_PAPERS_PER_DOMAIN` | 10 domains / 32 / 3600 / 20 | what to crawl, how far back without a checkpoint, cycle period, per-cycle cap |
 | `prune_manager/config.py` | `PRUNE_INTERVAL` / `PRUNE_RAW_PDFS` | 1800 / False | sweep period, whether PDFs are ever deleted |
 | `registry_manager/config.py` | `STATUS_TYPE` | the five statuses | accepted by the API |
@@ -563,9 +565,11 @@ A Plan Reuse Mechanism for LLM-Driven Agent › 6.5 Performance Gain Analysis
 | a service crashes mid-paper | nothing lost: output file is rewritten and status advanced on the next poll |
 | stale process holds a port | `stop_services.sh` sweeps it; `fresh_start`/`start_query` refuse to start over it |
 
+| a paper fails repeatedly | its status becomes `error` with the message in `last_error`; the loops skip it, and the Ingestion page and `pipeline_status.py` list it. Retry with `scripts/register_pdfs.py --retry-errors` |
+
 Known gaps are tracked in [PENDING_IMPROVEMENTS.md](PENDING_IMPROVEMENTS.md):
-tables lose structure and figures contribute only captions (#1); a page
-number misclassified as `Text` corrupts the next paragraph and its page
-attribution (#2); and **no service ever records `status = error`** (#3), so
-a PDF that always fails is silently retried every 5 s and never surfaces in
-`pipeline_status.py`'s error count.
+figures contribute only their captions, and tables keep no column structure
+unless the Docling backend is used (#1); a page number misclassified as
+`Text` corrupts the next paragraph and its page attribution (#2); and
+**PyMuPDF is AGPL**, the last copyleft dependency now that ultralytics is
+build-time only (#4). Error reporting (#3) is resolved.

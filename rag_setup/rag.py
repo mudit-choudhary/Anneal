@@ -1,51 +1,55 @@
-"""RAG query CLI.
+"""Retrieval + answering, shared by the UI, the CLI and rag_inspect.py.
 
-Retrieves chunks from the embedding service, then answers with either a
-locally hosted SLM via Ollama (default: Qwen3-4B) or Gemini. Select with
-LLM_BACKEND=local|gemini (see config.py).
+    context, sources, warnings = retrieve(question, filenames, web=False)
+    for token in answer_stream(context, question): ...
+
+Backends (settings `llm.backend`, editable in the UI):
+    local   — Ollama's native /api/chat (default: qwen3:4b-instruct)
+    openai  — any OpenAI-compatible chat API (base_url + api_key + model),
+              e.g. a self-hosted gateway; streams if the API allows, else
+              returns the whole answer at once.
+Retrieval sources: paper chunks (always), saved conversations (optional),
+web pages fetched live (optional; given to the model as-is, never embedded).
 """
 
 import json
-from typing import Iterator, List, Optional
+import sys
+from pathlib import Path
+from typing import Dict, Iterator, List, Optional, Sequence, Tuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import requests
 
-from config import (
-    EMBEDDING_URL,
-    GEMINI_API_KEY,
-    GEMINI_MODEL,
-    LLM_BACKEND,
-    N_RESULTS,
-    OLLAMA_KEEP_ALIVE,
-    OLLAMA_MODEL,
-    OLLAMA_NUM_CTX,
-    OLLAMA_URL,
-)
+from common import settings as settings_store
+from common.paths import EMBEDDING_URL
+from websearch import search_web
 
 SYSTEM_PROMPT = (
-    "You are a research assistant answering questions strictly from excerpts "
-    "of research papers provided as context. Rules:\n"
-    "- Use ONLY the provided excerpts; do not add outside knowledge.\n"
+    "You are a research assistant answering questions strictly from the numbered excerpts "
+    "provided as context. Excerpts come from research papers; some may be web pages (marked "
+    "'web') or the user's previous conversations (marked 'previous conversation'). Rules:\n"
+    "- Use ONLY the excerpts; do not add outside knowledge.\n"
     "- Cite the source after each claim using its bracketed number, e.g. [2].\n"
+    "- Prefer paper excerpts over web pages and previous conversations when they disagree.\n"
     "- If the excerpts do not contain the answer, say so explicitly.\n"
     "- Be concise and technical."
 )
 
 
-def fetch_chunks(query: str, filenames: Optional[List[str]] = None,
-                 n_results: int = N_RESULTS):
-    response = requests.get(
-        f"{EMBEDDING_URL}/get_chunks",
-        json={"query": query, "filenames": filenames, "n_results": n_results},
-        timeout=90,
-    )
-    response.raise_for_status()
-    return response.json()
+# --------------------------------------------------------------- retrieval
+def fetch_chunks(query: str, filenames: Optional[List[str]] = None, n_results: int = 6,
+                 sources: Sequence[str] = ("papers",), n_chat_results: int = 2) -> List[dict]:
+    r = requests.post(f"{EMBEDDING_URL}/v1/search",
+                      json={"query": query, "n_results": n_results, "filenames": filenames,
+                            "sources": list(sources), "n_chat_results": n_chat_results},
+                      timeout=90)
+    r.raise_for_status()
+    return r.json()["results"]
 
 
 def source_label(meta: Optional[dict]) -> str:
-    """Human-readable provenance from chunk metadata: paper title (or
-    prettified filename), plus 1-indexed page(s) when known."""
+    """Paper provenance: title (or prettified filename) + 1-indexed page(s)."""
     meta = meta or {}
     name = meta.get("title")
     if not name:
@@ -60,128 +64,180 @@ def source_label(meta: Optional[dict]) -> str:
     return name
 
 
-def build_context(documents: List[str], metadatas: List[dict]) -> str:
-    """Number each chunk and label it with its source for citation. (Chunk
-    text already carries its heading path — title › section — as its first
-    line, so the label only adds the page.)"""
-    parts = []
-    for i, (doc, meta) in enumerate(zip(documents, metadatas), start=1):
-        parts.append(f"[{i}] (from: {source_label(meta)})\n{doc}")
-    return "\n\n".join(parts)
+def build_context(results: List[dict], web_pages: Sequence[dict] = ()) -> Tuple[str, List[dict]]:
+    """Number every excerpt and label it for citation. Returns (context text,
+    sources) where each source is {n, kind, label, text, ...fields}."""
+    sources: List[dict] = []
+    for r in results:
+        meta = r.get("metadata") or {}
+        if r.get("source") == "chats":
+            sources.append({"kind": "chat", "label": f"previous conversation: {meta.get('title', '')}, "
+                                                     f"{str(meta.get('created_at', ''))[:10]}",
+                            "chat_id": meta.get("chat_id"), "title": meta.get("title")})
+        else:
+            sources.append({"kind": "paper", "label": f"from: {source_label(meta)}",
+                            "filename": meta.get("filename"), "title": meta.get("title"),
+                            "section": meta.get("section"), "page_start": meta.get("page_start"),
+                            "page_end": meta.get("page_end")})
+        sources[-1].update({"text": r.get("text", ""), "distance": r.get("distance")})
+    for p in web_pages:
+        sources.append({"kind": "web", "label": f"web: {p.get('title', '')} — {p.get('url', '')}",
+                        "title": p.get("title"), "url": p.get("url"), "text": p.get("text", ""),
+                        "distance": None})
+    for i, s in enumerate(sources, start=1):
+        s["n"] = i
+    context = "\n\n".join(f"[{s['n']}] ({s['label']})\n{s['text']}" for s in sources)
+    return context, sources
 
 
-def build_user_prompt(context: str, query: str) -> str:
-    return f"Excerpts:\n\n{context}\n\nQuestion: {query}"
+def retrieve(query: str, filenames: Optional[List[str]] = None, web: bool = False,
+             cfg: Optional[dict] = None) -> Tuple[str, List[dict], List[str]]:
+    """Everything before generation. Returns (context, sources, warnings)."""
+    cfg = cfg or settings_store.load()
+    rt = cfg["retrieval"]
+    kinds = ["papers"] + (["chats"] if rt.get("use_chats", True) else [])
+    n = int(rt.get("n_results_with_web", 4) if web else rt.get("n_results", 6))
+    results = fetch_chunks(query, filenames, n, kinds, int(rt.get("n_chat_results", 2)))
+    warnings: List[str] = []
+    pages: List[dict] = []
+    if web:
+        try:
+            pages = search_web(query, int(rt.get("web_results", 3)), int(rt.get("web_chars_per_page", 2000)))
+            if not pages:
+                warnings.append("web search returned no usable pages")
+        except Exception as e:
+            warnings.append(f"web search unavailable: {e}")
+    context, sources = build_context(results, pages)
+    return context, sources, warnings
 
 
-def _local_payload(context: str, query: str, stream: bool) -> dict:
-    return {
-        "model": OLLAMA_MODEL,
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": build_user_prompt(context, query)},
-        ],
-        "stream": stream,
-        "think": False,
-        "keep_alive": OLLAMA_KEEP_ALIVE,
-        "options": {"num_ctx": OLLAMA_NUM_CTX, "temperature": 0.2},
-    }
+# --------------------------------------------------------------- generation
+def _messages(context: str, query: str) -> List[dict]:
+    return [{"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Excerpts:\n\n{context}\n\nQuestion: {query}"}]
 
 
 def strip_thinking(text: str) -> str:
-    """Remove a leaked <think>...</think> block (belt-and-braces: some model
-    templates emit reasoning despite think=False)."""
+    """Remove a leaked <think>...</think> block."""
     if "</think>" in text:
         return text.split("</think>", 1)[1].lstrip()
     return text
 
 
-def answer_local(context: str, query: str) -> str:
-    """Query the Ollama daemon (Ollama's native chat API)."""
-    response = requests.post(
-        f"{OLLAMA_URL}/api/chat",
-        json=_local_payload(context, query, stream=False),
-        timeout=300,
-    )
-    response.raise_for_status()
-    return strip_thinking(response.json()["message"]["content"])
+def _filter_thinking(deltas: Iterator[str]) -> Iterator[str]:
+    """Buffer the head of a stream just long enough to swallow a leaked
+    <think>...</think> block, then pass everything through."""
+    buffer, checking = "", True
+    for content in deltas:
+        if not checking:
+            yield content
+            continue
+        buffer += content
+        head = buffer.lstrip()
+        if head.startswith("<think>"):
+            if "</think>" in head:
+                checking = False
+                after = strip_thinking(head)
+                if after:
+                    yield after
+        elif not "<think>".startswith(head[:7]):
+            checking = False
+            yield buffer
+    if checking and buffer:
+        yield strip_thinking(buffer.lstrip())
 
 
-def stream_local(context: str, query: str) -> Iterator[str]:
-    """Yield answer text incrementally from the Ollama daemon (used by the UI).
+def _ollama_stream(context: str, query: str, local: dict) -> Iterator[str]:
+    payload = {
+        "model": local.get("model", "qwen3:4b-instruct"),
+        "messages": _messages(context, query),
+        "stream": True,
+        "think": False,
+        "keep_alive": local.get("keep_alive", "30m"),
+        "options": {"num_ctx": int(local.get("num_ctx", 6144)),
+                    "temperature": float(local.get("temperature", 0.2))},
+    }
+    url = local.get("url", "http://127.0.0.1:11434").rstrip("/")
 
-    Buffers the start of the stream just long enough to detect and swallow a
-    leaked <think>...</think> block before yielding real answer text.
-    """
-    with requests.post(
-        f"{OLLAMA_URL}/api/chat",
-        json=_local_payload(context, query, stream=True),
-        stream=True,
-        timeout=300,
-    ) as response:
-        response.raise_for_status()
-        buffer, checking = "", True
-        for line in response.iter_lines():
-            if not line:
-                continue
-            data = json.loads(line)
-            content = data.get("message", {}).get("content")
-            if content:
-                if not checking:
+    def deltas():
+        with requests.post(f"{url}/api/chat", json=payload, stream=True, timeout=300) as r:
+            r.raise_for_status()
+            for line in r.iter_lines():
+                if not line:
+                    continue
+                data = json.loads(line)
+                content = data.get("message", {}).get("content")
+                if content:
                     yield content
-                else:
-                    buffer += content
-                    head = buffer.lstrip()
-                    if head.startswith("<think>"):
-                        if "</think>" in head:
-                            checking = False
-                            after = strip_thinking(head)
-                            if after:
-                                yield after
-                    elif not "<think>".startswith(head[:7]):
-                        # Definitely not a thinking block; flush and pass through.
-                        checking = False
-                        yield buffer
-            if data.get("done"):
-                if checking and buffer:
-                    yield strip_thinking(buffer.lstrip())
-                break
+                if data.get("done"):
+                    break
+    yield from _filter_thinking(deltas())
 
 
-def answer_gemini(context: str, query: str) -> str:
-    from google import genai
+def _openai_stream(context: str, query: str, oa: dict) -> Iterator[str]:
+    from openai import OpenAI
 
-    if not GEMINI_API_KEY:
-        raise RuntimeError("GEMINI_API_KEY is not set")
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=[SYSTEM_PROMPT, build_user_prompt(context, query)],
-    )
-    return response.text
+    if not oa.get("base_url") or not oa.get("model"):
+        raise RuntimeError("OpenAI-compatible backend is not configured: set base_url and model in Settings")
+    client = OpenAI(base_url=oa["base_url"], api_key=oa.get("api_key") or "none")
+    kwargs = dict(model=oa["model"], messages=_messages(context, query),
+                  temperature=float(oa.get("temperature", 0.2)),
+                  max_tokens=int(oa.get("max_tokens", 1024)))
+    if oa.get("stream", True):
+        yielded = False
+        try:
+            for chunk in client.chat.completions.create(stream=True, **kwargs):
+                delta = chunk.choices[0].delta.content if chunk.choices else None
+                if delta:
+                    yielded = True
+                    yield delta
+            return
+        except Exception as e:
+            if yielded:
+                raise
+            # The API rejected streaming (or the request failed before any
+            # token): fall back to a plain completion and send it whole.
+            if "stream" not in str(e).lower() and not _is_client_error(e):
+                raise
+    resp = client.chat.completions.create(**kwargs)
+    yield strip_thinking(resp.choices[0].message.content or "")
 
 
-def main(query: str, filenames: Optional[List[str]] = None, backend: str = LLM_BACKEND):
-    chunks = fetch_chunks(query, filenames)
-    documents = chunks["documents"][:N_RESULTS]
-    metadatas = chunks["metadatas"][:N_RESULTS]
-    context = build_context(documents, metadatas)
+def _is_client_error(e: Exception) -> bool:
+    status = getattr(e, "status_code", None)
+    return isinstance(status, int) and 400 <= status < 500
 
-    print(f"Retrieved {len(documents)} chunks; answering with backend: {backend}\n" + "=" * 50)
 
-    if backend == "local":
-        answer = answer_local(context, query)
-    elif backend == "gemini":
-        answer = answer_gemini(context, query)
+def answer_stream(context: str, query: str, cfg: Optional[dict] = None) -> Iterator[str]:
+    """Stream the answer for an already-built context using the configured backend."""
+    llm = (cfg or settings_store.load())["llm"]
+    if llm.get("backend") == "openai":
+        yield from _openai_stream(context, query, llm.get("openai", {}))
     else:
-        raise ValueError(f"Unknown LLM_BACKEND: {backend}")
+        yield from _ollama_stream(context, query, llm.get("local", {}))
 
-    print(answer)
-    return answer
+
+def answer(context: str, query: str, cfg: Optional[dict] = None) -> str:
+    return "".join(answer_stream(context, query, cfg)).strip()
+
+
+# --------------------------------------------------------------- CLI
+def main(query: str, filenames: Optional[List[str]] = None, web: bool = False):
+    cfg = settings_store.load()
+    context, sources, warnings = retrieve(query, filenames, web, cfg)
+    for w in warnings:
+        print(f"! {w}")
+    print(f"Retrieved {len(sources)} excerpts; backend: {cfg['llm']['backend']}\n" + "=" * 50)
+    for s in sources:
+        print(f"  [{s['n']}] {s['label']}")
+    print("=" * 50)
+    for token in answer_stream(context, query, cfg):
+        print(token, end="", flush=True)
+    print()
 
 
 if __name__ == "__main__":
-    query = input("Please enter your query: ")
-    filenames = input("Filenames filter, comma-separated (empty for all): ").strip()
-    file_list = [f.strip() for f in filenames.split(",")] if filenames else None
-    main(query, file_list)
+    q = input("Please enter your query: ")
+    f = input("Filenames filter, comma-separated (empty for all): ").strip()
+    w = input("Include web search? [y/N]: ").strip().lower() == "y"
+    main(q, [x.strip() for x in f.split(",")] if f else None, w)

@@ -1,9 +1,4 @@
-"""Unit tests for the RAG prompt construction (no services required).
-
-rag_setup has its own config.py, which collides with parse_manager's on
-sys.path; the fixture below imports the module in isolation and restores
-whatever `config` was loaded before.
-"""
+"""Unit tests for retrieval context construction (no services required)."""
 
 import importlib
 import sys
@@ -16,37 +11,78 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 @pytest.fixture(scope="module")
 def rag():
-    saved_config = sys.modules.pop("config", None)
+    saved = {k: sys.modules.pop(k) for k in ("config", "rag", "websearch") if k in sys.modules}
+    sys.path.insert(0, str(REPO_ROOT))
     sys.path.insert(0, str(REPO_ROOT / "rag_setup"))
     try:
         module = importlib.import_module("rag")
     finally:
         sys.path.pop(0)
         sys.modules.pop("config", None)
-        if saved_config is not None:
-            sys.modules["config"] = saved_config
+        sys.modules.update(saved)
     return module
 
 
-def test_build_context_numbers_and_sources(rag):
-    docs = ["First chunk text.", "Second chunk text."]
-    metas = [{"filename": "A_Great_Paper.txt"}, {"filename": "Another_One.txt"}]
-    ctx = rag.build_context(docs, metas)
-    assert "[1] (from: A Great Paper)\nFirst chunk text." in ctx
+def paper(text, **meta):
+    return {"text": text, "metadata": meta, "distance": 0.3, "source": "papers"}
+
+
+def test_build_context_numbers_and_labels(rag):
+    ctx, sources = rag.build_context([
+        paper("First chunk text.", filename="A_Great_Paper", title="A Great Paper", page_start=3, page_end=3),
+        paper("Second chunk text.", filename="Another_One"),
+    ])
+    assert "[1] (from: A Great Paper, p.4)\nFirst chunk text." in ctx
     assert "[2] (from: Another One)\nSecond chunk text." in ctx
+    assert [s["n"] for s in sources] == [1, 2]
+    assert sources[0]["kind"] == "paper" and sources[0]["section"] is None
 
 
-def test_build_context_handles_missing_filename(rag):
-    ctx = rag.build_context(["text"], [{}])
-    assert "(from: unknown)" in ctx
+def test_chats_and_web_sources_labeled(rag):
+    ctx, sources = rag.build_context(
+        [paper("Paper text.", title="P"),
+         {"text": "Q: x\nA: y", "metadata": {"chat_id": "c1", "title": "Old chat", "created_at": "2026-09-01T10:00:00"},
+          "distance": 0.4, "source": "chats"}],
+        web_pages=[{"title": "Site", "url": "https://example.org/a", "text": "Web text."}],
+    )
+    assert [s["kind"] for s in sources] == ["paper", "chat", "web"]
+    assert "[2] (previous conversation: Old chat, 2026-09-01)" in ctx
+    assert "[3] (web: Site — https://example.org/a)\nWeb text." in ctx
 
 
-def test_build_user_prompt_contains_query_and_context(rag):
-    prompt = rag.build_user_prompt("CTX", "What is X?")
-    assert "CTX" in prompt
-    assert prompt.rstrip().endswith("Question: What is X?")
+def test_source_label_fallbacks(rag):
+    assert rag.source_label({}) == "unknown"
+    assert rag.source_label({"filename": "A_B.txt"}) == "A B"
+    assert rag.source_label({"title": "T", "page_start": 0, "page_end": 2}) == "T, pp.1-3"
 
 
 def test_system_prompt_demands_citations(rag):
     assert "cite" in rag.SYSTEM_PROMPT.lower()
     assert "ONLY" in rag.SYSTEM_PROMPT
+
+
+def test_thinking_filter_swallows_leaked_block(rag):
+    out = "".join(rag._filter_thinking(iter(["<thi", "nk>reasoning…</think>\n\nAnswer ", "here."])))
+    assert out == "Answer here."
+    assert "".join(rag._filter_thinking(iter(["plain ", "answer"]))) == "plain answer"
+
+
+def test_answer_stream_dispatches_on_backend(rag, monkeypatch):
+    monkeypatch.setattr(rag, "_ollama_stream", lambda c, q, local: iter(["local:" + local["model"]]))
+    monkeypatch.setattr(rag, "_openai_stream", lambda c, q, oa: iter(["openai:" + oa["model"]]))
+    cfg = {"llm": {"backend": "local", "local": {"model": "m1"}, "openai": {"model": "m2"}}}
+    assert rag.answer(ctx := "c", "q", cfg) == "local:m1"
+    cfg["llm"]["backend"] = "openai"
+    assert rag.answer(ctx, "q", cfg) == "openai:m2"
+
+
+def test_retrieve_degrades_when_web_search_fails(rag, monkeypatch):
+    monkeypatch.setattr(rag, "fetch_chunks", lambda *a, **k: [paper("t", title="P")])
+
+    def boom(*a, **k):
+        raise RuntimeError("no network")
+    monkeypatch.setattr(rag, "search_web", boom)
+    cfg = {"retrieval": {"n_results": 6, "n_results_with_web": 4, "use_chats": False,
+                         "web_results": 3, "web_chars_per_page": 2000}, "llm": {"backend": "local"}}
+    context, sources, warnings = rag.retrieve("q", None, web=True, cfg=cfg)
+    assert len(sources) == 1 and warnings and "web search unavailable" in warnings[0]

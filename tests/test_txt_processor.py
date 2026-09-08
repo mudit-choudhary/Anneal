@@ -49,6 +49,36 @@ class TestOrderRegions:
         assert [r["lines"][0] for r in ordered] == [
             "A Title", "Some Author", "left body"]
 
+    def test_side_by_side_authors_read_left_to_right(self):
+        # ACM-style 3-across author block; the y coordinates jitter slightly,
+        # which must not reorder them.
+        title = region("Title", 50, 30, 560, 60, ["A Title"])
+        a1 = region("Authors", 40, 82, 190, 130, ["Author One"])
+        a2 = region("Authors", 230, 79, 380, 128, ["Author Two"])
+        a3 = region("Authors", 420, 81, 570, 131, ["Author Three"])
+        body = region("Text", 40, 160, 290, 700, ["left body"])
+        ordered = order_regions([body, a3, a1, title, a2], PAGE_W)
+        assert [r["lines"][0] for r in ordered] == [
+            "A Title", "Author One", "Author Two", "Author Three", "left body"]
+
+    def test_stacked_authors_keep_top_to_bottom(self):
+        a1 = region("Authors", 40, 80, 300, 110, ["First line of authors"])
+        a2 = region("Authors", 40, 120, 300, 150, ["Affiliation line"])
+        ordered = order_regions([a2, a1], PAGE_W)
+        assert [r["lines"][0] for r in ordered] == ["First line of authors", "Affiliation line"]
+
+    def test_mid_page_column_merge_separates_bands(self):
+        # YOLO detected a full-width Text block in the middle of a 2-column
+        # page: columns above are read first, then it, then columns below.
+        above_l = region("Text", 40, 100, 290, 250, ["above left"])
+        above_r = region("Text", 320, 100, 570, 250, ["above right"])
+        merged = region("Text", 45, 280, 565, 380, ["spans both columns"])
+        below_l = region("Text", 40, 400, 290, 600, ["below left"])
+        below_r = region("Text", 320, 400, 570, 600, ["below right"])
+        ordered = order_regions([below_r, above_r, merged, below_l, above_l], PAGE_W)
+        assert [r["lines"][0] for r in ordered] == [
+            "above left", "above right", "spans both columns", "below left", "below right"]
+
     def test_page_header_footer_removed(self):
         header = region("Page-header", 40, 10, 570, 25, ["Running head"])
         footer = region("Page-footer", 40, 780, 570, 795, ["7"])
