@@ -218,6 +218,37 @@ body text (e.g. a lone equation numeral, a table row label).
 
 ---
 
+## 3. No service ever records `status = error`
+
+**Status:** Not started. Small.
+
+### What's wrong
+
+The registry schema, `STATUS_TYPE`, and `FileRegistry.update_status` all
+support an `error` status with `error_count` and `last_error` — but no
+stage ever posts it. `parse_manager/main.py`'s loops catch exceptions and
+`print` them; `embedding_manager/main.py` logs a failed `chunk_and_embed`
+and moves on. The paper's status stays where it was, so it is **retried on
+every poll, forever** (every 5 s for parsing), and `pipeline_status.py`'s
+`error` row is always 0 even when a PDF is permanently broken (encrypted,
+corrupt, scanned-image-only).
+
+### Why it matters
+
+A single bad PDF wastes GPU time continuously and spams the log, and there
+is no way to see from the status view that something needs attention.
+
+### Candidate direction
+
+On exception, post `{status: "error", error_msg: str(e)}`; the registry
+already increments `error_count`. Loops then skip papers with status
+`error`, and `pipeline_status.py` already lists them. Optionally retry
+errors up to N times (the `error_count` column exists for exactly this)
+before giving up. Requires deciding how a paper gets *out* of `error` —
+simplest: `register_pdfs.py --retry-errors` resets them to `downloaded`.
+
+---
+
 ## Template for new entries
 
 ```markdown

@@ -4,6 +4,12 @@ A local RAG pipeline over research papers, designed to run on a single machine
 with a 4GB GPU (GTX 1650). Six services cooperate through a shared `data/`
 directory and a central registry that tracks each paper's lifecycle status.
 
+> This page is the short overview. For the full account of what happens
+> inside every module, why, and what triggers it — with data formats at
+> every boundary — read [SYSTEM_WALKTHROUGH.md](SYSTEM_WALKTHROUGH.md), and
+> open [diagrams/system_architecture_detailed.drawio](../diagrams/system_architecture_detailed.drawio)
+> (page 1: system; pages 2–8: one per module).
+
 ## Pipeline overview
 
 ```mermaid

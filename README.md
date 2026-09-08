@@ -14,7 +14,9 @@ optional fallback.
 - [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — testing & tuning each RAG stage
 - [docs/FRESH_START.md](docs/FRESH_START.md) — purge everything and re-ingest (`scripts/fresh_start.sh`)
 - [docs/PENDING_IMPROVEMENTS.md](docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
-- [docs/architecture.md](docs/architecture.md) — services, data flow, file lifecycle
+- [docs/architecture.md](docs/architecture.md) — services, data flow, file lifecycle (short)
+- [docs/SYSTEM_WALKTHROUGH.md](docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
+- [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
 - [docs/parse_manager.md](docs/parse_manager.md) — layout-aware parsing design
 - [docs/setup.md](docs/setup.md) — environments, models, running the pipeline
 - [docs/yolo_finetuning.md](docs/yolo_finetuning.md) — fine-tuning the layout model
