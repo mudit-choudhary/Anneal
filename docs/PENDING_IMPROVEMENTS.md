@@ -331,9 +331,48 @@ unsettled rather than a certainty. If that ambiguity ever needs to go:
 Avoid **DocLayout-YOLO** (AGPL, built on ultralytics) and **LayoutLMv3**
 (CC-BY-NC, non-commercial).
 
-**Replacing PyMuPDF** — smaller than it sounds: only three files import
-`fitz`, for three jobs. `pypdfium2` (Apache-2.0/BSD-3, bindings to Chrome's
-PDFium) covers all of them alone:
+**Replacing PyMuPDF — evaluated 2026-09-09, and NOT done.** `pypdfium2`
+(Apache-2.0/BSD-3) was benchmarked against PyMuPDF with
+`scripts/pdf_backend_compare.py` on two papers / 20 pages. It is a real
+option but measurably worse today, so switching now would trade output
+quality for a licence benefit that only matters if commercialization
+happens:
+
+| Metric | PyMuPDF | pypdfium2 |
+|---|---|---|
+| Rendering | 105 / 32 pages/s | 55 / 33 pages/s (**1.18x slower**) |
+| Word extraction | baseline | **1.8x slower** |
+| Rendered pixels | — | 8–13% of pixels differ by >8/255 (different rasterizer) |
+| Word boxes | — | mean IoU **0.89** with `loose=True`; only 0.73 with default ink boxes |
+| Layout detections | 78 / 237 regions | 78 / 239, up to 11 regions differ |
+| **Final processed text** | baseline | **87.2% similar** |
+
+Three findings explain the gap, and each would need compensation code:
+
+1. **No word API.** pdfium exposes characters; words must be rebuilt
+   (~40 lines to write and keep correct).
+2. **Box semantics differ.** Default char boxes are the glyph *ink* extent,
+   so height varies by letter ("A" 11.3pt vs "Agent" 15.3pt) where PyMuPDF
+   returns the font line height (uniform 17.22pt). The pipeline derives its
+   line-grouping tolerance *and* column-gutter threshold from the median word
+   height, so this silently retunes both (line tolerance 5.38 -> 3.80).
+   `get_charbox(loose=True)` mostly fixes it — x then matches PyMuPDF almost
+   exactly — but not entirely.
+3. **Hyphenated line breaks are merged.** pdfium returns `degrad￾ing`
+   as one word (U+FFFE marking the break) whose **bounding box spans both
+   lines** — 19.4pt tall against a typical 8.9pt. That breaks line clustering
+   outright, and the de-hyphenation vocabulary logic (which deliberately
+   keeps `Edge-centric` intact) would have to be rebuilt around a different
+   input shape.
+
+**Recommendation:** keep PyMuPDF while commercialization is hypothetical. If
+it becomes real, the cheapest path is the **Artifex commercial licence**
+(zero code risk); the pypdfium2 route is viable but needs the compensation
+work above plus a full re-ingest and re-validation. Re-run the benchmark any
+time with `python scripts/pdf_backend_compare.py`.
+
+For reference, the mapping if that work is ever done — only three files
+import `fitz`, for three jobs:
 
 | Job | Where | PyMuPDF | Replacement |
 |---|---|---|---|

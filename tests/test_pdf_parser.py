@@ -1,6 +1,9 @@
 """Unit tests for word-to-region assignment (no GPU or model required)."""
 
+import pytest
+
 from pdf_parser import (
+    SPLITTABLE_LABELS,
     assign_words_to_regions,
     find_gutters,
     split_region_columns,
@@ -73,12 +76,32 @@ class TestColumnSplitting:
         assert parts[0]["bbox"][2] < parts[1]["bbox"][0]      # left part ends before the right begins
 
     def test_three_across_authors_split(self):
+        # A real author block is name / university / city — three rows or
+        # more, which is why min_rows can be 3 without losing this case.
         words = row(80, [(40, 150, "Alice"), (240, 350, "Bob"), (440, 550, "Carol")])
         words += row(96, [(40, 150, "UniA"), (240, 350, "UniB"), (440, 550, "UniC")])
-        region = {"label": "Authors", "conf": 0.9, "bbox": [40, 80, 550, 106], "words": words}
+        words += row(112, [(40, 150, "CityA"), (240, 350, "CityB"), (440, 550, "CityC")])
+        region = {"label": "Authors", "conf": 0.9, "bbox": [40, 80, 550, 122], "words": words}
         parts = split_region_columns(region, page_width=612)
         assert [words_to_lines(p["words"]) for p in parts] == [
-            ["Alice", "UniA"], ["Bob", "UniB"], ["Carol", "UniC"]]
+            ["Alice", "UniA", "CityA"], ["Bob", "UniB", "CityB"], ["Carol", "UniC", "CityC"]]
+
+    def test_two_aligned_rows_are_not_enough(self):
+        """Two rows can align by coincidence; a real column layout has more."""
+        words = row(100, [(40, 150, "Short"), (400, 560, "tail")])
+        words += row(115, [(40, 150, "Also"), (400, 560, "here")])
+        region = {"label": "Text", "conf": 0.9, "bbox": [40, 100, 560, 125], "words": words}
+        assert len(split_region_columns(region, page_width=612)) == 1
+
+    def test_narrow_margin_is_not_a_column(self):
+        """A pseudocode line-number margin ("1:", "2:") is a sliver, not a
+        column — splitting there would strip the numbers off their lines."""
+        words = []
+        for i, y in enumerate((100, 115, 130, 145, 160)):
+            words += row(y, [(40, 58, f"{i+1}:")] + [(120 + 55 * j, 170 + 55 * j, f"tok{j}")
+                                                     for j in range(8)])
+        region = {"label": "Text", "conf": 0.9, "bbox": [40, 100, 555, 170], "words": words}
+        assert len(split_region_columns(region, page_width=612)) == 1
 
     def test_table_is_never_split(self):
         # A table's gutters separate columns of the same rows; splitting it
@@ -92,11 +115,33 @@ class TestColumnSplitting:
         assert words_to_lines(parts[0]["words"]) == [
             "Method Cora Pubmed", "Degree 91.67 82.70", "PageRank 92.41 83.41"]
 
-    def test_picture_and_formula_not_split(self):
-        words = row(100, [(40, 150, "a"), (300, 400, "b")]) + row(120, [(40, 150, "c"), (300, 400, "d")])
-        for label in ("Picture", "Formula"):
-            region = {"label": label, "conf": 0.9, "bbox": [40, 100, 400, 130], "words": list(words)}
-            assert len(split_region_columns(region, page_width=612)) == 1
+    def _two_column_words(self):
+        w = []
+        for y in (100, 115, 130):
+            w += row(y, [(40, 150, "left"), (153, 280, "side"), (330, 440, "right"), (443, 570, "side")])
+        return w
+
+    @pytest.mark.parametrize("label", ["Table", "Formula", "Picture",
+                                       "Title", "Section-header",
+                                       "Page-header", "Page-footer"])
+    def test_non_splittable_labels_are_left_whole(self, label):
+        """Only SPLITTABLE_LABELS may be divided. Tables and formulas would
+        lose their rows; a heading is one unit; page headers/footers are
+        dropped later anyway. Anything unrecognised must default to safe."""
+        region = {"label": label, "conf": 0.9, "bbox": [40, 100, 570, 145],
+                  "words": self._two_column_words()}
+        assert len(split_region_columns(region, page_width=612)) == 1
+
+    @pytest.mark.parametrize("label", sorted(SPLITTABLE_LABELS))
+    def test_splittable_labels_do_split(self, label):
+        region = {"label": label, "conf": 0.9, "bbox": [40, 100, 570, 145],
+                  "words": self._two_column_words()}
+        assert len(split_region_columns(region, page_width=612)) == 2
+
+    def test_unknown_label_defaults_to_not_splitting(self):
+        region = {"label": "SomeFutureClass", "conf": 0.9, "bbox": [40, 100, 570, 145],
+                  "words": self._two_column_words()}
+        assert len(split_region_columns(region, page_width=612)) == 1
 
     def test_normal_paragraph_not_split(self):
         words = []

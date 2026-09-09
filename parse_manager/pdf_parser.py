@@ -85,7 +85,7 @@ def assign_words_to_regions(words, regions):
     return regions, swallowed
 
 
-def find_gutters(words, min_gap=None, min_rows=2):
+def find_gutters(words, min_gap=None, min_rows=3):
     """Vertical whitespace gutters inside one region's words.
 
     A gutter is an x-interval *no* word in the region crosses, at least
@@ -93,6 +93,11 @@ def find_gutters(words, min_gap=None, min_rows=2):
     text rows. Both conditions matter: the first rules out ordinary word
     spacing (some line always covers that x in running prose), the second
     rules out the one-off wide space of a centred heading or a tab stop.
+
+    `min_rows` is 3 rather than 2 because two rows are cheap to align by
+    coincidence — a two-line region with a chance gap at the same x would
+    otherwise be torn in half. Real column layouts run to many rows (the
+    author blocks this was built for have four or five).
 
     `min_gap` defaults to roughly one line-height, measured from the region's
     own words, because column gutters scale with the font: in a 10pt paper,
@@ -137,10 +142,33 @@ def find_gutters(words, min_gap=None, min_rows=2):
     return accepted
 
 
-# Regions whose columns are meaningful *within* the region: a table's columns
-# belong to its rows, so splitting on the gutter would destroy it. Formulas
-# and pictures are likewise read as one unit.
-NO_COLUMN_SPLIT = {"Table", "Picture", "Formula"}
+# Labels a wide region may be split on, as an *allowlist* — a new or
+# unrecognised label is never split, which is the safe default. Splitting only
+# helps where the layout model merged content from two page columns into one
+# region, and only where the parts stay meaningful on their own:
+#
+#   Text       the mid-page column merge this was written for
+#   Authors    the 3-across author block
+#   List-item  two side-by-side list items merged into one region
+#   Caption    captions of side-by-side subfigures
+#   Footnote   the full-width footnote band under a two-column page
+#
+# Everything else is excluded deliberately:
+#   Table, Formula   their columns belong to their *rows*; splitting on a
+#                    gutter separates row labels from their values
+#   Picture          read as one unit; its text is swallowed anyway
+#   Title,           a heading is one logical unit by definition, so splitting
+#   Section-header   can only ever turn one heading into two
+#   Page-header,     dropped before assembly (NOISE_LABELS), so splitting them
+#   Page-footer      is work with no effect on the output
+SPLITTABLE_LABELS = {"Text", "Authors", "List-item", "Caption", "Footnote"}
+
+
+# Each column produced by a split must be at least this fraction of the
+# region's width. A genuine column is ~45% of a two-column region; a
+# pseudocode line-number margin ("1:", "2:", …) is ~3%, and splitting there
+# would strip the numbers off their statements.
+MIN_COLUMN_FRACTION = 0.15
 
 
 def split_region_columns(region, page_width, min_width_fraction=0.5, min_gap=None):
@@ -152,12 +180,12 @@ def split_region_columns(region, page_width, min_width_fraction=0.5, min_gap=Non
     stretch the layout model merged into one wide `Text` box, whose lines
     would otherwise be stitched together across the gutter.
 
-    Never applied to `Table` (its gutters separate columns of the *same*
-    rows), `Picture`, or `Formula`.
+    Only labels in `SPLITTABLE_LABELS` are eligible; see the note there for
+    why each of the others is excluded.
     """
     words = region.get("words") or []
     width = region["bbox"][2] - region["bbox"][0]
-    if not words or region["label"] in NO_COLUMN_SPLIT or width < min_width_fraction * page_width:
+    if not words or region["label"] not in SPLITTABLE_LABELS or width < min_width_fraction * page_width:
         return [region]
 
     cuts = find_gutters(words, min_gap)
@@ -177,7 +205,13 @@ def split_region_columns(region, page_width, min_width_fraction=0.5, min_gap=Non
         out.append({**region, "words": group, "column_split": True,
                     "bbox": [round(min(w[0] for w in group), 2), round(min(w[1] for w in group), 2),
                              round(max(w[2] for w in group), 2), round(max(w[3] for w in group), 2)]})
-    return out or [region]
+    if len(out) < 2:
+        return [region]
+    # Reject a split that carves off a sliver — that is a margin (line
+    # numbers, bullets), not a column.
+    if any((p["bbox"][2] - p["bbox"][0]) < MIN_COLUMN_FRACTION * width for p in out):
+        return [region]
+    return out
 
 
 def words_to_lines(region_words):

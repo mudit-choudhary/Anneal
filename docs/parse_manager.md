@@ -123,6 +123,50 @@ flowchart TD
      one wide `Text` box and its lines would be stitched together across the
      gutter.
 
+   Splitting applies only to `SPLITTABLE_LABELS` — an **allowlist**
+   (`Text`, `Authors`, `List-item`, `Caption`, `Footnote`), so a label that
+   is new or was never considered defaults to *not* being split:
+
+   | Excluded | Why |
+   |---|---|
+   | `Table`, `Formula` | their columns belong to their *rows*; splitting on a gutter separates row labels from their values (this was a real bug — a table came out as just its row labels) |
+   | `Picture` | read as one unit; its text is swallowed anyway |
+   | `Title`, `Section-header` | a heading is one logical unit, so a split can only ever turn one heading into two |
+   | `Page-header`, `Page-footer` | dropped before assembly, so splitting has no effect on output |
+
+   **All four conditions must hold**, which is why it is nearly inert:
+
+   1. the label is in the allowlist;
+   2. the region is at least **half the page wide** (a normal body column in
+      a two-column paper cannot be, so it is excluded outright);
+   3. a gutter crosses the *whole* region, at least ~one line-height wide,
+      with words on both sides on **3 or more rows** (two rows align by
+      coincidence too easily);
+   4. every resulting column is at least **15% of the region width** — a
+      pseudocode line-number margin is ~3%, and splitting there would strip
+      the numbers off their statements.
+
+   Measured over the whole corpus — **46 PDFs x 8 pages, 4,430 regions with
+   words** — the funnel is:
+
+   | Stage | Regions |
+   |---|---|
+   | have words | 4,430 |
+   | blocked: label not splittable | 1,157 |
+   | blocked: narrower than half the page | 1,996 |
+   | passed both gates | 1,277 |
+   | of those, no qualifying gutter | 1,276 |
+   | **actually split** | **1** |
+
+   So the realistic answer to "how often per PDF" is **zero for 45 of 46
+   papers, and once for the one with a 3-across author block**.
+
+   **Known residual risk**: a definition list (term | meaning) that the model
+   labels `Text` rather than `Table` will be split, separating terms from
+   their meanings — the same damage shape as the table case, under a label
+   that has to stay splittable. Not observed in the corpus; if it appears,
+   the fix is upstream (the model should call it a `Table`).
+
    Split parts are marked `column_split: true` in the JSON.
 6. **Line building**: each region's words are clustered into lines by
    y-center (tolerance = 0.6 × median word height) and sorted left-to-right.
