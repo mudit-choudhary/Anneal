@@ -3,14 +3,31 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import mermaid from "mermaid";
 
-mermaid.initialize({ startOnLoad: false, theme: "dark", securityLevel: "strict" });
+/** Diagrams must follow the app theme, or they render dark-on-light. */
+function mermaidTheme() {
+  return document.documentElement.dataset.theme === "light" ? "default" : "dark";
+}
+mermaid.initialize({ startOnLoad: false, theme: mermaidTheme(), securityLevel: "strict" });
+
+/** Re-renders diagrams when the theme attribute on <html> changes. */
+function useThemeName() {
+  const [name, setName] = useState(() => document.documentElement.dataset.theme ?? "dark");
+  useEffect(() => {
+    const obs = new MutationObserver(() => setName(document.documentElement.dataset.theme ?? "dark"));
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => obs.disconnect();
+  }, []);
+  return name;
+}
 
 function Mermaid({ chart }: { chart: string }) {
   const id = useId().replace(/:/g, "");
   const [svg, setSvg] = useState<string>("");
   const [err, setErr] = useState<string>("");
+  const theme = useThemeName();
   useEffect(() => {
     let cancelled = false;
+    mermaid.initialize({ startOnLoad: false, theme: mermaidTheme(), securityLevel: "strict" });
     mermaid
       .render(`m${id}`, chart)
       .then(({ svg }) => !cancelled && setSvg(svg))
@@ -18,7 +35,7 @@ function Mermaid({ chart }: { chart: string }) {
     return () => {
       cancelled = true;
     };
-  }, [chart, id]);
+  }, [chart, id, theme]);
   if (err) return <pre className="mermaid-error">mermaid: {err}\n\n{chart}</pre>;
   return <div className="mermaid" dangerouslySetInnerHTML={{ __html: svg }} />;
 }

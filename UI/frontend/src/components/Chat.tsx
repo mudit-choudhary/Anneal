@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api, streamQuery } from "../api";
+import { duration, timeLabel } from "../format";
 import type { Message, Source } from "../types";
 import Markdown from "./Markdown";
 import Sources from "./Sources";
@@ -33,7 +34,8 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
     api
       .chat(chatId)
       .then((c) => {
-        setMessages(c.messages.map((m) => ({ role: m.role, content: m.content, sources: m.sources ?? undefined })));
+        setMessages(c.messages.map((m) => ({ role: m.role, content: m.content,
+          sources: m.sources ?? undefined, duration_ms: m.duration_ms, created_at: m.created_at })));
         setEmbedded(c.embedded);
       })
       .catch(() => setMessages([]));
@@ -64,7 +66,7 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
           else if (ev.type === "warning") update((a) => ({ ...a, warnings: [...(a.warnings ?? []), ev.message] }));
           else if (ev.type === "delta") update((a) => ({ ...a, content: a.content + ev.text }));
           else if (ev.type === "error") update((a) => ({ ...a, error: ev.message, streaming: false }));
-          else if (ev.type === "done") update((a) => ({ ...a, streaming: false }));
+          else if (ev.type === "done") update((a) => ({ ...a, streaming: false, duration_ms: ev.duration_ms }));
         },
         abort.current.signal,
       );
@@ -118,6 +120,13 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
                 <Markdown text={m.content} onCite={(n) => setHighlight({ idx: i, n })} />
                 {m.streaming && <span className="cursor" />}
                 {m.error && <div className="error">⚠ {m.error}</div>}
+                {!m.streaming && (m.duration_ms != null || m.created_at) && (
+                  <div className="timing">
+                    {m.duration_ms != null && <>answered in {duration(m.duration_ms)}</>}
+                    {m.duration_ms != null && m.created_at && " · "}
+                    {m.created_at && timeLabel(m.created_at)}
+                  </div>
+                )}
                 {m.sources && <Sources sources={m.sources as Source[]} highlight={highlight?.idx === i ? highlight.n : null} />}
               </div>
             </div>

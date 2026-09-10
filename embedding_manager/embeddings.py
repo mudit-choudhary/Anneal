@@ -38,11 +38,55 @@ class BGEEmbeddingFunction(embedding_functions.SentenceTransformerEmbeddingFunct
 # Initialized once. EMBED_DEVICE=cpu keeps VRAM free for the local LLM during
 # daytime querying (a single query embeds in tens of ms on CPU); use cuda —
 # the default — for overnight batch embedding.
-embed_fn = BGEEmbeddingFunction(
-    model_name=MODEL_NAME,
-    device=os.environ.get("EMBED_DEVICE", "cuda"),
-    normalize_embeddings=True,
-)
+def _build(device: str):
+    return BGEEmbeddingFunction(model_name=MODEL_NAME, device=device, normalize_embeddings=True)
+
+
+_device = os.environ.get("EMBED_DEVICE", "cuda")
+try:
+    embed_fn = _build(_device)
+except Exception as _e:                      # noqa: BLE001 - any CUDA failure
+    # Loading the model onto the GPU fails outright when the answering model
+    # already holds the card. Starting on the CPU is slower but keeps the
+    # service up; failing here would take the whole pipeline down.
+    if _device == "cpu":
+        raise
+    log.warning("could not load the embedding model on %s (%s); using CPU",
+                _device, str(_e).splitlines()[0][:120])
+    _device = "cpu"
+    embed_fn = _build("cpu")
+
+
+def current_device() -> str:
+    return _device
+
+
+def _is_oom(exc: Exception) -> bool:
+    text = str(exc).lower()
+    return "out of memory" in text or "cuda error" in text or "cublas" in text
+
+
+def fall_back_to_cpu(reason: str = "") -> bool:
+    """Rebuild the embedding function on the CPU after a GPU failure.
+
+    The 4GB card is shared with the answering model, so a warm LLM can leave
+    too little room to embed. Embedding on the CPU is slower but correct —
+    far better than marking papers as failed, which is what happened before
+    this existed.
+    """
+    global embed_fn, _device
+    if _device == "cpu":
+        return False
+    log.warning("embedding on GPU failed (%s); falling back to CPU for this process", reason[:120])
+    _device = "cpu"
+    embed_fn = _build("cpu")
+    try:
+        import torch
+        torch.cuda.empty_cache()
+    except Exception:
+        pass
+    client.clear_system_cache()          # drop collections bound to the old function
+    return True
 
 
 def get_collection(name: str = COLLECTION_NAME):
@@ -59,14 +103,25 @@ def chunk_and_embed(json_path: str) -> Dict[str, Any]:
     chunks, skipped = chunk_file(json_path, CHUNK_TARGET_CHARS, CHUNK_MAX_CHARS)
     if not chunks:
         return {"filename": filename, "chunk_count": 0, "success": False, "error": "no embeddable blocks"}
-    collection = get_collection()
-    collection.delete(where={"filename": filename})
-    collection.add(
-        documents=[c["text"] for c in chunks],
-        metadatas=[c["metadata"] for c in chunks],
-        ids=[f"{filename}_{c['metadata']['chunk_index']}" for c in chunks],
-    )
-    log.info("embedded %d chunks from %s (%d blocks not embedded)", len(chunks), filename, len(skipped))
+    documents = [c["text"] for c in chunks]
+    metadatas = [c["metadata"] for c in chunks]
+    ids = [f"{filename}_{c['metadata']['chunk_index']}" for c in chunks]
+
+    for attempt in range(2):
+        collection = get_collection()
+        collection.delete(where={"filename": filename})
+        try:
+            collection.add(documents=documents, metadatas=metadatas, ids=ids)
+            break
+        except Exception as e:
+            # A warm LLM can leave too little VRAM to embed; retry on the CPU
+            # rather than failing the paper.
+            if attempt == 0 and _is_oom(e) and fall_back_to_cpu(str(e)):
+                continue
+            raise
+
+    log.info("embedded %d chunks from %s (%d blocks not embedded, device=%s)",
+             len(chunks), filename, len(skipped), _device)
     return {"filename": filename, "chunk_count": len(chunks), "success": True}
 
 
@@ -108,7 +163,12 @@ def search(query: str, n_results: int = 8, filenames: Optional[List[str]] = None
     results: List[Dict[str, Any]] = []
     if "papers" in sources:
         where = {"filename": {"$in": filenames}} if filenames else None
-        res = get_collection().query(query_texts=[query], n_results=n_results, where=where)
+        try:
+            res = get_collection().query(query_texts=[query], n_results=n_results, where=where)
+        except Exception as e:
+            if not (_is_oom(e) and fall_back_to_cpu(str(e))):
+                raise
+            res = get_collection().query(query_texts=[query], n_results=n_results, where=where)
         results += _flatten(res, "papers")
     if "chats" in sources and n_chat_results > 0:
         try:

@@ -68,12 +68,62 @@ def test_thinking_filter_swallows_leaked_block(rag):
 
 
 def test_answer_stream_dispatches_on_backend(rag, monkeypatch):
-    monkeypatch.setattr(rag, "_ollama_stream", lambda c, q, local: iter(["local:" + local["model"]]))
-    monkeypatch.setattr(rag, "_openai_stream", lambda c, q, oa: iter(["openai:" + oa["model"]]))
+    monkeypatch.setattr(rag, "_ollama_stream", lambda c, q, local, history=None: iter(["local:" + local["model"]]))
+    monkeypatch.setattr(rag, "_openai_stream", lambda c, q, oa, history=None: iter(["openai:" + oa["model"]]))
     cfg = {"llm": {"backend": "local", "local": {"model": "m1"}, "openai": {"model": "m2"}}}
     assert rag.answer(ctx := "c", "q", cfg) == "local:m1"
     cfg["llm"]["backend"] = "openai"
     assert rag.answer(ctx, "q", cfg) == "openai:m2"
+
+
+class TestConversationHistory:
+    """A follow-up ("the gist of this paper") has no searchable content and no
+    subject of its own; both retrieval and generation need the earlier turns."""
+
+    HISTORY = [{"role": "user", "content": "What does the CELP framework do?"},
+               {"role": "assistant", "content": "CELP uses community structure."}]
+
+    def test_search_text_prepends_previous_question(self, rag):
+        assert rag.search_text("give me the gist", self.HISTORY) == \
+            "What does the CELP framework do? give me the gist"
+
+    def test_search_text_unchanged_without_history(self, rag):
+        assert rag.search_text("a fresh question") == "a fresh question"
+        assert rag.search_text("a fresh question", []) == "a fresh question"
+
+    def test_search_text_ignores_assistant_only_history(self, rag):
+        assert rag.search_text("q", [{"role": "assistant", "content": "hi"}]) == "q"
+
+    def test_messages_include_prior_turns_before_the_question(self, rag):
+        msgs = rag._messages("CTX", "and its limitations?", self.HISTORY)
+        assert [m["role"] for m in msgs] == ["system", "user", "assistant", "user"]
+        assert msgs[1]["content"] == self.HISTORY[0]["content"]
+        assert msgs[-1]["content"].endswith("Question: and its limitations?")
+
+    def test_history_is_capped(self, rag):
+        long_history = [{"role": "user", "content": f"q{i}"} for i in range(20)]
+        msgs = rag._messages("CTX", "now", long_history)
+        assert len(msgs) == 1 + rag.MAX_HISTORY_TURNS + 1        # system + capped + question
+        assert msgs[1]["content"] == "q16"                        # kept the most recent
+
+    def test_long_assistant_answers_are_truncated(self, rag):
+        history = [{"role": "assistant", "content": "x " * 5000}]
+        msgs = rag._messages("CTX", "next", history)
+        assert len(msgs[1]["content"]) <= rag.MAX_HISTORY_CHARS + 2
+        assert msgs[1]["content"].endswith("…")
+
+    def test_user_turns_are_never_truncated(self, rag):
+        question = "y " * 2000
+        msgs = rag._messages("CTX", "next", [{"role": "user", "content": question}])
+        assert msgs[1]["content"] == question
+
+    def test_answer_stream_passes_history_to_backend(self, rag, monkeypatch):
+        seen = {}
+        monkeypatch.setattr(rag, "_ollama_stream",
+                            lambda c, q, local, history=None: seen.update(history=history) or iter(["ok"]))
+        cfg = {"llm": {"backend": "local", "local": {}}}
+        rag.answer("ctx", "q", cfg, history=self.HISTORY)
+        assert seen["history"] == self.HISTORY
 
 
 def test_retrieve_degrades_when_web_search_fails(rag, monkeypatch):

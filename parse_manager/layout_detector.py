@@ -68,9 +68,12 @@ class LayoutDetector:
             return self.model.predict(images, conf=YOLO_CONF, iou=YOLO_IOU, imgsz=YOLO_IMGSZ,
                                       fixed_batch=YOLO_BATCH)
         except Exception as e:
-            if "CPUExecutionProvider" in str(self.model.session.get_providers()):
+            # `get_providers()` always lists CPU as onnxruntime's own fallback,
+            # so ask which provider is actually *first* — otherwise this never
+            # falls back and a busy GPU turns into a hard failure.
+            if self.model.provider == "CPUExecutionProvider":
                 raise
-            if not any(s in str(e).lower() for s in ("memory", "cuda", "cudnn", "cublas")):
+            if not any(s in str(e).lower() for s in ("memory", "cuda", "cudnn", "cublas", "allocate")):
                 raise
             print(f"[layout] GPU inference failed ({type(e).__name__}); falling back to CPU")
             self.model = OnnxYolo(self.model_path, providers=["CPUExecutionProvider"])

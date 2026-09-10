@@ -1,18 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "./api";
 import Chat from "./components/Chat";
+import ChatList from "./components/ChatList";
 import Ingestion from "./components/Ingestion";
+import PaperFilter from "./components/PaperFilter";
 import SettingsPage from "./components/Settings";
-import Sidebar from "./components/Sidebar";
 import StatusBar from "./components/StatusBar";
-import type { ChatSummary, Status } from "./types";
+import type { ChatSummary, Paper, Status } from "./types";
+import Gpu from "./components/Gpu";
+import Logs from "./components/Logs";
+import ThemeToggle from "./components/ThemeToggle";
 
-type View = "chat" | "ingestion" | "settings";
+type View = "chat" | "ingestion" | "gpu" | "logs" | "settings";
 
 export default function App() {
   const [view, setView] = useState<View>("chat");
   const [status, setStatus] = useState<Status | null>(null);
-  const [papers, setPapers] = useState<string[]>([]);
+  const [papers, setPapers] = useState<Paper[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [chats, setChats] = useState<ChatSummary[]>([]);
   const [chatId, setChatId] = useState<string | null>(null);
@@ -36,22 +40,19 @@ export default function App() {
           Research Paper <span>RAG</span>
         </h1>
         <nav>
-          {(["chat", "ingestion", "settings"] as View[]).map((v) => (
+          {(["chat", "ingestion", "gpu", "logs", "settings"] as View[]).map((v) => (
             <button key={v} className={view === v ? "active" : ""} onClick={() => setView(v)}>
-              {v[0].toUpperCase() + v.slice(1)}
+              {v === "gpu" ? "GPU" : v[0].toUpperCase() + v.slice(1)}
             </button>
           ))}
         </nav>
         <StatusBar status={status} />
+        <ThemeToggle />
       </header>
       <main className="layout">
         {view === "chat" && (
           <>
-            <Sidebar
-              papers={papers}
-              selected={selected}
-              setSelected={setSelected}
-              onRefreshPapers={refreshPapers}
+            <ChatList
               chats={chats}
               chatId={chatId}
               onSelectChat={setChatId}
@@ -68,9 +69,17 @@ export default function App() {
               }}
               onChatsChanged={refreshChats}
             />
+            <PaperFilter
+              papers={papers}
+              selected={selected}
+              setSelected={setSelected}
+              onRefresh={refreshPapers}
+            />
           </>
         )}
         {view === "ingestion" && <Ingestion />}
+        {view === "gpu" && <Gpu />}
+        {view === "logs" && <Logs />}
         {view === "settings" && <SettingsPage onSaved={refreshStatus} />}
       </main>
     </div>

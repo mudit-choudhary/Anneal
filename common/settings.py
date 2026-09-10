@@ -32,6 +32,25 @@ DEFAULTS: Dict[str, Any] = {
             "stream": True,                      # if the API rejects streaming, the answer is sent whole
         },
     },
+    "ingestion": {
+        # arXiv crawl defaults, used by the UI's "fetch papers" action
+        "domain": "Retrieval Augmented Generation",
+        "max_papers": 10,
+    },
+    "prune": {
+        # What happens to a raw PDF once its paper is embedded.
+        #   keep    — leave it in data/raw_pdfs (default; the only input a
+        #             re-ingest can be rebuilt from)
+        #   archive — move it to archive_dir
+        #   delete  — remove it (irreversible)
+        "raw_pdf_policy": "keep",
+        "archive_dir": "",
+        # Which embedded PDFs stay behind when archiving/deleting:
+        #   all — none stay; newest/oldest — keep that many by download time
+        "keep_strategy": "all",
+        "keep_count": 50,
+        "interval_seconds": 1800,
+    },
     "retrieval": {
         "n_results": 6,                          # paper chunks handed to the LLM
         "n_results_with_web": 4,                 # fewer when web pages share the context window

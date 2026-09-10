@@ -122,8 +122,13 @@ class FileRegistry:
         return row[0] if row and row[0] else None
 
     def stats(self) -> Dict[str, Any]:
-        """Counts per status, average seconds per stage, and recent errors —
-        everything the ingestion dashboard needs for an ETA."""
+        """Counts per status, per-stage timings, and recent errors.
+
+        Stage timings are **medians, not means**. The gap from `downloaded_at`
+        to `parsed_at` is mostly *queue wait* when papers are registered in
+        bulk — one sample can be 28 hours while the median is 44 seconds — and
+        a mean turns that into a nonsense "average parse time".
+        """
         papers = self.list_papers()
         counts = {s: 0 for s in STATUSES}
         stage_samples = {"parse": [], "process": [], "embed": [], "total": []}
@@ -139,9 +144,18 @@ class FileRegistry:
                 stage_samples["embed"].append((em - pr).total_seconds())
             if d and em:
                 stage_samples["total"].append((em - d).total_seconds())
+            if em:
                 embedded_at.append(em.isoformat())
-        avg = {k: (sum(v) / len(v) if v else None) for k, v in stage_samples.items()}
+
+        def median(values):
+            if not values:
+                return None
+            ordered = sorted(values)
+            mid = len(ordered) // 2
+            return ordered[mid] if len(ordered) % 2 else (ordered[mid - 1] + ordered[mid]) / 2
+
         errors = [{"filename": p["filename"], "error_count": p["error_count"], "last_error": p["last_error"]}
                   for p in papers if p["status"] == "error"]
-        return {"counts": counts, "total": len(papers), "stage_seconds": avg,
-                "recent_embedded_at": sorted(embedded_at)[-20:], "errors": errors}
+        return {"counts": counts, "total": len(papers),
+                "stage_seconds": {k: median(v) for k, v in stage_samples.items()},
+                "recent_embedded_at": sorted(embedded_at)[-40:], "errors": errors}

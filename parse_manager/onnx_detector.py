@@ -31,6 +31,14 @@ PAD_VALUE = 114  # ultralytics' letterbox grey; the models were trained with it
 # Loaded on demand by _preload_cuda_libraries(); kept alive for the process.
 _CUDA_PRELOADED = None
 
+# Only the libraries onnxruntime's CUDA provider actually dlopen()s. This is
+# an allowlist on purpose: loading *everything* under site-packages/nvidia
+# pulls in libnvblas, which installs itself as a drop-in BLAS and then
+# hijacks CPU BLAS calls process-wide — that breaks numpy/torch CPU maths in
+# any process that also runs the embedder ("cublasXtSgemm failed").
+_CUDA_LIB_PREFIXES = ("libcublas.", "libcublasLt.", "libcudart.", "libcufft.",
+                      "libcurand.", "libcusparse.", "libcudnn")
+
 
 def _preload_cuda_libraries():
     """Make the CUDA runtime visible to onnxruntime's CUDA provider.
@@ -52,7 +60,9 @@ def _preload_cuda_libraries():
         nvidia = Path(entry) / "nvidia"
         if nvidia.is_dir():
             lib_dirs += sorted(nvidia.glob("*/lib"))
-    handles, remaining = [], [so for d in lib_dirs for so in sorted(d.glob("lib*.so*"))]
+    handles = []
+    remaining = [so for d in lib_dirs for so in sorted(d.glob("lib*.so*"))
+                 if so.name.startswith(_CUDA_LIB_PREFIXES)]
     # Two passes: some libraries depend on others that load later.
     for _ in range(2):
         deferred = []
@@ -164,7 +174,19 @@ class OnnxYolo:
             (p, {"cudnn_conv_algo_search": "HEURISTIC"}) if p == "CUDAExecutionProvider" else p
             for p in providers
         ]
-        self.session = ort.InferenceSession(str(model_path), options, providers=session_providers)
+        try:
+            self.session = ort.InferenceSession(str(model_path), options, providers=session_providers)
+        except Exception as e:
+            # Creating the CUDA session fails outright when the GPU is full —
+            # e.g. the LLM is loaded during the day. Parsing on CPU is slow
+            # but correct, and far better than the service refusing to start.
+            if not wanted_cuda:
+                raise
+            log.warning("could not create a GPU session (%s: %s); falling back to CPU",
+                        type(e).__name__, str(e).splitlines()[0][:120])
+            self.session = ort.InferenceSession(str(model_path), options,
+                                                providers=["CPUExecutionProvider"])
+            wanted_cuda = False
         self.provider = self.session.get_providers()[0]
 
         # onnxruntime falls back to CPU *silently* when the CUDA provider

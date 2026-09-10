@@ -1,4 +1,4 @@
-import type { ChatDetail, ChatSummary, Ingestion, QueryEvent, Settings, Status } from "./types";
+import type { ChatDetail, ChatSummary, GpuInfo, Ingestion, Paper, PruneCounts, QueryEvent, Service, Settings, Status } from "./types";
 
 async function json<T>(url: string, init?: RequestInit): Promise<T> {
   const r = await fetch(url, { headers: { "Content-Type": "application/json" }, ...init });
@@ -16,7 +16,7 @@ async function json<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   status: () => json<Status>("/v1/status"),
-  papers: () => json<{ papers: string[] }>("/v1/papers"),
+  papers: () => json<{ papers: Paper[] }>("/v1/papers"),
   settings: () => json<Settings>("/v1/settings"),
   saveSettings: (update: Partial<Settings>) =>
     json<Settings>("/v1/settings", { method: "PUT", body: JSON.stringify(update) }),
@@ -28,6 +28,25 @@ export const api = {
     json<{ success: boolean }>(`/v1/chats/${id}`, { method: "PATCH", body: JSON.stringify({ title }) }),
   deleteChat: (id: string) => json<{ success: boolean }>(`/v1/chats/${id}`, { method: "DELETE" }),
   embedChat: (id: string) => json<{ embedded: number }>(`/v1/chats/${id}/embed`, { method: "POST" }),
+  fetchArxiv: (domain: string, max_papers: number) =>
+    json<{ started: boolean; pid: number }>("/v1/ingest/arxiv", {
+      method: "POST", body: JSON.stringify({ domain, max_papers }),
+    }),
+  fetchUrl: (url: string) =>
+    json<{ started: boolean; pid: number }>("/v1/ingest/url", {
+      method: "POST", body: JSON.stringify({ url }),
+    }),
+  gpu: () => json<GpuInfo>("/v1/gpu"),
+  services: () => json<{ services: Service[] }>("/v1/services"),
+  controlService: (name: string, action: "start" | "stop" | "restart", embed_device?: string) =>
+    json<{ name: string; running: boolean; note?: string; device?: string }>(`/v1/services/${name}`, {
+      method: "POST", body: JSON.stringify({ action, embed_device }),
+    }),
+  servicePreset: (preset: "query" | "ingest") =>
+    json<{ started: string[]; already_running: string[]; note: string | null }>(
+      `/v1/services/preset/${preset}`, { method: "POST" }),
+  prune: (dryRun: boolean) =>
+    json<{ dry_run: boolean; counts: PruneCounts }>(`/v1/prune/run?dry_run=${dryRun}`, { method: "POST" }),
 };
 
 /** POST /v1/query and deliver each newline-delimited JSON event as it arrives. */

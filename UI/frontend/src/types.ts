@@ -20,7 +20,11 @@ export type Message = {
   warnings?: string[];
   error?: string;
   streaming?: boolean;
+  duration_ms?: number | null;
+  created_at?: string;
 };
+
+export type Paper = { filename: string; embedded_at: string | null };
 
 export type Status = {
   backend: "local" | "openai";
@@ -43,7 +47,10 @@ export type ChatSummary = {
 };
 
 export type ChatDetail = ChatSummary & {
-  messages: { role: "user" | "assistant"; content: string; sources?: Source[] | null; created_at: string }[];
+  messages: {
+    role: "user" | "assistant"; content: string; sources?: Source[] | null;
+    created_at: string; duration_ms?: number | null;
+  }[];
 };
 
 export type Settings = {
@@ -51,6 +58,14 @@ export type Settings = {
     backend: "local" | "openai";
     local: { url: string; model: string; num_ctx: number; keep_alive: string; temperature: number };
     openai: { base_url: string; api_key: string; model: string; temperature: number; max_tokens: number; stream: boolean };
+  };
+  ingestion: { domain: string; max_papers: number };
+  prune: {
+    raw_pdf_policy: "keep" | "archive" | "delete";
+    archive_dir: string;
+    keep_strategy: "all" | "newest" | "oldest";
+    keep_count: number;
+    interval_seconds: number;
   };
   retrieval: {
     n_results: number;
@@ -62,8 +77,18 @@ export type Settings = {
   };
 };
 
+export type PruneCounts = {
+  parsed: number;
+  processed: number;
+  raw_archived: number;
+  raw_deleted: number;
+};
+
 export type Ingestion = {
   services: Record<string, { pid: number; running: boolean }>;
+  eta_note: string | null;
+  throughput_per_hour: number | null;
+  pending_bytes: number | null;
   registry: null | {
     counts: Record<string, number>;
     total: number;
@@ -72,7 +97,7 @@ export type Ingestion = {
   };
   remaining?: number;
   eta_seconds: number | null;
-  files: Record<string, number>;
+  files: Record<string, { files: number; papers: number; bytes: number }>;
 };
 
 export type QueryEvent =
@@ -80,5 +105,30 @@ export type QueryEvent =
   | { type: "sources"; sources: Source[]; backend: string }
   | { type: "warning"; message: string }
   | { type: "delta"; text: string }
-  | { type: "done" }
+  | { type: "done"; duration_ms?: number }
   | { type: "error"; message: string };
+
+export type Service = {
+  name: string;
+  title: string;
+  purpose: string;
+  port: number | null;
+  running: boolean;
+  pid: number | null;
+  uptime_seconds: number | null;
+  self: boolean;
+  log_bytes: number;
+};
+
+export type GpuInfo = {
+  available: boolean;
+  device: null | {
+    name: string; total_mb: number; used_mb: number; free_mb: number;
+    utilisation_percent: number; temperature_c: number;
+  };
+  processes: { pid: number; used_mb: number; owner: string }[];
+  models: {
+    name: string; detail: string; placement: string; gpu_percent: number;
+    note: string; splittable: boolean | "partial";
+  }[];
+};

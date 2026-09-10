@@ -84,9 +84,10 @@ def test_query_reports_unreachable_embedding_service(client, ui, monkeypatch):
 
 
 def test_query_streams_and_persists_chat(client, ui, monkeypatch):
-    monkeypatch.setattr(ui.rag, "retrieve", lambda q, f, w, cfg: (
+    monkeypatch.setattr(ui.rag, "retrieve", lambda q, f, w, cfg, history=None: (
         "[1] (from: P)\ntext", [{"n": 1, "kind": "paper", "label": "from: P", "text": "text"}], ["web off"]))
-    monkeypatch.setattr(ui.rag, "answer_stream", lambda c, q, cfg: iter(["Hello ", "[1]"]))
+    monkeypatch.setattr(ui.rag, "answer_stream",
+                        lambda c, q, cfg, history=None: iter(["Hello ", "[1]"]))
     r = client.post("/v1/query", json={"query": "hi?", "web": True})
     events = [json.loads(l) for l in r.text.strip().split("\n")]
     types = [e["type"] for e in events]
@@ -113,3 +114,92 @@ def test_ingestion_without_registry(client):
 
 def test_logs_stream_rejects_unknown_service(client):
     assert client.get("/v1/logs/stream?service=nope").status_code == 404
+
+
+class TestServiceControl:
+    """The control pane drives scripts/ops.py; these check the guards, not
+    the process management itself (which would start real services)."""
+
+    def test_lists_every_service_with_purpose(self, client):
+        body = client.get("/v1/services").json()["services"]
+        names = {s["name"] for s in body}
+        assert {"registry", "parse", "embedding", "prune", "download", "ui"} <= names
+        for s in body:
+            assert s["title"] and s["purpose"]
+            assert isinstance(s["running"], bool)
+        assert [s for s in body if s["name"] == "ui"][0]["self"] is True
+
+    def test_ui_cannot_stop_or_restart_itself(self, client):
+        for action in ("stop", "restart"):
+            r = client.post("/v1/services/ui", json={"action": action})
+            assert r.status_code == 409
+            assert "cannot stop itself" in r.json()["detail"]
+
+    def test_unknown_service_and_action_rejected(self, client):
+        assert client.post("/v1/services/nope", json={"action": "start"}).status_code == 404
+        assert client.post("/v1/services/parse", json={"action": "explode"}).status_code == 422
+
+    def test_start_is_a_noop_when_already_running(self, client, ui, monkeypatch):
+        ops = ui._ops()
+        monkeypatch.setattr(ops, "running", lambda name: True)
+        started = []
+        monkeypatch.setattr(ops, "start", lambda *a, **k: started.append(a))
+        body = client.post("/v1/services/parse", json={"action": "start"}).json()
+        assert body["note"] == "already running" and started == []
+
+    def test_embedding_device_is_passed_through(self, client, ui, monkeypatch):
+        ops = ui._ops()
+        calls = {}
+        monkeypatch.setattr(ops, "running", lambda name: False)
+        monkeypatch.setattr(ops, "port_owner", lambda port: None)
+        monkeypatch.setattr(ops, "start", lambda name, env=None: calls.update(name=name, env=env))
+        client.post("/v1/services/embedding", json={"action": "start", "embed_device": "cuda"})
+        assert calls["env"] == {"EMBED_DEVICE": "cuda"}
+
+    def test_preset_starts_the_right_set(self, client, ui, monkeypatch):
+        ops = ui._ops()
+        started = []
+        monkeypatch.setattr(ops, "running", lambda name: False)
+        monkeypatch.setattr(ops, "port_owner", lambda port: None)
+        monkeypatch.setattr(ops, "start", lambda name, env=None: started.append((name, env)))
+
+        client.post("/v1/services/preset/query")
+        assert [n for n, _ in started] == ["registry", "embedding"]
+        assert dict(started)["embedding"] == {"EMBED_DEVICE": "cpu"}
+
+        started.clear()
+        r = client.post("/v1/services/preset/ingest").json()
+        assert [n for n, _ in started] == ["registry", "embedding", "parse", "prune"]
+        assert dict(started)["embedding"] == {"EMBED_DEVICE": "cuda"}
+        assert r["embed_device"] == "cuda"
+
+    def test_unknown_preset_rejected(self, client):
+        assert client.post("/v1/services/preset/nope").status_code == 404
+
+    def _stub_embedding_start(self, client, ui, monkeypatch, actual_device):
+        """Start the embedder with a health endpoint reporting `actual_device`."""
+        ops = ui._ops()
+        monkeypatch.setattr(ops, "running", lambda name: False)
+        monkeypatch.setattr(ops, "port_owner", lambda port: None)
+        monkeypatch.setattr(ops, "start", lambda name, env=None: None)
+        monkeypatch.setattr(ui.time, "sleep", lambda s: None)
+
+        class R:
+            def json(self):
+                return {"status": "ok", "device": actual_device}
+        monkeypatch.setattr(ui.requests, "get", lambda *a, **k: R())
+        monkeypatch.setattr(ui, "_free_vram_mb", lambda: 24)
+        return client.post("/v1/services/embedding",
+                           json={"action": "start", "embed_device": "cuda"}).json()
+
+    def test_reports_when_the_embedder_lands_on_the_gpu(self, client, ui, monkeypatch):
+        body = self._stub_embedding_start(client, ui, monkeypatch, "cuda")
+        assert body["device"] == "cuda"
+        assert "running on CUDA" in body["note"]
+
+    def test_warns_when_gpu_was_asked_for_but_cpu_was_used(self, client, ui, monkeypatch):
+        """The silent CPU fallback is exactly what cost two papers before; the
+        control pane must say so rather than report a bare success."""
+        body = self._stub_embedding_start(client, ui, monkeypatch, "cpu")
+        assert body["device"] == "cpu"
+        assert "not CUDA" in body["note"] and "24 MB free" in body["note"]

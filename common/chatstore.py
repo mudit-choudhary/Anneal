@@ -35,6 +35,12 @@ class ChatStore:
                     created_at TEXT NOT NULL);
                 CREATE INDEX IF NOT EXISTS idx_messages_chat ON messages(chat_id, id);
             """)
+            # Added after the table shipped: how long the answer took, so the
+            # timing survives a reload. CREATE TABLE IF NOT EXISTS never alters
+            # an existing file, so add it explicitly.
+            columns = {r[1] for r in c.execute("PRAGMA table_info(messages)")}
+            if "duration_ms" not in columns:
+                c.execute("ALTER TABLE messages ADD COLUMN duration_ms INTEGER")
 
     def _conn(self):
         c = sqlite3.connect(self.db_path)
@@ -82,11 +88,14 @@ class ChatStore:
             c.execute("UPDATE chats SET embedded = ? WHERE id = ?", (1 if embedded else 0, chat_id))
 
     # -- messages ---------------------------------------------------------
-    def add_message(self, chat_id: str, role: str, content: str, sources=None) -> int:
+    def add_message(self, chat_id: str, role: str, content: str, sources=None,
+                    duration_ms: Optional[int] = None) -> int:
         ts = _now()
         with self._conn() as c:
-            cur = c.execute("INSERT INTO messages (chat_id, role, content, sources, created_at) VALUES (?, ?, ?, ?, ?)",
-                            (chat_id, role, content, json.dumps(sources) if sources else None, ts))
+            cur = c.execute(
+                "INSERT INTO messages (chat_id, role, content, sources, created_at, duration_ms) "
+                "VALUES (?, ?, ?, ?, ?, ?)",
+                (chat_id, role, content, json.dumps(sources) if sources else None, ts, duration_ms))
             c.execute("UPDATE chats SET updated_at = ?, embedded = 0 WHERE id = ?", (ts, chat_id))
             return cur.lastrowid
 

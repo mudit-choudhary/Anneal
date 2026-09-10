@@ -124,6 +124,80 @@ class TestDecode:
         assert [d["conf"] for d in out] == [0.95, 0.4]
 
 
+class TestCudaPreload:
+    """The CUDA preloader must load only what onnxruntime's provider needs."""
+
+    def test_nvblas_is_excluded(self):
+        import onnx_detector as od
+        # libnvblas installs itself as a drop-in BLAS; loading it with
+        # RTLD_GLOBAL hijacks CPU BLAS process-wide and breaks numpy/torch
+        # maths for anything running after the detector in the same process.
+        assert not "libnvblas.".startswith(od._CUDA_LIB_PREFIXES)
+        assert not any("libnvblas.so".startswith(p) for p in od._CUDA_LIB_PREFIXES)
+
+    def test_required_cuda_libraries_are_allowed(self):
+        import onnx_detector as od
+        for name in ("libcublas.so.12", "libcublasLt.so.12", "libcudart.so.12",
+                     "libcudnn.so.9", "libcudnn_graph.so.9", "libcufft.so.11"):
+            assert name.startswith(od._CUDA_LIB_PREFIXES), f"{name} would not be preloaded"
+
+    def test_cpu_blas_still_works_after_preload(self):
+        """Regression guard for the hijack above: real matmuls must survive."""
+        import numpy as np
+        import onnx_detector as od
+        od._preload_cuda_libraries()
+        a, b = np.random.rand(64, 64), np.random.rand(64, 64)
+        assert np.isfinite(a @ b).all()
+
+
+class TestGpuFallback:
+    """A busy GPU (the LLM is warm) must degrade to CPU, not fail the run."""
+
+    class FakeModel:
+        """`always_fails=True` mimics a GPU with no room left."""
+
+        def __init__(self, provider, always_fails):
+            self.provider, self.always_fails = provider, always_fails
+
+        def predict(self, images, **kw):
+            if self.always_fails:
+                raise RuntimeError("Failed to allocate memory for requested buffer of size 52428800")
+            return [[{"label": "Text", "conf": 0.9, "bbox": [0, 0, 1, 1]}] for _ in images]
+
+    def _detector(self, monkeypatch, provider):
+        import layout_detector as ld
+        det = ld.LayoutDetector.__new__(ld.LayoutDetector)
+        det.model = self.FakeModel(provider, always_fails=True)
+        det.model_path = Path("dummy.onnx")
+        # the CPU session it retries with has room and succeeds
+        monkeypatch.setattr(ld, "OnnxYolo",
+                            lambda p, providers=None: self.FakeModel("CPUExecutionProvider", False))
+        return det
+
+    def test_allocation_failure_on_gpu_falls_back_to_cpu(self, monkeypatch):
+        det = self._detector(monkeypatch, "CUDAExecutionProvider")
+        out = det._predict([object()])
+        assert len(out) == 1
+        assert det.model.provider == "CPUExecutionProvider"
+
+    def test_failure_already_on_cpu_is_raised(self, monkeypatch):
+        det = self._detector(monkeypatch, "CPUExecutionProvider")
+        with pytest.raises(RuntimeError):
+            det._predict([object()])
+
+    def test_unrelated_errors_are_not_swallowed(self, monkeypatch):
+        import layout_detector as ld
+
+        class FakeModel:
+            provider = "CUDAExecutionProvider"
+            def predict(self, images, **kw):
+                raise ValueError("malformed model file")
+        det = ld.LayoutDetector.__new__(ld.LayoutDetector)
+        det.model, det.model_path = FakeModel(), Path("dummy.onnx")
+        with pytest.raises(ValueError):
+            det._predict([object()])
+
+
 class TestProviderReporting:
     """A CUDA provider that cannot load its libraries falls back to CPU
     silently: correct results, ~6x slower, no error. That must be loud."""
@@ -171,13 +245,16 @@ ONNX_MODELS = [p.with_suffix(".onnx") for p in
 @pytest.mark.skipif(not any(p.exists() for p in ONNX_MODELS), reason="no ONNX export present")
 class TestRealModel:
     def test_metadata_is_self_describing(self):
-        det = OnnxYolo(next(p for p in ONNX_MODELS if p.exists()))
+        det = OnnxYolo(next(p for p in ONNX_MODELS if p.exists()),
+                       providers=["CPUExecutionProvider"])
         assert len(det.names) == 12
         assert set(det.names.values()) >= {"Text", "Table", "Title", "Authors", "Picture"}
         assert det.imgsz == 1024 and det.stride == 32
 
     def test_fixed_batch_padding_does_not_change_results(self):
-        det = OnnxYolo(next(p for p in ONNX_MODELS if p.exists()))
+        # CPU on purpose: deterministic, and unaffected by a busy GPU.
+        det = OnnxYolo(next(p for p in ONNX_MODELS if p.exists()),
+                       providers=["CPUExecutionProvider"])
         rng = np.random.default_rng(0)
         pages = [rng.integers(0, 255, (330, 255, 3), dtype=np.uint8) for _ in range(2)]
         plain = det.predict(pages, conf=0.3, iou=0.7)

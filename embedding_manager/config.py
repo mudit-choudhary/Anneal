@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 # Embedding model. bge-base-en-v1.5: 512-token window (~2,600 chars of paper
@@ -13,7 +14,9 @@ COLLECTION_NAME = "papers_bge_base_v1"        # paper chunks
 CHATS_COLLECTION_NAME = "chats_bge_base_v1"   # saved conversations (kept separate: model output, not evidence)
 
 dir_path = Path(__file__).resolve().parent
-EMBEDDING_VECTOR_PATH = dir_path.parent / 'vector_db'
+# VECTOR_DB_PATH lets a test point at a throwaway store instead of the real
+# one (scripts/smoke_test.py uses this so it never touches your corpus).
+EMBEDDING_VECTOR_PATH = Path(os.environ.get("VECTOR_DB_PATH", dir_path.parent / "vector_db"))
 
 DATA_DIR = dir_path.parent / "data"
 PROCESSED_DIR = str(DATA_DIR / "processed")

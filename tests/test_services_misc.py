@@ -68,51 +68,81 @@ def prune():
 
 
 class TestPrune:
+    """Raw-PDF policy now lives in settings (UI-editable), passed in as a dict."""
+
     def _papers(self, tmp_path, n):
         papers = []
         for i in range(n):
             (tmp_path / f"p{i}.pdf").write_bytes(b"%PDF-")
-            papers.append({"filename": f"p{i}", "status": "embedded", "downloaded_at": f"2026-09-0{i + 1} 00:00:00"})
+            papers.append({"filename": f"p{i}", "status": "embedded",
+                           "downloaded_at": f"2026-09-0{i + 1} 00:00:00"})
         return papers
 
     def test_default_policy_leaves_pdfs_alone(self, prune):
-        assert prune.raw_pdf_action() is None
+        assert prune.raw_pdf_action({"raw_pdf_policy": "keep"}) is None
+        # archive without a destination must not silently delete
+        assert prune.raw_pdf_action({"raw_pdf_policy": "archive", "archive_dir": ""}) is None
+
+    def test_policies_resolve(self, prune):
+        assert prune.raw_pdf_action({"raw_pdf_policy": "delete"}) == "delete"
+        assert prune.raw_pdf_action({"raw_pdf_policy": "archive", "archive_dir": "/tmp/arch"}) == "archive"
 
     def test_keep_newest(self, prune, tmp_path, monkeypatch):
         monkeypatch.setattr(prune, "PDF_DIR", tmp_path)
-        monkeypatch.setattr(prune, "RAW_PDF_KEEP_STRATEGY", "newest")
-        monkeypatch.setattr(prune, "RAW_PDF_KEEP_COUNT", 2)
-        targets = prune.select_raw_pdfs(self._papers(tmp_path, 5))
+        targets = prune.select_raw_pdfs(self._papers(tmp_path, 5),
+                                        {"keep_strategy": "newest", "keep_count": 2})
         assert sorted(p["filename"] for p in targets) == ["p0", "p1", "p2"]
 
     def test_keep_oldest(self, prune, tmp_path, monkeypatch):
         monkeypatch.setattr(prune, "PDF_DIR", tmp_path)
-        monkeypatch.setattr(prune, "RAW_PDF_KEEP_STRATEGY", "oldest")
-        monkeypatch.setattr(prune, "RAW_PDF_KEEP_COUNT", 1)
-        targets = prune.select_raw_pdfs(self._papers(tmp_path, 3))
+        targets = prune.select_raw_pdfs(self._papers(tmp_path, 3),
+                                        {"keep_strategy": "oldest", "keep_count": 1})
         assert sorted(p["filename"] for p in targets) == ["p1", "p2"]
 
-    def test_sweep_archives_to_dir(self, prune, tmp_path, monkeypatch):
-        raw, parsed, processed, archive = (tmp_path / d for d in ("raw", "parsed", "processed", "archive"))
+    def test_unknown_strategy_keeps_everything(self, prune, tmp_path, monkeypatch):
+        monkeypatch.setattr(prune, "PDF_DIR", tmp_path)
+        assert prune.select_raw_pdfs(self._papers(tmp_path, 3),
+                                     {"keep_strategy": "nonsense", "keep_count": 1}) == []
+
+    def _dirs(self, tmp_path, prune, monkeypatch):
+        raw, parsed, processed = (tmp_path / d for d in ("raw", "parsed", "processed"))
         for d in (raw, parsed, processed):
             d.mkdir()
         (raw / "a.pdf").write_bytes(b"%PDF-")
         (parsed / "a.json").write_text("{}")
         (processed / "a.txt").write_text("")
-        (processed / "b.json").write_text("{}")   # b is only 'parsed' -> must survive
+        (processed / "b.json").write_text("{}")     # b is only 'parsed' -> must survive
         monkeypatch.setattr(prune, "PDF_DIR", raw)
         monkeypatch.setattr(prune, "PARSED_DIR", parsed)
         monkeypatch.setattr(prune, "PROCESSED_DIR", processed)
-        monkeypatch.setattr(prune, "RAW_PDF_ARCHIVE_DIR", str(archive))
+        return raw, parsed, processed
 
-        class Reg:
-            def list_papers(self):
-                return [{"filename": "a", "status": "embedded", "downloaded_at": "x"},
-                        {"filename": "b", "status": "parsed", "downloaded_at": "y"}]
-        counts = prune.sweep(Reg())
+    class Reg:
+        def list_papers(self):
+            return [{"filename": "a", "status": "embedded", "downloaded_at": "x"},
+                    {"filename": "b", "status": "parsed", "downloaded_at": "y"}]
+
+    def test_sweep_archives_to_dir(self, prune, tmp_path, monkeypatch):
+        raw, parsed, processed = self._dirs(tmp_path, prune, monkeypatch)
+        archive = tmp_path / "archive"
+        counts = prune.sweep(self.Reg(), {"raw_pdf_policy": "archive", "archive_dir": str(archive),
+                                          "keep_strategy": "all"})
         assert counts == {"parsed": 1, "processed": 1, "raw_archived": 1, "raw_deleted": 0}
         assert (archive / "a.pdf").exists() and not (raw / "a.pdf").exists()
         assert (processed / "b.json").exists()
+
+    def test_sweep_keep_policy_leaves_pdf(self, prune, tmp_path, monkeypatch):
+        raw, _, _ = self._dirs(tmp_path, prune, monkeypatch)
+        counts = prune.sweep(self.Reg(), {"raw_pdf_policy": "keep"})
+        assert counts["raw_archived"] == 0 and counts["raw_deleted"] == 0
+        assert (raw / "a.pdf").exists()
+
+    def test_dry_run_changes_nothing(self, prune, tmp_path, monkeypatch):
+        raw, parsed, processed = self._dirs(tmp_path, prune, monkeypatch)
+        counts = prune.sweep(self.Reg(), {"raw_pdf_policy": "delete", "keep_strategy": "all"},
+                             dry_run=True)
+        assert counts == {"parsed": 1, "processed": 1, "raw_archived": 0, "raw_deleted": 1}
+        assert (raw / "a.pdf").exists() and (parsed / "a.json").exists()
 
 
 # --------------------------------------------------------------- web search

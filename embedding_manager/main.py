@@ -26,7 +26,7 @@ from pydantic import BaseModel, field_validator
 
 from common.logsetup import get_logger
 from common.registry_client import RegistryClient, RegistryUnavailable
-from config import PROCESSED_DIR
+from config import MODEL_NAME, PROCESSED_DIR
 from embeddings import chunk_and_embed, delete_chat, embed_chat, list_embedded_files, search
 
 log = get_logger("embedding")
@@ -87,7 +87,12 @@ embedding = FastAPI(title="embedding_manager", version="1")
 
 @embedding.get("/v1/health")
 def health():
-    return {"status": "ok"}
+    """Includes the device actually in use — it may be CPU even when cuda was
+    requested, if the GPU was full when the model loaded."""
+    from embeddings import current_device
+    return {"status": "ok", "device": current_device(),
+            "requested_device": os.environ.get("EMBED_DEVICE", "cuda"),
+            "model": MODEL_NAME}
 
 
 @embedding.post("/v1/search")

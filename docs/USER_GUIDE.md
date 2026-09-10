@@ -11,6 +11,36 @@ python scripts/rag_inspect.py <stage> ...
 Run it from anywhere with `globalragsetup_env` active. Stages: `parse`,
 `tables`, `chunks`, `retrieve`, `answer`.
 
+## Is the whole thing working? — one command
+
+```bash
+python scripts/smoke_test.py            # every stage it can reach
+python scripts/smoke_test.py -v         # also print sample output per stage
+python scripts/smoke_test.py --offline  # stages 1-3 only, no services needed
+```
+
+It walks the entire pipeline and prints a pass/fail line per stage:
+
+| # | Stage | Needs | Checks |
+|---|---|---|---|
+| 1 | parse | nothing | regions found, blocks produced, body text present |
+| 2 | chunk | nothing | chunks produced, none over the 512-token window, mid-sentence cuts counted |
+| 3 | embed | nothing | chunks embedded and retrievable |
+| 4 | retrieval | embedding service | live store returns chunks, best distance is sane |
+| 5 | answer | + Ollama | model answers, cites `[n]` |
+| 6 | UI | UI service | all endpoints respond, React build is being served |
+| 7 | query | UI + Ollama | full ndjson stream completes, chat persisted, memory works |
+
+Stages 1–3 touch **no project state** — parsing writes to
+`data/debug/smoke/` and embedding goes to a throwaway store in a temp
+directory, so it is safe to run at any time, including mid-ingestion.
+Stages 4–7 are skipped with a reason if the services are down. Exit code is
+0 unless something actually failed.
+
+Use it after any change, before a re-ingest, or when something feels wrong
+and you want to know *which* stage broke. For tuning a specific stage, use
+the per-stage commands below.
+
 ```
 PDF ──stage 1──▶ tagged text ──stage 2──▶ chunks ──stage 3──▶ retrieved excerpts ──stage 4──▶ answer
      parsing              chunking              retrieval                   generation

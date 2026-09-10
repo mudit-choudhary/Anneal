@@ -90,14 +90,33 @@ def build_context(results: List[dict], web_pages: Sequence[dict] = ()) -> Tuple[
     return context, sources
 
 
+def search_text(query: str, history: Optional[List[dict]] = None) -> str:
+    """The text actually embedded for retrieval.
+
+    A follow-up like "give me the gist of this paper" carries no searchable
+    content on its own — embedding it alone retrieves something unrelated.
+    Prepending the previous user turn restores the subject.
+    """
+    if not history:
+        return query
+    previous = [m["content"] for m in history if m.get("role") == "user"]
+    return f"{previous[-1]} {query}" if previous else query
+
+
 def retrieve(query: str, filenames: Optional[List[str]] = None, web: bool = False,
-             cfg: Optional[dict] = None) -> Tuple[str, List[dict], List[str]]:
-    """Everything before generation. Returns (context, sources, warnings)."""
+             cfg: Optional[dict] = None,
+             history: Optional[List[dict]] = None) -> Tuple[str, List[dict], List[str]]:
+    """Everything before generation. Returns (context, sources, warnings).
+
+    `history` is the earlier turns of this conversation, oldest first, as
+    {"role": "user"|"assistant", "content": str}.
+    """
     cfg = cfg or settings_store.load()
     rt = cfg["retrieval"]
     kinds = ["papers"] + (["chats"] if rt.get("use_chats", True) else [])
     n = int(rt.get("n_results_with_web", 4) if web else rt.get("n_results", 6))
-    results = fetch_chunks(query, filenames, n, kinds, int(rt.get("n_chat_results", 2)))
+    results = fetch_chunks(search_text(query, history), filenames, n, kinds,
+                           int(rt.get("n_chat_results", 2)))
     warnings: List[str] = []
     pages: List[dict] = []
     if web:
@@ -112,9 +131,26 @@ def retrieve(query: str, filenames: Optional[List[str]] = None, web: bool = Fals
 
 
 # --------------------------------------------------------------- generation
-def _messages(context: str, query: str) -> List[dict]:
-    return [{"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Excerpts:\n\n{context}\n\nQuestion: {query}"}]
+MAX_HISTORY_TURNS = 4          # messages, not exchanges — keeps num_ctx headroom
+MAX_HISTORY_CHARS = 1200       # per remembered assistant answer
+
+
+def _messages(context: str, query: str, history: Optional[List[dict]] = None) -> List[dict]:
+    """System prompt, then the recent conversation, then this turn's excerpts.
+
+    Earlier turns let the model resolve "this paper" / "and its limitations?".
+    Old assistant answers are truncated: they are there for reference, and a
+    6144-token window is not big enough to carry them whole.
+    """
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    for turn in (history or [])[-MAX_HISTORY_TURNS:]:
+        content = turn.get("content", "")
+        if turn.get("role") == "assistant" and len(content) > MAX_HISTORY_CHARS:
+            content = content[:MAX_HISTORY_CHARS].rsplit(" ", 1)[0] + " …"
+        if content:
+            messages.append({"role": turn["role"], "content": content})
+    messages.append({"role": "user", "content": f"Excerpts:\n\n{context}\n\nQuestion: {query}"})
+    return messages
 
 
 def strip_thinking(text: str) -> str:
@@ -147,10 +183,10 @@ def _filter_thinking(deltas: Iterator[str]) -> Iterator[str]:
         yield strip_thinking(buffer.lstrip())
 
 
-def _ollama_stream(context: str, query: str, local: dict) -> Iterator[str]:
+def _ollama_stream(context: str, query: str, local: dict, history=None) -> Iterator[str]:
     payload = {
         "model": local.get("model", "qwen3:4b-instruct"),
-        "messages": _messages(context, query),
+        "messages": _messages(context, query, history),
         "stream": True,
         "think": False,
         "keep_alive": local.get("keep_alive", "30m"),
@@ -174,13 +210,13 @@ def _ollama_stream(context: str, query: str, local: dict) -> Iterator[str]:
     yield from _filter_thinking(deltas())
 
 
-def _openai_stream(context: str, query: str, oa: dict) -> Iterator[str]:
+def _openai_stream(context: str, query: str, oa: dict, history=None) -> Iterator[str]:
     from openai import OpenAI
 
     if not oa.get("base_url") or not oa.get("model"):
         raise RuntimeError("OpenAI-compatible backend is not configured: set base_url and model in Settings")
     client = OpenAI(base_url=oa["base_url"], api_key=oa.get("api_key") or "none")
-    kwargs = dict(model=oa["model"], messages=_messages(context, query),
+    kwargs = dict(model=oa["model"], messages=_messages(context, query, history),
                   temperature=float(oa.get("temperature", 0.2)),
                   max_tokens=int(oa.get("max_tokens", 1024)))
     if oa.get("stream", True):
@@ -208,17 +244,19 @@ def _is_client_error(e: Exception) -> bool:
     return isinstance(status, int) and 400 <= status < 500
 
 
-def answer_stream(context: str, query: str, cfg: Optional[dict] = None) -> Iterator[str]:
+def answer_stream(context: str, query: str, cfg: Optional[dict] = None,
+                  history: Optional[List[dict]] = None) -> Iterator[str]:
     """Stream the answer for an already-built context using the configured backend."""
     llm = (cfg or settings_store.load())["llm"]
     if llm.get("backend") == "openai":
-        yield from _openai_stream(context, query, llm.get("openai", {}))
+        yield from _openai_stream(context, query, llm.get("openai", {}), history)
     else:
-        yield from _ollama_stream(context, query, llm.get("local", {}))
+        yield from _ollama_stream(context, query, llm.get("local", {}), history)
 
 
-def answer(context: str, query: str, cfg: Optional[dict] = None) -> str:
-    return "".join(answer_stream(context, query, cfg)).strip()
+def answer(context: str, query: str, cfg: Optional[dict] = None,
+           history: Optional[List[dict]] = None) -> str:
+    return "".join(answer_stream(context, query, cfg, history)).strip()
 
 
 # --------------------------------------------------------------- CLI

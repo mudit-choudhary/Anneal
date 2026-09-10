@@ -34,7 +34,18 @@ SERVICES = {
     "parse": ("parse_manager", "main.py"),
     "embedding": ("embedding_manager", "main.py"),
     "prune": ("prune_manager", "pruning.py"),
+    "download": ("download_manager", "downloader.py"),
     "ui": ("UI", "main.py"),
+}
+
+# Shown in the UI's control pane so each switch explains itself.
+SERVICE_INFO = {
+    "registry": ("Registry", "Tracks every paper's stage. Everything else needs it.", 4000),
+    "parse": ("Parser", "PDF -> layout -> structured text. Needed to process new papers.", None),
+    "embedding": ("Embedder", "Chunks and embeds; also answers searches.", 4001),
+    "prune": ("Pruner", "Clears intermediates once a paper is embedded.", None),
+    "download": ("Downloader", "Crawls arXiv on a schedule for new papers.", None),
+    "ui": ("Web UI", "This page. Stop it from the terminal, not from itself.", 4002),
 }
 SERVICE_SCRIPTS = ("main.py", "pruning.py", "downloader.py")
 IS_WINDOWS = os.name == "nt"
