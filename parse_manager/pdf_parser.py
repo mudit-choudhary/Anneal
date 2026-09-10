@@ -291,10 +291,20 @@ def parse(pdf_path, detector=None, max_pages=None, out_dir=None, backend=None):
             page_entry["swallowed_text"] = swallowed
         doc.close()
 
+    # `num_pages` is what was actually parsed; `pdf_pages` is what the document
+    # has. Recording both means a truncated parse is detectable later even
+    # after the PDF has been pruned — see common/coverage.py.
+    try:
+        with fitz.open(pdf_path) as _doc:
+            pdf_pages = len(_doc)
+    except Exception:                                    # noqa: BLE001
+        pdf_pages = None
+
     parsed = {
         "source_pdf": str(pdf_path),
         "backend": backend,
         "num_pages": len(layout_pages),
+        "pdf_pages": pdf_pages,
         "pages": layout_pages,
     }
 

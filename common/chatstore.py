@@ -9,9 +9,10 @@ import json
 import sqlite3
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from common.paths import APP_DB
+import common.paths as paths
 
 
 def _now() -> str:
@@ -19,9 +20,14 @@ def _now() -> str:
 
 
 class ChatStore:
-    def __init__(self, db_path=APP_DB):
+    def __init__(self, db_path=None):
+        # Resolved when the store is built, never as a default argument: a
+        # default binds at import time, so a test that repoints APP_DB
+        # afterwards still gets the real data/app.db. That is not theoretical —
+        # it let a test run delete a live chat history.
+        db_path = Path(db_path) if db_path is not None else Path(paths.APP_DB)
         self.db_path = str(db_path)
-        db_path.parent.mkdir(parents=True, exist_ok=True) if hasattr(db_path, "parent") else None
+        db_path.parent.mkdir(parents=True, exist_ok=True)
         with self._conn() as c:
             c.executescript("""
                 CREATE TABLE IF NOT EXISTS chats (
@@ -82,6 +88,48 @@ class ChatStore:
         with self._conn() as c:
             n = c.execute("DELETE FROM chats WHERE id = ?", (chat_id,)).rowcount
         return n > 0
+
+    def ids(self, scope: str = "all") -> List[str]:
+        """Chat ids for a bulk delete.
+
+        'all'        — every saved chat.
+        'unanswered' — chats with no assistant reply: the debris left behind by
+                       an interrupted question or one that failed before the
+                       model answered. These are what accumulate during testing.
+        """
+        sql = {
+            "all": "SELECT id FROM chats",
+            "unanswered": ("SELECT ch.id FROM chats ch WHERE NOT EXISTS "
+                           "(SELECT 1 FROM messages m WHERE m.chat_id = ch.id "
+                           "AND m.role = 'assistant')"),
+        }.get(scope)
+        if sql is None:
+            raise ValueError(f"unknown scope: {scope}")
+        with self._conn() as c:
+            return [r[0] for r in c.execute(sql)]
+
+    def delete_many(self, chat_ids: List[str]) -> List[Dict[str, Any]]:
+        """Delete several chats at once; returns the rows that actually existed,
+        each as {id, title, embedded}. The caller needs `embedded` to know which
+        ones also have to be removed from the vector store.
+
+        Ids are batched because SQLite caps bound parameters per statement.
+        """
+        remaining = list(dict.fromkeys(chat_ids))
+        deleted: List[Dict[str, Any]] = []
+        with self._conn() as c:
+            for i in range(0, len(remaining), 400):
+                batch = remaining[i:i + 400]
+                marks = ",".join("?" * len(batch))
+                rows = c.execute(
+                    f"SELECT id, title, embedded FROM chats WHERE id IN ({marks})", batch).fetchall()
+                if not rows:
+                    continue
+                found = [r["id"] for r in rows]
+                c.execute(f"DELETE FROM chats WHERE id IN ({','.join('?' * len(found))})", found)
+                deleted += [{"id": r["id"], "title": r["title"], "embedded": bool(r["embedded"])}
+                            for r in rows]
+        return deleted
 
     def mark_embedded(self, chat_id: str, embedded: bool = True):
         with self._conn() as c:

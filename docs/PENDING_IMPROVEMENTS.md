@@ -131,9 +131,14 @@ just "todo"):
 
 ---
 
-## 2. A misclassified page number corrupts text and page attribution for everything until the next paragraph break
+## 2. Text and page attribution get corrupted in parsed output (cause unconfirmed)
 
-**Status:** Shelved, not started. Root cause identified, not yet fixed.
+**Status:** Shelved, and the diagnosis below is **disputed**. Reviewed
+2026-09-10: the page-number explanation is not what was actually observed,
+so do not act on the root cause as written. The symptom (corrupted text and
+page attribution in parsed output) is real but currently **uncharacterised** —
+it needs a fresh reproduction with a specific PDF and page before any fix.
+Everything below is kept as the original hypothesis, not as a finding.
 
 ### What's wrong
 
@@ -220,6 +225,44 @@ Any of these should be validated against real fine-tuning output (the
 "page number classified as Text" failure rate) before picking one, since a
 heuristic tuned too aggressively could start swallowing legitimate short
 body text (e.g. a lone equation numeral, a table row label).
+
+---
+
+## 3b. A failed parse can leave a truncated paper indexed as complete
+
+**Status:** ✅ Root cause understood and the two affected papers re-ingested
+2026-09-11. The guard below is **not** implemented.
+
+### What happened
+
+`scripts/retrieval_eval.py` compared the parsed text against the raw PDFs and
+found two papers holding a fraction of their content:
+
+| paper | pages parsed | actual pages | text kept |
+|---|---|---|---|
+| A_Plan_Reuse_Mechanism_for_LLM-Driven_Agent | 1 | 11 | 9% |
+| A_Community-Enhanced_Graph_Representation_Model | 10 | 34 | 29% |
+
+Both were embedded and reported `status = embedded`. Nothing in the pipeline
+or the UI indicated a problem: the registry tracks *stage*, not *completeness*.
+Re-parsing them today produced all 11 and all 34 pages, so the parser is
+correct — these were partial artifacts written during the VRAM incident that
+also cost two papers their embeddings, and they were never re-done.
+
+### Why it matters
+
+A silently truncated paper is worse than a missing one. It answers questions
+about its first page confidently and cannot answer anything else, and there is
+no signal that the corpus is incomplete.
+
+### Candidate direction
+
+`pdf_parser.parse` already knows `len(doc)`. Compare it with the number of
+pages that produced blocks and refuse to write a processed file that covers
+materially fewer — post `status = error` instead, which
+`register_pdfs.py --retry-errors` already knows how to reset. A cheap
+corpus-wide audit is worth having too: parsed page count versus PDF page
+count, per paper, surfaced on the Ingestion tab.
 
 ---
 

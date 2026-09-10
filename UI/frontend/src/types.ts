@@ -132,3 +132,50 @@ export type GpuInfo = {
     note: string; splittable: boolean | "partial";
   }[];
 };
+
+export type PruneCandidate = {
+  filename: string;
+  downloaded_at: string | null;
+  bytes: number;
+};
+
+export type ArxivCandidate = {
+  title: string;
+  authors: string[];
+  published: string | null;
+  summary: string;
+  url: string;
+  pdf_url: string;
+  categories: string[];
+  already_have: boolean;
+};
+
+export type ScheduleTopic = { topic: string; max_papers: number; enabled: boolean };
+
+export type ScheduleState = {
+  time: string;
+  topics: ScheduleTopic[];
+  installed: boolean;
+  enabled: boolean;
+  next_run: string | null;
+  last_run: string | null;
+  linger: boolean;
+  note?: string | null;
+};
+
+export type CoveragePaper = {
+  filename: string;
+  parsed_pages?: number | null;
+  pdf_pages?: number | null;
+  blocks?: number;
+  chars?: number;
+  problems: string[];
+  unverified?: string;
+};
+
+export type CoverageResult = {
+  checked: number;
+  affected: number;
+  unverifiable: number;
+  papers: CoveragePaper[];
+};

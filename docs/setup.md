@@ -148,11 +148,29 @@ python downloader.py --url https://arxiv.org/abs/2401.01234 --url https://host/p
 
 ### Daily automatic ingestion (systemd user timer)
 
+Easiest from the app: **Ingestion → Daily downloads**. Add topics with a cap
+each, pick a time, flip the switch. That installs and enables the timer for
+you. Only `loginctl enable-linger "$USER"` still needs a terminal, because it
+needs root.
+
+By hand:
+
 ```bash
 ops/systemd/install.sh --max 20 --time 03:00        # install units (not enabled)
 systemctl --user enable --now rag-daily-ingest.timer
 loginctl enable-linger "$USER"                       # run while logged out too
 ```
+
+Topics configured in the app live in `data/settings.json` under
+`ingestion.schedule.topics`, and `ops.py daily-ingest` searches each one
+separately so every topic carries its own cap. With no topics configured it
+falls back to `download_manager/config.py`'s `DOMAINS` with a single shared
+cap. Changing topics needs no reinstall; only the time of day is baked into
+the unit file.
+
+**Switching the timer on runs a cycle immediately.** `Persistent=true` treats
+"never run" as a missed run — the same rule that makes a run missed overnight
+fire five minutes after the next boot.
 
 The job (`ops.py daily-ingest`) downloads one capped cycle, processes
 everything pending, and stops what it started. A run missed because the

@@ -320,6 +320,7 @@ def process_layout_json(input_json, output_txt=None, output_json=None, update_re
         json.dump({
             "source": layout.get("source_pdf"),
             "num_pages": layout.get("num_pages"),
+            "pdf_pages": layout.get("pdf_pages"),
             "dropped": dropped,
             "blocks": blocks,
         }, f, indent=2)

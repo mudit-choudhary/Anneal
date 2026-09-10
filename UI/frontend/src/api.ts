@@ -1,4 +1,4 @@
-import type { ChatDetail, ChatSummary, GpuInfo, Ingestion, Paper, PruneCounts, QueryEvent, Service, Settings, Status } from "./types";
+import type { ArxivCandidate, CoverageResult, ChatDetail, ChatSummary, GpuInfo, Ingestion, Paper, PruneCandidate, PruneCounts, ScheduleState, ScheduleTopic, QueryEvent, Service, Settings, Status } from "./types";
 
 async function json<T>(url: string, init?: RequestInit): Promise<T> {
   const r = await fetch(url, { headers: { "Content-Type": "application/json" }, ...init });
@@ -27,6 +27,10 @@ export const api = {
   renameChat: (id: string, title: string) =>
     json<{ success: boolean }>(`/v1/chats/${id}`, { method: "PATCH", body: JSON.stringify({ title }) }),
   deleteChat: (id: string) => json<{ success: boolean }>(`/v1/chats/${id}`, { method: "DELETE" }),
+  deleteChats: (what: { ids: string[] } | { scope: "all" | "unanswered" }) =>
+    json<{ deleted: number; requested: number; note?: string }>("/v1/chats", {
+      method: "DELETE", body: JSON.stringify(what),
+    }),
   embedChat: (id: string) => json<{ embedded: number }>(`/v1/chats/${id}/embed`, { method: "POST" }),
   fetchArxiv: (domain: string, max_papers: number) =>
     json<{ started: boolean; pid: number }>("/v1/ingest/arxiv", {
@@ -36,6 +40,20 @@ export const api = {
     json<{ started: boolean; pid: number }>("/v1/ingest/url", {
       method: "POST", body: JSON.stringify({ url }),
     }),
+  previewArxiv: (topic: string, max_papers: number) =>
+    json<{ topic: string; papers: ArxivCandidate[] }>(
+      `/v1/ingest/arxiv/preview?topic=${encodeURIComponent(topic)}&max_papers=${max_papers}`),
+  pickPapers: (urls: string[]) =>
+    json<{ started: boolean; count: number }>("/v1/ingest/pick", {
+      method: "POST", body: JSON.stringify({ urls }),
+    }),
+  audit: () => json<CoverageResult>("/v1/audit"),
+  repair: (filenames: string[]) =>
+    json<{ repaired: string[]; skipped: { filename: string; why: string }[]; note: string }>(
+      "/v1/audit/repair", { method: "POST", body: JSON.stringify({ filenames }) }),
+  schedule: () => json<ScheduleState>("/v1/schedule"),
+  saveSchedule: (body: { topics?: ScheduleTopic[]; time?: string; enabled?: boolean }) =>
+    json<ScheduleState>("/v1/schedule", { method: "PUT", body: JSON.stringify(body) }),
   gpu: () => json<GpuInfo>("/v1/gpu"),
   services: () => json<{ services: Service[] }>("/v1/services"),
   controlService: (name: string, action: "start" | "stop" | "restart", embed_device?: string) =>
@@ -45,6 +63,7 @@ export const api = {
   servicePreset: (preset: "query" | "ingest") =>
     json<{ started: string[]; already_running: string[]; note: string | null }>(
       `/v1/services/preset/${preset}`, { method: "POST" }),
+  pruneCandidates: () => json<{ papers: PruneCandidate[]; registry: boolean }>("/v1/prune/candidates"),
   prune: (dryRun: boolean) =>
     json<{ dry_run: boolean; counts: PruneCounts }>(`/v1/prune/run?dry_run=${dryRun}`, { method: "POST" }),
 };

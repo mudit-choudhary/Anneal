@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { bytes, eta } from "../format";
+import CoverageCard from "./CoverageCard";
 import GetPapers from "./GetPapers";
 import PruneCard from "./PruneCard";
+import ScheduleCard from "./ScheduleCard";
 import ServiceControl from "./ServiceControl";
 import type { Ingestion as IngestionT } from "../types";
 
@@ -92,8 +94,12 @@ export default function Ingestion() {
 
       <ServiceControl onChanged={reload} />
 
+      <CoverageCard onRepaired={reload} />
+
+      <GetPapers onStarted={reload} />
+
       <div className="cards">
-        <GetPapers onStarted={reload} />
+        <ScheduleCard />
         <PruneCard />
       </div>
 

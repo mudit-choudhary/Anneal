@@ -289,9 +289,29 @@ def cmd_daily_ingest(a):
         started.append("registry")
         if not wait_http(f"{REGISTRY_URL}/v1/health", 30, "registry"):
             sys.exit(1)
-    say("== download cycle")
-    cmd = [str(VENV_PYTHON), "downloader.py", "--once"] + (["--max", str(a.max)] if a.max is not None else [])
-    subprocess.run(cmd, cwd=REPO_ROOT / "download_manager", check=False)
+    # Topics configured in the UI win over download_manager's built-in DOMAINS.
+    # Each is searched in its own run so it can carry its own cap — the
+    # downloader's --max applies to every domain in a run, not per domain.
+    topics = []
+    try:
+        from common import settings as settings_store
+        sched = settings_store.load().get("ingestion", {}).get("schedule", {})
+        topics = [t for t in sched.get("topics", []) if t.get("enabled", True) and t.get("topic")]
+    except Exception as e:                                       # noqa: BLE001
+        say(f"could not read scheduled topics ({e}); using the built-in domains")
+
+    if topics:
+        say(f"== download cycle: {len(topics)} configured topic(s)")
+        for t in topics:
+            cap = int(t.get("max_papers") or a.max or 10)
+            say(f"-- {t['topic']} (up to {cap})")
+            subprocess.run([str(VENV_PYTHON), "downloader.py", "--once",
+                            "--domain", t["topic"], "--max", str(cap)],
+                           cwd=REPO_ROOT / "download_manager", check=False)
+    else:
+        say("== download cycle: built-in domains")
+        cmd = [str(VENV_PYTHON), "downloader.py", "--once"] + (["--max", str(a.max)] if a.max is not None else [])
+        subprocess.run(cmd, cwd=REPO_ROOT / "download_manager", check=False)
 
     registry = RegistryClient()
     stats = registry.stats()
@@ -318,6 +338,14 @@ def cmd_daily_ingest(a):
                 say("a service died; see run/logs/")
                 break
     say(f"== done: {registry.stats()['counts']}")
+
+    # A parse that dies half way still writes partial output and still reports
+    # `embedded`; nothing downstream notices. Check before walking away.
+    try:
+        from common import coverage
+        say("== " + coverage.format_report(coverage.audit()))
+    except Exception as e:                                       # noqa: BLE001
+        say(f"coverage check failed: {e}")
     if started:
         stop(names=started)
 

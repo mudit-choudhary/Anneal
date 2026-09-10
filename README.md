@@ -10,6 +10,7 @@ optional web search, saved conversations as memory, and Mermaid rendering.
 
 ## Documentation
 
+- [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
 - [docs/DAILY_USE.md](docs/DAILY_USE.md) — morning start, asking questions, adding papers
 - [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — testing & tuning each RAG stage
 - [docs/FRESH_START.md](docs/FRESH_START.md) — purge everything and re-ingest

@@ -158,6 +158,108 @@ table.services td.ok { color: var(--ok); } table.services td.bad { color: var(--
 .chat-item .x:hover { color: var(--accent); }
 .chat-item .x[title="Delete chat"]:hover { color: var(--bad); }
 
+/* --- bulk selection in the chat list --- */
+/* The checkbox is an extra grid child, so the explicit placement that keeps
+   titles left-aligned has to shift a column while it is present. */
+.chat-item:has(> .pick) { grid-template-columns: auto 1fr auto; }
+.chat-item .pick { grid-column: 1; grid-row: 1 / span 2; margin: 0 4px 0 0;
+  accent-color: var(--accent); flex: none; cursor: pointer; }
+.chat-item:has(> .pick) .title,
+.chat-item:has(> .pick) .meta,
+.chat-item:has(> .pick) .rename { grid-column: 2; }
+.chat-item.picked { background: var(--panel2); color: var(--text); }
+.rail .group-head .x { background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 10px; text-transform: uppercase; letter-spacing: .05em; padding: 0 2px; }
+.rail .group-head .x:hover { color: var(--accent); }
+
+/* --- coverage check --- */
+.coverage .verdict { font-size: 14px; margin: 8px 0 0; }
+.coverage .verdict.bad { color: var(--bad); }
+.coverage.flagged { border-color: var(--bad); }
+.coverage .result .m b { color: var(--bad); }
+
+/* --- get papers: search, then choose --- */
+.search { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.search .topic { flex: 1 1 260px; min-width: 0; }
+.search .n { width: 74px; flex: none; }
+
+.found-head { display: flex; align-items: center; gap: 8px; margin: 14px 0 8px; font-size: 13px; }
+.found-head .spacer, .row .spacer { flex: 1; }
+
+.results { display: flex; flex-direction: column; gap: 4px; max-height: 420px; overflow-y: auto;
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px; background: var(--bg); }
+.result { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: start;
+  padding: 9px 10px; border-radius: 6px; cursor: pointer; }
+.result:hover { background: var(--panel2); }
+.result.on { background: var(--panel2); box-shadow: inset 3px 0 0 var(--accent); }
+.result.have { opacity: .55; cursor: default; }
+.result input[type=checkbox] { margin-top: 3px; accent-color: var(--accent); }
+.result .t { font-size: 13.5px; line-height: 1.35; color: var(--text); }
+.result .m { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.result .m .tag { margin-left: 8px; }
+.result .abs { font-size: 12.5px; color: var(--muted); margin: 8px 0 0; line-height: 1.5; }
+.result .x { background: none; border: 1px solid var(--border); border-radius: 5px;
+  color: var(--muted); cursor: pointer; width: 22px; height: 22px; line-height: 1; padding: 0; }
+.result .x:hover { color: var(--accent); border-color: var(--accent); }
+
+/* --- daily downloads --- */
+.schedule .verdict { font-size: 14px; margin: 10px 0 12px; color: var(--text); }
+.schedule .verdict.off { color: var(--muted); }
+.topics { display: flex; flex-direction: column; gap: 3px; }
+.topic { display: grid; grid-template-columns: auto 1fr auto auto; gap: 10px; align-items: center;
+  padding: 7px 10px; border-radius: 6px; background: var(--panel2); }
+.topic.muted { opacity: .5; }
+.topic input[type=checkbox] { accent-color: var(--accent); }
+.topic .name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topic .cap { display: flex; align-items: center; gap: 5px; }
+.topic .cap input { width: 62px; }
+.topic .x { background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 16px; line-height: 1; padding: 0 3px; }
+.topic .x:hover { color: var(--bad); }
+
+.switch { display: flex; align-items: center; gap: 7px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.switch input { accent-color: var(--accent); width: 16px; height: 16px; }
+
+/* --- pruning: the shelf --- */
+.prune .verdict { font-size: 14px; margin: 12px 0 10px; color: var(--text); }
+.prune .verdict.bad { color: var(--bad); }
+.prune .verdict b { font-weight: 650; }
+
+/* One tile per PDF, oldest left. Tiles shrink to fit rather than wrapping,
+   so the whole corpus is one readable strip at any collection size. */
+.shelf { display: flex; gap: 2px; align-items: stretch; height: 34px;
+  padding: 4px; background: var(--panel2); border: 1px solid var(--border);
+  border-radius: 6px; overflow: hidden; }
+.shelf .tile { flex: 1 1 0; min-width: 2px; border-radius: 2px; transition: background .12s ease; }
+.shelf .tile.kept { background: var(--ok); }
+.shelf .tile.gone { background: var(--bad); opacity: .45; }
+.shelf .tile.moved { background: var(--warn); opacity: .6; }
+.shelf-axis { display: flex; justify-content: space-between; font-size: 11px;
+  color: var(--muted); padding: 4px 2px 0; }
+
+/* segmented choices instead of dropdowns: the options are few and worth seeing */
+.seg { display: flex; gap: 0; margin: 14px 0 0; flex-wrap: wrap; }
+.seg button { background: var(--panel2); border: 1px solid var(--border); color: var(--muted);
+  padding: 7px 14px; cursor: pointer; font-size: 13px; }
+.seg button:first-child { border-radius: 6px 0 0 6px; }
+.seg button:last-child { border-radius: 0 6px 6px 0; }
+.seg button + button { border-left: none; }
+.seg button:hover { color: var(--text); }
+.seg button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+.seg.small-seg button { padding: 5px 11px; font-size: 12.5px; }
+
+.spare { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.spare label { font-size: 13px; color: var(--muted); }
+.spare input[type=range] { flex: 1 1 180px; accent-color: var(--accent); }
+.spare input[type=number] { width: 74px; }
+
+/* --- danger zone (settings) --- */
+.danger { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin-top: 10px; }
+.danger h3 { margin: 0 0 4px; font-size: 13px; }
+.danger .row { margin-top: 12px; }
+.danger button.warn { border-color: var(--bad); color: var(--bad); }
+.danger button.warn:hover:not(:disabled) { background: var(--bad); color: var(--bg); }
+
 /* --- answer timing --- */
 .timing { margin-top: 8px; font-size: 11px; color: var(--muted); opacity: .85; }
 

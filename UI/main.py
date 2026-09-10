@@ -12,6 +12,7 @@ UI/index.html if no build exists) and the JSON API it uses:
     GET  /v1/ingestion          counts, stage timings, ETA, services, disk
     GET  /v1/logs/stream?service=parse   server-sent events tailing run/logs/<service>.log
     GET  /v1/chats  POST /v1/chats  GET/PATCH/DELETE /v1/chats/{id}  POST /v1/chats/{id}/embed
+    DELETE /v1/chats            bulk: {ids:[...]} or {scope:'all'|'unanswered'}
 """
 
 import asyncio
@@ -21,7 +22,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 UI_DIR = Path(__file__).resolve().parent
 REPO_ROOT = UI_DIR.parent
@@ -220,6 +221,43 @@ def delete_chat(chat_id: str):
     return {"success": True}
 
 
+class ChatBulkDelete(BaseModel):
+    ids: Optional[List[str]] = None
+    scope: Optional[Literal["all", "unanswered"]] = None
+
+
+@app.delete("/v1/chats")
+def delete_chats(body: ChatBulkDelete):
+    """Delete many chats in one call — a selection from the list, or everything.
+
+    Exactly one of `ids` or `scope` is expected; sending both is a caller bug
+    worth rejecting rather than guessing at.
+    """
+    if (body.ids is None) == (body.scope is None):
+        raise HTTPException(422, "send either ids or scope, not both")
+    targets = body.ids if body.ids is not None else chats.ids(body.scope)
+    deleted = chats.delete_many(targets)
+
+    # Only embedded chats have anything in the vector store. Stop after the
+    # first connection failure so a stopped embedder cannot turn a 40-chat
+    # delete into 40 timeouts.
+    embedded = [d["id"] for d in deleted if d["embedded"]]
+    orphaned = 0
+    for i, chat_id in enumerate(embedded):
+        try:
+            requests.delete(f"{EMBEDDING_URL}/v1/chats/{chat_id}", timeout=5)
+        except requests.RequestException:
+            orphaned = len(embedded) - i
+            break
+
+    result = {"deleted": len(deleted), "requested": len(targets)}
+    if orphaned:
+        result["note"] = (f"Deleted, but {orphaned} chat(s) could not be removed from the "
+                          f"vector store — the embedding service is not reachable. They stay "
+                          f"searchable in memory until it is running and they are deleted again.")
+    return result
+
+
 @app.post("/v1/chats/{chat_id}/embed")
 def embed_chat(chat_id: str):
     chat = chats.get(chat_id)
@@ -285,6 +323,302 @@ def ingest_url(req: UrlRequest):
     if not RegistryClient().health():
         raise HTTPException(503, "registry is not running — the paper could not be registered")
     return _run_downloader(["--url", url])
+
+
+# --------------------------------------------------------------- coverage audit
+@app.get("/v1/audit")
+def audit_coverage():
+    """Papers whose parse did not cover the whole document.
+
+    The registry records the stage a paper reached, never whether that stage
+    covered all of it, so a parse that died half way still ends up marked
+    `embedded`. This is the check for that.
+    """
+    from common import coverage
+    return coverage.audit()
+
+
+class RepairRequest(BaseModel):
+    filenames: List[str]
+
+
+@app.post("/v1/audit/repair")
+def audit_repair(body: RepairRequest):
+    """Re-ingest the named papers from their PDFs.
+
+    Exactly the sequence that fixed the two truncated papers by hand: delete
+    the partial intermediates so the parser cannot skip them, then send the
+    registry row back to `downloaded` so the normal pipeline picks it up.
+    Re-embedding drops a filename's old chunks, so the vector store needs no
+    separate cleanup.
+    """
+    import sqlite3
+
+    from common import coverage
+    from common.paths import PDF_DIR, REGISTRY_DB
+
+    names = [n.strip() for n in body.filenames if n.strip()]
+    if not names:
+        raise HTTPException(422, "no filenames given")
+
+    repaired, skipped = [], []
+    for stem in names:
+        if not (PDF_DIR / f"{stem}.pdf").exists():
+            skipped.append({"filename": stem,
+                            "why": "the PDF is gone, so it cannot be re-parsed"})
+            continue
+        coverage.clear_artifacts(stem)
+        repaired.append(stem)
+
+    if repaired:
+        try:
+            con = sqlite3.connect(REGISTRY_DB)
+            con.executemany(
+                "UPDATE file_status_table SET status='downloaded', parsed_at=NULL, "
+                "processed_at=NULL, embedded_at=NULL WHERE filename=?",
+                [(s,) for s in repaired])
+            con.commit()
+            con.close()
+        except Exception as e:                                   # noqa: BLE001
+            raise HTTPException(500, f"could not reset the registry: {e}")
+
+    ops = _ops()
+    idle = [n for n in ("parse", "embedding") if not ops.running(n)]
+    note = (f"{len(repaired)} paper(s) queued for re-ingest."
+            if repaired else "Nothing could be repaired.")
+    if repaired and idle:
+        note += (f" Start {' and '.join(idle)} from Pipeline control — "
+                 "nothing will happen until they are running.")
+    if skipped:
+        note += f" {len(skipped)} skipped."
+    return {"repaired": repaired, "skipped": skipped,
+            "services_needed": idle, "note": note}
+
+
+@app.get("/v1/ingest/arxiv/preview")
+def ingest_arxiv_preview(topic: str = Query(...), max_papers: int = Query(10, ge=1, le=50)):
+    """What a fetch would actually bring back, without downloading anything.
+
+    Fetching N papers blind is a guess. This runs the same arXiv search the
+    downloader runs and returns the candidates so they can be read and chosen
+    from; anything already in the registry is marked rather than hidden, so it
+    is obvious when a topic is already exhausted.
+    """
+    import arxiv
+
+    topic = topic.strip()
+    if not topic:
+        raise HTTPException(422, "topic is required")
+
+    try:
+        known = {p["filename"] for p in RegistryClient().list_papers()}
+    except Exception:                                            # noqa: BLE001
+        known = set()
+
+    sys.path.insert(0, str(REPO_ROOT / "download_manager"))
+    from downloader import sanitize_filename
+
+    try:
+        client = arxiv.Client(page_size=max_papers, delay_seconds=3.0, num_retries=3)
+        search = arxiv.Search(query=f'ti:"{topic}" OR abs:"{topic}"',
+                              max_results=max_papers,
+                              sort_by=arxiv.SortCriterion.SubmittedDate)
+        results = list(client.results(search))
+    except Exception as e:                                       # noqa: BLE001
+        raise HTTPException(502, f"arXiv search failed: {e}")
+
+    papers = []
+    for r in results:
+        stem = sanitize_filename(r.title)
+        papers.append({
+            "title": r.title.strip(),
+            "authors": [a.name for a in r.authors][:6],
+            "published": r.published.isoformat() if r.published else None,
+            "summary": (r.summary or "").strip().replace("\n", " ")[:400],
+            "url": r.entry_id,
+            "pdf_url": r.pdf_url,
+            "categories": list(r.categories)[:4],
+            "already_have": stem in known,
+        })
+    return {"topic": topic, "papers": papers}
+
+
+class PickRequest(BaseModel):
+    urls: List[str]
+
+
+@app.post("/v1/ingest/pick")
+def ingest_pick(req: PickRequest):
+    """Download a chosen set of papers rather than the first N of a search."""
+    urls = [u.strip() for u in req.urls if u.strip().startswith(("http://", "https://"))]
+    if not urls:
+        raise HTTPException(422, "no valid urls")
+    if len(urls) > 50:
+        raise HTTPException(422, "at most 50 papers at a time")
+    if not RegistryClient().health():
+        raise HTTPException(503, "registry is not running — papers could not be registered")
+    args = []
+    for u in urls:
+        args += ["--url", u]
+    result = _run_downloader(args)
+    result["count"] = len(urls)
+    return result
+
+
+# --------------------------------------------------------------- schedule
+SCHED_UNIT = "rag-daily-ingest.timer"
+UNIT_DIR = Path.home() / ".config" / "systemd" / "user"
+
+
+def _systemctl(*args, timeout=10):
+    """Best-effort systemctl --user. Returns (ok, output)."""
+    import subprocess
+    try:
+        p = subprocess.run(["systemctl", "--user", *args], capture_output=True,
+                           text=True, timeout=timeout)
+        return p.returncode == 0, (p.stdout or p.stderr).strip()
+    except Exception as e:                                       # noqa: BLE001
+        return False, str(e)
+
+
+@app.get("/v1/schedule")
+def get_schedule():
+    """The configured topics plus the real state of the systemd timer."""
+    cfg = settings_store.load().get("ingestion", {}).get("schedule", {})
+    installed = (UNIT_DIR / SCHED_UNIT).exists()
+    enabled, next_run, last_run = False, None, None
+    if installed:
+        ok, out = _systemctl("is-enabled", SCHED_UNIT)
+        enabled = ok and out.strip() == "enabled"
+        ok, out = _systemctl("show", SCHED_UNIT, "-p", "NextElapseUSecRealtime",
+                             "-p", "LastTriggerUSec")
+        if ok:
+            for line in out.splitlines():
+                key, _, value = line.partition("=")
+                value = value.strip()
+                if not value or value in ("0", "n/a"):
+                    continue
+                if key == "NextElapseUSecRealtime":
+                    next_run = value
+                elif key == "LastTriggerUSec":
+                    last_run = value
+    # lingering decides whether the timer survives logout; it needs sudo to set
+    linger = False
+    try:
+        import subprocess
+        p = subprocess.run(["loginctl", "show-user", os.environ.get("USER", ""), "-p", "Linger"],
+                           capture_output=True, text=True, timeout=5)
+        linger = "Linger=yes" in (p.stdout or "")
+    except Exception:                                            # noqa: BLE001
+        pass
+    return {"time": cfg.get("time", "03:00"), "topics": cfg.get("topics", []),
+            "installed": installed, "enabled": enabled,
+            "next_run": next_run, "last_run": last_run, "linger": linger}
+
+
+class ScheduleTopic(BaseModel):
+    topic: str
+    max_papers: int = 10
+    enabled: bool = True
+
+
+class SchedulePut(BaseModel):
+    time: Optional[str] = None
+    topics: Optional[List[ScheduleTopic]] = None
+    enabled: Optional[bool] = None
+
+
+@app.put("/v1/schedule")
+def put_schedule(body: SchedulePut):
+    """Save the topic list, and install/enable the timer to match.
+
+    The topics live in settings so `ops.py daily-ingest` picks them up with no
+    unit change; only the time of day is baked into the timer file, so the
+    units are only rewritten when that changes or they are missing.
+    """
+    import re as _re
+    import subprocess
+
+    # Merge only the schedule subtree: save() deep-merges, so writing the whole
+    # config back would bake every default into the file for no reason.
+    sched = dict(settings_store.load().get("ingestion", {}).get("schedule", {}))
+
+    if body.time is not None:
+        if not _re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", body.time):
+            raise HTTPException(422, "time must be HH:MM in 24-hour form")
+        sched["time"] = body.time
+    if body.topics is not None:
+        cleaned = []
+        for t in body.topics:
+            name = t.topic.strip()
+            if name:
+                cleaned.append({"topic": name,
+                                "max_papers": max(1, min(200, t.max_papers)),
+                                "enabled": t.enabled})
+        sched["topics"] = cleaned
+    settings_store.save({"ingestion": {"schedule": sched}})
+
+    notes = []
+    want_enabled = body.enabled
+    need_install = body.time is not None or not (UNIT_DIR / SCHED_UNIT).exists()
+    if need_install or want_enabled:
+        installer = REPO_ROOT / "ops" / "systemd" / "install.sh"
+        if not installer.exists():
+            notes.append("the unit installer is missing; the timer was not changed")
+        else:
+            try:
+                p = subprocess.run(["bash", str(installer), "--time", sched.get("time", "03:00")],
+                                   capture_output=True, text=True, timeout=30)
+                if p.returncode != 0:
+                    notes.append(f"installing the timer failed: {(p.stderr or p.stdout).strip()[:200]}")
+            except Exception as e:                               # noqa: BLE001
+                notes.append(f"installing the timer failed: {e}")
+            _systemctl("daemon-reload")
+
+    if want_enabled is True:
+        ok, out = _systemctl("enable", "--now", SCHED_UNIT)
+        # Persistent=true treats "never run" as a missed run, so switching the
+        # timer on starts a catch-up cycle straight away. That is the behaviour
+        # that makes a missed overnight run fire after boot, but it surprises
+        # people the first time, so say it rather than let downloads appear.
+        notes.append("Daily downloads are on — a first catch-up run starts now."
+                     if ok else f"could not enable the timer: {out[:200]}")
+    elif want_enabled is False:
+        ok, out = _systemctl("disable", "--now", SCHED_UNIT)
+        notes.append("Daily downloads are off." if ok else f"could not disable the timer: {out[:200]}")
+
+    state = get_schedule()
+    if want_enabled is not False and state["enabled"] and not state["linger"]:
+        notes.append("The timer only runs while you are logged in. To keep it running "
+                     "after logout: loginctl enable-linger $USER")
+    state["note"] = " ".join(notes) if notes else None
+    return state
+
+
+@app.get("/v1/prune/candidates")
+def prune_candidates():
+    """Embedded papers whose PDF is still on disk, oldest first.
+
+    This is exactly the list the keep-strategy slices. The UI gets it once and
+    works out the boundary itself, so dragging the "spare" control redraws
+    instantly instead of asking the server on every step.
+    """
+    pdf_dir = REPO_ROOT / "data" / "raw_pdfs"
+    try:
+        papers = RegistryClient().list_papers(status="embedded")
+    except Exception:                                        # noqa: BLE001
+        return {"papers": [], "registry": False}
+
+    out = []
+    for p in papers:
+        pdf = pdf_dir / f"{p['filename']}.pdf"
+        if not pdf.exists():
+            continue
+        out.append({"filename": p["filename"],
+                    "downloaded_at": p.get("downloaded_at"),
+                    "bytes": pdf.stat().st_size})
+    out.sort(key=lambda x: x["downloaded_at"] or "")
+    return {"papers": out, "registry": True}
 
 
 @app.post("/v1/prune/run")

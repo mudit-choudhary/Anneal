@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
+import ChatCleanup from "./ChatCleanup";
 import type { Settings } from "../types";
 
 export default function SettingsPage({ onSaved }: { onSaved: () => void }) {
@@ -85,6 +86,9 @@ export default function SettingsPage({ onSaved }: { onSaved: () => void }) {
         <button className="send" onClick={save}>Save</button>
         <span className="hint">{msg}</span>
       </div>
+
+      <h2>Data</h2>
+      <ChatCleanup />
     </div>
   );
 }

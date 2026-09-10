@@ -36,6 +36,14 @@ DEFAULTS: Dict[str, Any] = {
         # arXiv crawl defaults, used by the UI's "fetch papers" action
         "domain": "Retrieval Augmented Generation",
         "max_papers": 10,
+        # Unattended daily crawl, run by the systemd timer through
+        # `ops.py daily-ingest`. Each topic is searched separately so it can
+        # carry its own cap; an empty list falls back to download_manager's
+        # built-in DOMAINS.
+        "schedule": {
+            "time": "03:00",                 # local time the timer fires
+            "topics": [],                    # [{"topic": str, "max_papers": int, "enabled": bool}]
+        },
     },
     "prune": {
         # What happens to a raw PDF once its paper is embedded.
