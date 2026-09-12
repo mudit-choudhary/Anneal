@@ -32,9 +32,11 @@ recursive   the classic fixed-size character splitter. Variations sweep the
 semantic    breakpoints where consecutive sentences stop being similar.
             Its unique knob is the *threshold type* — percentile, standard
             deviation, or interquartile — so all three are run.
-structure   today's approach: pack whole blocks, never cross a section.
-            Its unique knob is the heading-path prefix, so it is run with and
-            without.
+structure   today's approach — Grain-Growth Chunking: next-fit packing under
+            structural barriers. A chunk grows by whole blocks until the budget
+            is reached or it meets a section heading or standalone block, and a
+            closed chunk is never reopened. Its unique knob is the heading-path
+            prefix, so it is run with and without.
 
 recursive and semantic consume flat text, so they run on both parsers.
 structure consumes typed blocks; on the legacy parser those blocks carry no
@@ -216,8 +218,17 @@ class CurrentParser:
 
         parsed = json.loads((stage2 / f"{stem}.json").read_text(encoding="utf-8"))
         blocks = parsed.get("blocks", [])
-        text = "\n\n".join(b.get("text", "") for b in blocks if b.get("text"))
-        return {"pages": real_pages, "parsed": parsed, "blocks": blocks, "text": text}
+        # The flat text carries the same fences the structure chunker emits, so
+        # a fixed-size splitter run over it can be caught cutting through one.
+        from chunking import FENCED_TYPES, fence
+        parts = []
+        for b in blocks:
+            t = b.get("text", "")
+            if not t:
+                continue
+            parts.append(fence(b["type"], t) if b["type"] in FENCED_TYPES else t)
+        return {"pages": real_pages, "parsed": parsed, "blocks": blocks,
+                "text": "\n\n".join(parts)}
 
 
 # ============================================================ chunkers
@@ -269,12 +280,48 @@ class SemanticChunker:
             cls._model = SentenceTransformer(EMBED_MODEL, device=os.environ.get("BENCH_DEVICE", "cpu"))
         return cls._model
 
+    @staticmethod
+    def _units(text):
+        """Sentences, except that a fenced block is one indivisible unit.
+
+        Without this the sentence splitter cuts inside a block — an equation
+        number like "(72)" reads as the start of a new sentence because "(" is
+        in its lookahead — and the closing bar ends up in the next chunk. Any
+        production semantic chunker has to mask fenced regions first.
+        """
+        from chunking import FENCE_CHAR
+        block = re.compile(rf"^({re.escape(FENCE_CHAR)}{{3,}})\S*\n.*?\n\1$", re.M | re.S)
+        out, last = [], 0
+        for m in block.finditer(text):
+            out += [s for s in split_sentences(text[last:m.start()]) if s.strip()]
+            out.append(m.group(0))
+            last = m.end()
+        out += [s for s in split_sentences(text[last:]) if s.strip()]
+        return out
+
+    @staticmethod
+    def _join(units):
+        """Rejoin preserving line structure.
+
+        A plain " ".join puts an opening bar mid-line, where it no longer
+        matches "^~~~", so an intact block reads as severed.
+        """
+        from chunking import FENCE_CHAR, _FENCE_RUN
+        out = ""
+        for u in units:
+            if not out:
+                out = u
+                continue
+            needs_line = _FENCE_RUN.match(u) or "\n" in u or out.rstrip().endswith(FENCE_CHAR)
+            out += ("\n\n" if needs_line else " ") + u
+        return out
+
     def chunk(self, parsed):
         key = (parsed.get("_key"), len(parsed["text"]))
         if key in SemanticChunker._cache:
             sentences, distances = SemanticChunker._cache[key]
         else:
-            sentences = [s for s in split_sentences(parsed["text"]) if s.strip()]
+            sentences = self._units(parsed["text"])
             if len(sentences) < 3:
                 return [parsed["text"]] if parsed["text"].strip() else []
             import numpy as np
@@ -303,10 +350,10 @@ class SemanticChunker:
             over_budget = sum(len(s) + 1 for s in cur) >= self.max_chars
             breakpoint_here = i < len(distances) and distances[i] > cutoff
             if breakpoint_here or over_budget:
-                chunks.append(" ".join(cur))
+                chunks.append(self._join(cur))
                 cur = []
         if cur:
-            chunks.append(" ".join(cur))
+            chunks.append(self._join(cur))
         return [c for c in chunks if c.strip()]
 
 
@@ -380,8 +427,8 @@ def build_chunkers():
 
 
 # ============================================================ metrics
-_ENDS_CLEAN = re.compile(r'[.!?:;)\]"\'”’]$')
-_STARTS_MID = re.compile(r'^[a-z,;:)\]]')
+# The boundary rules live in chunking.py and are imported where used, so the
+# evaluation and the chunker cannot disagree about what a clean edge is.
 
 
 def boundary_overlap(a, b, cap=600):
@@ -401,16 +448,40 @@ def measure(chunks, pages, corpus_bytes, elapsed):
     overlaps = [boundary_overlap(chunks[i], chunks[i + 1]) for i in range(len(chunks) - 1)]
     with_overlap = [o for o in overlaps if o > 0]
 
+    # one definition of a clean boundary, shared with the chunker, so the
+    # evaluation cannot drift from what the pipeline considers correct
+    from chunking import (ends_cleanly, fences_balanced, has_fence,
+                          starts_cleanly, strip_fences)
+
     starts_mid = ends_mid = 0
+    p_starts = p_ends = p_total = 0
+    fenced = broken = 0
+
     for c in chunks:
         body = c.strip()
         # the heading prefix is not the chunk's prose; judge the body
         if "\n\n" in body:
             body = body.split("\n\n", 1)[1].strip()
-        if body and _STARTS_MID.match(body):
+        if body and not starts_cleanly(body):
             starts_mid += 1
-        if body and not _ENDS_CLEAN.search(body):
+        if body and not ends_cleanly(body):
             ends_mid += 1
+
+        # A table that ends in a number was not cut off mid-sentence, so prose
+        # rules are applied only to what remains once fenced blocks are taken
+        # out. An arm that cannot identify a table has nothing to take out —
+        # which is the deficiency itself, not an unfair comparison.
+        if has_fence(body):
+            fenced += 1
+            if not fences_balanced(body):
+                broken += 1
+        prose = strip_fences(body)
+        if prose:
+            p_total += 1
+            if not starts_cleanly(prose):
+                p_starts += 1
+            if not ends_cleanly(prose):
+                p_ends += 1
 
     n = len(chunks)
     return {
@@ -426,6 +497,11 @@ def measure(chunks, pages, corpus_bytes, elapsed):
         "overlap_max_chars": max(with_overlap) if with_overlap else 0,
         "starts_mid_sentence_pct": starts_mid / n,
         "ends_mid_sentence_pct": ends_mid / n,
+        "prose_chunks": p_total,
+        "prose_starts_mid_pct": p_starts / p_total if p_total else 0.0,
+        "prose_ends_mid_pct": p_ends / p_total if p_total else 0.0,
+        "fenced_pct": fenced / n,
+        "fence_broken_pct": broken / fenced if fenced else 0.0,
         "seconds": round(elapsed, 1),
     }
 
@@ -551,9 +627,23 @@ def report(r):
                   f"{100 * x['overlap_zero_pct']:>6.0f}%{x['overlap_median_chars']:>8}"
                   f"{100 * x['starts_mid_sentence_pct']:>10.1f}%{100 * x['ends_mid_sentence_pct']:>8.1f}%")
 
+    print("\nProse only — fenced tables and formulas removed before judging")
+    print(f"  {'parser':<10}{'chunker':<26}{'prose':>8}{'mid-start':>11}{'mid-end':>9}"
+          f"{'fenced':>9}{'broken':>9}")
+    for strategy in ("recursive", "semantic", "structure", "production"):
+        for x in [q for q in r["rows"] if q["strategy"] == strategy and q["chunks"]]:
+            print(f"  {x['parser']:<10}{x['chunker']:<26}{x.get('prose_chunks', 0):>8}"
+                  f"{100 * x.get('prose_starts_mid_pct', 0):>10.1f}%"
+                  f"{100 * x.get('prose_ends_mid_pct', 0):>8.1f}%"
+                  f"{100 * x.get('fenced_pct', 0):>8.1f}%"
+                  f"{100 * x.get('fence_broken_pct', 0):>8.1f}%")
+
     print("\n  ov=0     share of neighbouring chunk pairs sharing no text")
     print("  ov med   median shared characters where they do overlap")
     print("  mid-*    chunk begins / ends mid-sentence (fragmenting a thought)")
+    print("  prose    chunks with prose left after fenced blocks are removed")
+    print("  fenced   chunks containing a ~~~table / ~~~formula block")
+    print("  broken   of those, the share whose fence is left unclosed by the split")
     print(f"\nArtefacts (parsed JSON + chunks): {r['sandbox']}/output/")
     print(f"Full results: {RESULTS}\n")
 

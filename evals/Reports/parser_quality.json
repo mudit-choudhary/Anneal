@@ -1,0 +1,53 @@
+{
+ "papers": [
+  "2609.10065",
+  "2609.10988",
+  "2609.11306",
+  "2609.11328",
+  "2609.11755"
+ ],
+ "metric": "share of paragraph blocks over 40 characters that begin lower case, i.e. a continuation the parser did not merge",
+ "pipelines": {
+  "docling_native": {
+   "paragraphs": 409,
+   "start_lowercase": 71,
+   "start_lowercase_pct": 0.17359413202933985
+  },
+  "docling_plus_ours": {
+   "paragraphs": 245,
+   "start_lowercase": 7,
+   "start_lowercase_pct": 0.02857142857142857
+  },
+  "ours": {
+   "paragraphs": 257,
+   "start_lowercase": 11,
+   "start_lowercase_pct": 0.042801556420233464
+  }
+ },
+ "docling_labels": {
+  "text": 448,
+  "list_item": 413,
+  "formula": 133,
+  "section_header": 99,
+  "caption": 39,
+  "picture": 27,
+  "table": 24,
+  "footnote": 6
+ },
+ "yolo_labels": {
+  "Text": 456,
+  "List-item": 396,
+  "Formula": 146,
+  "Section-header": 107,
+  "Caption": 56,
+  "Picture": 28,
+  "Table": 25,
+  "Footnote": 18,
+  "Authors": 9,
+  "Title": 5
+ },
+ "page_furniture": {
+  "docling_native_items": 6,
+  "docling_native_in_markdown": 6
+ }
+}

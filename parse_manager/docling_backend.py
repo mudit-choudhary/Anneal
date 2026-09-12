@@ -104,8 +104,12 @@ def detect_pdf(pdf_path, max_pages=None):
         elif label == "Picture":
             lines = []
         else:
-            text = getattr(item, "text", "") or ""
-            lines = [ln for ln in text.splitlines() if ln.strip()] or ([text] if text.strip() else [])
+            # Docling leaves `.text` empty on some item types and puts the
+            # content in `.orig` — formulas are the case that matters here.
+            # Reading only `.text` silently discarded every equation.
+            text = (getattr(item, "text", "") or "").strip() or \
+                   (getattr(item, "orig", "") or "").strip()
+            lines = [ln for ln in text.splitlines() if ln.strip()] or ([text] if text else [])
 
         page["regions"].append({"label": label, "conf": 1.0, "bbox": bbox, "lines": lines,
                                 "backend": "docling"})

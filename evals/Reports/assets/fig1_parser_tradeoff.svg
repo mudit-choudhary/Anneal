@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 813 260" width="813" height="260" font-family="ui-monospace,Menlo,monospace">
+<title>Parser cost against structure recovered</title>
+<text x="0.0" y="20.0" font-size="13" fill="#8b949e" text-anchor="start" font-weight="600">What each parser costs, and what it buys</text>
+<text x="0.0" y="38.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">each panel has its own scale; bars are not comparable across panels</text>
+<text x="138.0" y="89.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump</text>
+<text x="138.0" y="119.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy</text>
+<text x="138.0" y="149.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling</text>
+<text x="138.0" y="179.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm</text>
+<text x="138.0" y="209.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">current</text>
+<text x="150.0" y="58.0" font-size="11" fill="#8b949e" text-anchor="start" font-weight="600">Parse time</text>
+<text x="150.0" y="70.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">s/page</text>
+<line x1="150" y1="72" x2="150" y2="230" stroke="#8b949e" stroke-width="1" opacity="0.35"/>
+<path d="M150 79 H 152.4 Q 154.8 79 154.8 81.4 V 89.6 Q 154.8 92 152.4 92 H 150 Z" fill="#1baf7a" opacity="0.9"/>
+<text x="160.8" y="89.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.032</text>
+<path d="M150 109 H 152.4 Q 154.8 109 154.8 111.4 V 119.6 Q 154.8 122 152.4 122 H 150 Z" fill="#eb6834" opacity="0.9"/>
+<text x="160.8" y="119.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.032</text>
+<path d="M150 139 H 213.8 Q 216.8 139 216.8 142.0 V 149.0 Q 216.8 152 213.8 152 H 150 Z" fill="#a87bd6" opacity="0.9"/>
+<text x="222.8" y="149.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.446</text>
+<path d="M150 169 H 284.0 Q 287.0 169 287.0 172.0 V 179.0 Q 287.0 182 284.0 182 H 150 Z" fill="#eda100" opacity="0.9"/>
+<text x="293.0" y="179.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.915</text>
+<path d="M150 199 H 170.3 Q 173.3 199 173.3 202.0 V 209.0 Q 173.3 212 170.3 212 H 150 Z" fill="#2a78d6" opacity="0.9"/>
+<text x="179.3" y="209.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.156</text>
+<text x="371.0" y="58.0" font-size="11" fill="#8b949e" text-anchor="start" font-weight="600">GPU memory</text>
+<text x="371.0" y="70.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">MB above baseline</text>
+<line x1="371" y1="72" x2="371" y2="230" stroke="#8b949e" stroke-width="1" opacity="0.35"/>
+<circle cx="373" cy="85.5" r="2" fill="#1baf7a" opacity="0.55"/>
+<text x="381.0" y="89.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0</text>
+<circle cx="373" cy="115.5" r="2" fill="#eb6834" opacity="0.55"/>
+<text x="381.0" y="119.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0</text>
+<path d="M371 139 H 505.0 Q 508.0 139 508.0 142.0 V 149.0 Q 508.0 152 505.0 152 H 371 Z" fill="#a87bd6" opacity="0.9"/>
+<text x="514.0" y="149.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">1,380</text>
+<circle cx="373" cy="175.5" r="2" fill="#eda100" opacity="0.55"/>
+<text x="381.0" y="179.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0</text>
+<path d="M371 199 H 471.6 Q 474.6 199 474.6 202.0 V 209.0 Q 474.6 212 471.6 212 H 371 Z" fill="#2a78d6" opacity="0.9"/>
+<text x="480.6" y="209.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">1,044</text>
+<text x="592.0" y="58.0" font-size="11" fill="#8b949e" text-anchor="start" font-weight="600">Structure recovered</text>
+<text x="592.0" y="70.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">section headings / page</text>
+<line x1="592" y1="72" x2="592" y2="230" stroke="#8b949e" stroke-width="1" opacity="0.35"/>
+<circle cx="594" cy="85.5" r="2" fill="#1baf7a" opacity="0.55"/>
+<text x="602.0" y="89.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.00</text>
+<circle cx="594" cy="115.5" r="2" fill="#eb6834" opacity="0.55"/>
+<text x="602.0" y="119.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.00</text>
+<path d="M592 139 H 726.0 Q 729.0 139 729.0 142.0 V 149.0 Q 729.0 152 726.0 152 H 592 Z" fill="#a87bd6" opacity="0.9"/>
+<text x="735.0" y="149.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">1.01</text>
+<path d="M592 169 H 721.6 Q 724.6 169 724.6 172.0 V 179.0 Q 724.6 182 721.6 182 H 592 Z" fill="#eda100" opacity="0.9"/>
+<text x="730.6" y="179.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.98</text>
+<path d="M592 199 H 723.6 Q 726.6 199 726.6 202.0 V 209.0 Q 726.6 212 723.6 212 H 592 Z" fill="#2a78d6" opacity="0.9"/>
+<text x="732.6" y="209.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">1.00</text>
+<text x="0.0" y="250.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">three of the five parsers use no GPU at all, shown as a dot rather than a bar</text>
+</svg>

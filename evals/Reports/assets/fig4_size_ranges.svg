@@ -1,0 +1,104 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 552" width="820" height="552" font-family="ui-monospace,Menlo,monospace">
+<title>Chunk size ranges</title>
+<text x="0.0" y="20.0" font-size="13" fill="#8b949e" text-anchor="start" font-weight="600">Chunk size: smallest to largest, dot at the median</text>
+<text x="0.0" y="38.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">axis clamped at 4,000 characters; a chevron means the row runs past it, with its real maximum printed</text>
+<line x1="250" y1="84" x2="250" y2="526" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="250.0" y="78.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">0</text>
+<line x1="338" y1="84" x2="338" y2="526" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="338.0" y="78.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">800</text>
+<line x1="426" y1="84" x2="426" y2="526" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="426.0" y="78.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">1,600</text>
+<line x1="514" y1="84" x2="514" y2="526" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="514.0" y="78.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">2,400</text>
+<line x1="602" y1="84" x2="602" y2="526" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="602.0" y="78.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">3,200</text>
+<line x1="690" y1="84" x2="690" y2="526" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="690.0" y="78.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">4,000</text>
+<line x1="536" y1="84" x2="536" y2="526" stroke="#97382a" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.85"/>
+<text x="536.0" y="64.0" font-size="9" fill="#97382a" text-anchor="middle" font-weight="normal">embedder window</text>
+<text x="240.0" y="102.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · fixed_token</text>
+<line x1="262.4" y1="98" x2="418.3" y2="98" stroke="#1baf7a" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="345.5" cy="98" r="4.5" fill="#1baf7a"/>
+<text x="425.3" y="102.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,530</text>
+<text x="240.0" y="123.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · recursive_char</text>
+<line x1="260.9" y1="119" x2="414.9" y2="119" stroke="#1baf7a" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="409.2" cy="119" r="4.5" fill="#1baf7a"/>
+<text x="421.9" y="123.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,499</text>
+<text x="240.0" y="144.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · semantic</text>
+<line x1="250.2" y1="140" x2="690.0" y2="140" stroke="#1baf7a" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="478.0" cy="140" r="4.5" fill="#1baf7a"/>
+<path d="M689.0 135 l6 5 l-6 5" fill="none" stroke="#1baf7a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="700.0" y="144.0" font-size="9" fill="#97382a" text-anchor="start" font-weight="normal">5,079</text>
+<text x="240.0" y="165.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · grain_growth</text>
+<line x1="255.4" y1="161" x2="468.9" y2="161" stroke="#1baf7a" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="403.3" cy="161" r="4.5" fill="#1baf7a"/>
+<text x="475.9" y="165.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,990</text>
+<text x="240.0" y="186.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · fixed_token</text>
+<line x1="262.1" y1="182" x2="424.9" y2="182" stroke="#eb6834" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="358.5" cy="182" r="4.5" fill="#eb6834"/>
+<text x="431.9" y="186.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,590</text>
+<text x="240.0" y="207.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · recursive_char</text>
+<line x1="267.2" y1="203" x2="414.9" y2="203" stroke="#eb6834" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="408.3" cy="203" r="4.5" fill="#eb6834"/>
+<text x="421.9" y="207.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,499</text>
+<text x="240.0" y="228.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · semantic</text>
+<line x1="254.6" y1="224" x2="568.1" y2="224" stroke="#eb6834" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="478.2" cy="224" r="4.5" fill="#eb6834"/>
+<text x="575.1" y="228.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">2,892</text>
+<text x="240.0" y="249.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · grain_growth</text>
+<line x1="261.7" y1="245" x2="470.0" y2="245" stroke="#eb6834" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="422.7" cy="245" r="4.5" fill="#eb6834"/>
+<text x="477.0" y="249.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">2,000</text>
+<text x="240.0" y="270.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · fixed_token</text>
+<line x1="265.3" y1="266" x2="419.6" y2="266" stroke="#a87bd6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="341.6" cy="266" r="4.5" fill="#a87bd6"/>
+<text x="426.6" y="270.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,542</text>
+<text x="240.0" y="291.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · recursive_char</text>
+<line x1="251.0" y1="287" x2="414.9" y2="287" stroke="#a87bd6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="390.2" cy="287" r="4.5" fill="#a87bd6"/>
+<text x="421.9" y="291.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,499</text>
+<text x="240.0" y="312.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · semantic</text>
+<line x1="261.0" y1="308" x2="690.0" y2="308" stroke="#a87bd6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="477.8" cy="308" r="4.5" fill="#a87bd6"/>
+<path d="M689.0 303 l6 5 l-6 5" fill="none" stroke="#a87bd6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="700.0" y="312.0" font-size="9" fill="#97382a" text-anchor="start" font-weight="normal">16,295</text>
+<text x="240.0" y="333.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · grain_growth</text>
+<line x1="250.9" y1="329" x2="470.0" y2="329" stroke="#a87bd6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="376.2" cy="329" r="4.5" fill="#a87bd6"/>
+<text x="477.0" y="333.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">2,000</text>
+<text x="240.0" y="354.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · fixed_token</text>
+<line x1="258.9" y1="350" x2="419.2" y2="350" stroke="#eda100" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="340.8" cy="350" r="4.5" fill="#eda100"/>
+<text x="426.2" y="354.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,538</text>
+<text x="240.0" y="375.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · recursive_char</text>
+<line x1="252.0" y1="371" x2="414.9" y2="371" stroke="#eda100" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="394.6" cy="371" r="4.5" fill="#eda100"/>
+<text x="421.9" y="375.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,499</text>
+<text x="240.0" y="396.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · semantic</text>
+<line x1="259.5" y1="392" x2="690.0" y2="392" stroke="#eda100" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="480.8" cy="392" r="4.5" fill="#eda100"/>
+<path d="M689.0 387 l6 5 l-6 5" fill="none" stroke="#eda100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="700.0" y="396.0" font-size="9" fill="#97382a" text-anchor="start" font-weight="normal">6,949</text>
+<text x="240.0" y="417.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · grain_growth</text>
+<line x1="250.2" y1="413" x2="470.0" y2="413" stroke="#eda100" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="386.9" cy="413" r="4.5" fill="#eda100"/>
+<text x="477.0" y="417.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">2,000</text>
+<text x="240.0" y="438.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · fixed_token</text>
+<line x1="272.6" y1="434" x2="420.2" y2="434" stroke="#2a78d6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="346.2" cy="434" r="4.5" fill="#2a78d6"/>
+<text x="427.2" y="438.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,547</text>
+<text x="240.0" y="459.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · recursive_char</text>
+<line x1="251.0" y1="455" x2="414.9" y2="455" stroke="#2a78d6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="388.8" cy="455" r="4.5" fill="#2a78d6"/>
+<text x="421.9" y="459.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">1,499</text>
+<text x="240.0" y="480.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · semantic</text>
+<line x1="261.0" y1="476" x2="690.0" y2="476" stroke="#2a78d6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="476.7" cy="476" r="4.5" fill="#2a78d6"/>
+<path d="M689.0 471 l6 5 l-6 5" fill="none" stroke="#2a78d6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="700.0" y="480.0" font-size="9" fill="#97382a" text-anchor="start" font-weight="normal">4,662</text>
+<text x="240.0" y="501.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · grain_growth</text>
+<line x1="250.1" y1="497" x2="470.0" y2="497" stroke="#2a78d6" stroke-width="3" opacity="0.35" stroke-linecap="round"/>
+<circle cx="367.5" cy="497" r="4.5" fill="#2a78d6"/>
+<text x="477.0" y="501.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">2,000</text>
+<text x="0.0" y="544.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">left edge is the smallest chunk the cell produced; anything right of the dashed line is truncated at embed time</text>
+</svg>

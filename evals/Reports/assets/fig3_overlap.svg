@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 498" width="880" height="498" font-family="ui-monospace,Menlo,monospace">
+<title>Adjacent chunk pairs sharing no text</title>
+<text x="0.0" y="20.0" font-size="13" fill="#8b949e" text-anchor="start" font-weight="600">Adjacent chunk pairs sharing no text</text>
+<text x="0.0" y="38.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">longer is better: overlap costs embedding work and returns the same passage twice</text>
+<line x1="250" y1="66" x2="250" y2="464" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="250.0" y="60.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">0%</text>
+<line x1="345" y1="66" x2="345" y2="464" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="345.0" y="60.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">25%</text>
+<line x1="440" y1="66" x2="440" y2="464" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="440.0" y="60.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">50%</text>
+<line x1="535" y1="66" x2="535" y2="464" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="535.0" y="60.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">75%</text>
+<line x1="630" y1="66" x2="630" y2="464" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
+<text x="630.0" y="60.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">100%</text>
+<text x="700.0" y="60.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">median overlap</text>
+<text x="240.0" y="85.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · fixed_token</text>
+<rect x="250" y="74" width="64.8" height="14" rx="3" fill="#1baf7a" opacity="0.9"/>
+<text x="308.8" y="84.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">17.0%</text>
+<text x="700.0" y="84.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">108 ch</text>
+<text x="240.0" y="104.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · recursive_char</text>
+<rect x="250" y="93" width="142.6" height="14" rx="3" fill="#1baf7a" opacity="0.9"/>
+<text x="386.6" y="103.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">37.5%</text>
+<text x="700.0" y="103.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">117 ch</text>
+<text x="240.0" y="123.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · semantic</text>
+<rect x="250" y="112" width="379.4" height="14" rx="3" fill="#1baf7a" opacity="0.9"/>
+<text x="623.4" y="122.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">99.8%</text>
+<text x="700.0" y="122.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">8 ch</text>
+<text x="240.0" y="142.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">raw_dump · grain_growth</text>
+<rect x="250" y="131" width="149.9" height="14" rx="3" fill="#1baf7a" opacity="0.9"/>
+<text x="393.9" y="141.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">39.4%</text>
+<text x="700.0" y="141.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">115 ch</text>
+<text x="240.0" y="161.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · fixed_token</text>
+<rect x="250" y="150" width="55.5" height="14" rx="3" fill="#eb6834" opacity="0.9"/>
+<text x="299.5" y="160.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">14.6%</text>
+<text x="700.0" y="160.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">124 ch</text>
+<text x="240.0" y="180.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · recursive_char</text>
+<rect x="250" y="169" width="105.4" height="14" rx="3" fill="#eb6834" opacity="0.9"/>
+<text x="349.4" y="179.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">27.7%</text>
+<text x="700.0" y="179.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">104 ch</text>
+<text x="240.0" y="199.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · semantic</text>
+<rect x="250" y="188" width="380.0" height="14" rx="3" fill="#eb6834" opacity="0.9"/>
+<text x="624.0" y="198.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">100.0%</text>
+<text x="700.0" y="198.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0 ch</text>
+<text x="240.0" y="218.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">legacy · grain_growth</text>
+<rect x="250" y="207" width="377.3" height="14" rx="3" fill="#eb6834" opacity="0.9"/>
+<text x="621.3" y="217.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">99.3%</text>
+<text x="700.0" y="217.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">2 ch</text>
+<text x="240.0" y="237.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · fixed_token</text>
+<rect x="250" y="226" width="40.9" height="14" rx="3" fill="#a87bd6" opacity="0.9"/>
+<text x="296.9" y="236.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">10.8%</text>
+<text x="700.0" y="236.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">103 ch</text>
+<text x="240.0" y="256.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · recursive_char</text>
+<rect x="250" y="245" width="208.9" height="14" rx="3" fill="#a87bd6" opacity="0.9"/>
+<text x="452.9" y="255.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">55.0%</text>
+<text x="700.0" y="255.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">75 ch</text>
+<text x="240.0" y="275.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · semantic</text>
+<rect x="250" y="264" width="346.4" height="14" rx="3" fill="#a87bd6" opacity="0.9"/>
+<text x="590.4" y="274.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">91.2%</text>
+<text x="700.0" y="274.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
+<text x="240.0" y="294.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_docling · grain_growth</text>
+<rect x="250" y="283" width="347.0" height="14" rx="3" fill="#a87bd6" opacity="0.9"/>
+<text x="591.0" y="293.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">91.3%</text>
+<text x="700.0" y="293.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
+<text x="240.0" y="313.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · fixed_token</text>
+<rect x="250" y="302" width="53.4" height="14" rx="3" fill="#eda100" opacity="0.9"/>
+<text x="297.4" y="312.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">14.0%</text>
+<text x="700.0" y="312.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">99 ch</text>
+<text x="240.0" y="332.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · recursive_char</text>
+<rect x="250" y="321" width="207.6" height="14" rx="3" fill="#eda100" opacity="0.9"/>
+<text x="451.6" y="331.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">54.6%</text>
+<text x="700.0" y="331.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">72 ch</text>
+<text x="240.0" y="351.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · semantic</text>
+<rect x="250" y="340" width="377.4" height="14" rx="3" fill="#eda100" opacity="0.9"/>
+<text x="621.4" y="350.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">99.3%</text>
+<text x="700.0" y="350.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">2 ch</text>
+<text x="240.0" y="370.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">oss_pymupdf4llm · grain_growth</text>
+<rect x="250" y="359" width="370.3" height="14" rx="3" fill="#eda100" opacity="0.9"/>
+<text x="614.3" y="369.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">97.5%</text>
+<text x="700.0" y="369.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
+<text x="240.0" y="389.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · fixed_token</text>
+<rect x="250" y="378" width="58.7" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
+<text x="302.7" y="388.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">15.4%</text>
+<text x="700.0" y="388.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">108 ch</text>
+<text x="240.0" y="408.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · recursive_char</text>
+<rect x="250" y="397" width="204.8" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
+<text x="448.8" y="407.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">53.9%</text>
+<text x="700.0" y="407.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">79 ch</text>
+<text x="240.0" y="427.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · semantic</text>
+<rect x="250" y="416" width="354.1" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
+<text x="598.1" y="426.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">93.2%</text>
+<text x="700.0" y="426.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
+<text x="240.0" y="446.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · grain_growth</text>
+<rect x="250" y="435" width="358.7" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
+<text x="602.7" y="445.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">94.4%</text>
+<text x="700.0" y="445.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
+<text x="0.0" y="488.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">median overlap is over the pairs that do overlap; the strategies near 100% barely ever repeat text</text>
+</svg>

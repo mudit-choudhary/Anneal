@@ -14,6 +14,23 @@ matters, and a candidate direction — not a committed design.
 
 ## 1. Tables and figures lose structure/meaning in the parsed output
 
+> **Update 2026-09-11 — partially addressed.** Tables and formulas are now
+> **labelled** in the embedded text with a typed fence (`~~~table` / `~~~formula`,
+> `FENCED_INLINE` / `FENCED_STANDALONE` in `embedding_manager/chunking.py`), so a
+> retrieved chunk tells the answering model and a human reader that the content is
+> data rather than prose. The caption stays outside the fence as prose. This does
+> **not** recover table *structure* — the TableFormer/VLM work below is still
+> open — but it removes the ambiguity about what a chunk contains, and it fixed a
+> measurement error: the evaluation had been judging tables by sentence rules.
+> A fence bar also counts as a valid chunk boundary now (`starts_cleanly` /
+> `ends_cleanly` in the same module, shared with the benchmark so the two
+> cannot drift): opening a labelled block is as clean a start as a capital
+> letter, closing one as clean an end as a full stop, and a chunk that opens
+> part-way *through* a block is dirty even when its first row starts with a
+> capital. See `evals/Reports/Report.md`. **Requires re-ingestion to
+> take effect on the live corpus.**
+
+
 **Status:** Partly addressed 2026-09-09 — decision: **no VLM** for now (user
 choice). Tables: `scripts/rag_inspect.py tables` verifies number
 preservation and saves crops; the Docling backend
