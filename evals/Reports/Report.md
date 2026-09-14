@@ -8,7 +8,7 @@ Two evaluations. A **chunk-shape run** crossed five parsers with four chunkers o
 
 **Keep Grain-Growth, but for narrower reasons than the shape run suggested.** On retrieval it beats semantic chunking on 2 of 3 parsers after correction for multiple comparisons, and beats the simple splitters on 0 of 6. Its lead over `fixed_token` and `recursive_char` is consistent in direction but not statistically established at this sample size.
 
-**On retrieval the three parsers cannot be told apart.** Questions written from `current`'s own output inflate its scores: 86.5% of its own questions find the answer in the top five, against 57.1% of everyone else's. Scored only on neutral questions, 0 of 6 pairwise parser comparisons reach significance. What separates the parsers is what reaches the index at all, plus speed: `oss_docling` loses 10 answers in parsing, `oss_pymupdf4llm` loses 6 answers in parsing, `current` loses 2 answers in parsing, and `current` parses 2.81x faster than Docling.
+**On retrieval the three parsers cannot be told apart.** Questions written from `current`'s own output inflate its scores: 86.5% of its own questions find the answer in the top five, against 57.1% of everyone else's. Scored only on neutral questions, 0 of 6 pairwise parser comparisons reach significance. What separates the parsers is what reaches the index at all, plus speed: `oss_docling` loses 5, `oss_pymupdf4llm` loses 3, `current` loses 1 of the answers in parsing, allowing for text-engine differences, and `current` parses 2.81x faster than Docling.
 
 ## Corpora
 
@@ -259,17 +259,21 @@ For each pair of parsers, the comparison is repeated on only the third parser's 
 
 **0 of 6 neutral comparisons are significant.** The one nominal difference on all questions, `current` against `oss_pymupdf4llm` on correctness (5 / 15, p=0.041), disappears on neutral questions (2 / 1). Neutral subsets are small, about thirty questions, so this is absence of evidence rather than evidence of equality: a real difference of a few points would not be detected. Retrieval quality does not justify choosing one parser over another.
 
-### Finding 5: answers lost in parsing are never recovered
+### Finding 5: parse losses are real, but smaller than an exact match suggests
 
-| Parser | Answers missing from its own output | Retrieved anyway, any chunker |
-|---|---|---|
-| `oss_docling` | 10 of 100 | 0 |
-| `oss_pymupdf4llm` | 6 of 100 | 0 |
-| `current` | 2 of 100 | 0 |
+An answer span missing from a parser's output caps every chunker behind it. Counting those losses needs care, because the spans were verified against PyMuPDF text and **two of the three parsers read their words through PyMuPDF**: `current` fills YOLO boxes with `page.get_text("words")`, and PyMuPDF4LLM is built on it. Docling uses its own text engine. An exact match therefore counts Docling's differences in maths symbols, spacing and stray line numbers as lost text, even where it extracted the passage. A near match, a span-length window holding at least 90% of the span's words, tolerates those differences and still rejects a passage that is really missing.
+
+| Parser | Text engine | exact | >= 95% of words | >= 90% of words | >= 80% of words | Really missing, retrieved anyway |
+|---|---|---|---|---|---|---|
+| `oss_docling` | Docling | 10 | 7 | **5** | 1 | 0 |
+| `oss_pymupdf4llm` | PyMuPDF | 6 | 3 | **3** | 2 | 0 |
+| `current` | PyMuPDF | 2 | 2 | **1** | 0 | 0 |
 
 ![answers lost before retrieval](assets/fig10_coverage.svg)
 
-A parser that drops or mangles the passage holding an answer caps every chunker behind it: no retrieval or generation step can put the text back. `oss_docling` loses 10 answers before retrieval begins, `current` 2. This is the clearest parser difference the run produced, and it is a text-fidelity difference, not a ranking one.
+Half the gap was the engine. Docling's exact-match losses fall from 10 to 5 at the 90% threshold. `current` loses the fewest answers at every threshold, so the ordering survives the correction, but the margin is a handful of questions out of 100, not a decisive difference. No really-missing answer was retrieved by any chunker in any cell: a parse loss is unrecoverable downstream.
+
+**The same effect reaches the retrieval metrics.** Every span-hit figure in this report, including MRR and nDCG, uses the exact match, so Docling's retrieval scores carry the same penalty and are probably understated in every cell. The run did not save the text of retrieved chunks, so they cannot be re-scored without re-running retrieval; that needs no answer generation or judging, only re-indexing. This strengthens rather than weakens Finding 4: Docling was level with the others despite the handicap.
 
 ### Finding 6: does fragmentation predict retrieval?
 
@@ -313,6 +317,7 @@ Semantic cells took about 2.2x as long as Grain-Growth: embedding every sentence
 - **Self-judging.** The answering model and the judge are the same model, so correctness and faithfulness may favour its own phrasing. They are consistent with the judge-free span metrics in direction, which is some reassurance.
 - **Question bias.** Questions were written by the same small model from one parser's output, which introduced the home advantage in Finding 3. Neutral-subset analysis removes it at the cost of sample size.
 - **Corpus.** 103 papers rather than the planned 201, after arXiv rate-limited the build. A larger corpus would make paper-level retrieval harder and stop those metrics saturating.
+- **Text-engine bias.** Answer spans were verified against PyMuPDF, the engine behind `current` and PyMuPDF4LLM, and span hits use an exact match. Docling is scored down for character-level differences (Finding 5). The next run should verify against a third engine and score with a near match.
 - **Two runs, two corpora.** Shape metrics come from the smaller corpus, so Finding 6 correlates measurements taken on different papers.
 
 ## Recommendation
@@ -326,7 +331,7 @@ Semantic cells took about 2.2x as long as Grain-Growth: embedding every sentence
 ### Parsing: keep `current`, for fidelity and speed, not retrieval
 
 - **Retrieval does not separate the parsers** once question bias is removed (Finding 4).
-- **It loses the fewest answers before retrieval:** `oss_docling` 10, `oss_pymupdf4llm` 6, `current` 2 (Finding 5).
+- **It loses the fewest answers before retrieval:** `oss_docling` 5, `oss_pymupdf4llm` 3, `current` 1, allowing for text-engine differences (Finding 5). The margin is small.
 - **It is 2.81x faster than Docling and lighter on VRAM**, and it recovers `title` and `authors`, which Docling does not deliver.
 
 ### The strongest argument against it

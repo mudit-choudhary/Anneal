@@ -1,10 +1,10 @@
 {
  "parser": "current",
- "pages": 2291,
- "bytes": 7049768,
- "seconds": 305.6676342487335,
- "vram_rise_mb": 1044.0,
- "documents": 103,
+ "pages": 6046,
+ "bytes": 20399918,
+ "seconds": 837.8142795562744,
+ "vram_rise_mb": 1046.0,
+ "documents": 363,
  "failures": [],
  "sec_per_page": 0.13342105379691555
 }

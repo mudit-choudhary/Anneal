@@ -1,0 +1,146 @@
+{
+ "written_at": "2026-09-14 16:55:27 +0530",
+ "git_commit": "de28f20",
+ "working_tree_dirty": true,
+ "status_when_written": "question generation and parsing in progress; no retrieval or answer results exist",
+ "dataset_sha256": null,
+ "dataset_sha256_note": "filled once, when the 400-question shortlist is frozen and before the first cell runs",
+ "questions_answered": [
+  "Q1 chunkers, retrieval: does grain_growth retrieve better than recursive_char and fixed_token?",
+  "Q2 chunkers, answers: does grain_growth produce better qwen3:4b answers?",
+  "Q3 parsers: does current, oss_docling or oss_pymupdf4llm retrieve or answer better?",
+  "Q4 parse fidelity: how many answer spans does each parser lose?",
+  "Q5 generalisation: do results differ between arXiv papers and never-trained YOLO-folder PDFs? (descriptive)"
+ ],
+ "alpha": 0.05,
+ "span_match": {
+  "verdicts_use": "near",
+  "near_match_threshold": 0.9,
+  "also_reported": "exact"
+ },
+ "retrieval_budget_chars": 4000,
+ "k": 5,
+ "primary_metrics_in_priority_order": {
+  "retrieval": [
+   {
+    "metric": "span_hit_near@4000ch",
+    "type": "binary",
+    "threshold": {
+     "points": 5
+    }
+   },
+   {
+    "metric": "span_hit_near@5",
+    "type": "binary",
+    "threshold": {
+     "points": 5
+    }
+   },
+   {
+    "metric": "precision_near@5",
+    "type": "continuous",
+    "threshold": {
+     "paired_effect_size_dz": 0.2
+    }
+   }
+  ],
+  "answers": [
+   {
+    "metric": "nli_fact_recall",
+    "type": "continuous",
+    "threshold": {
+     "points": 5
+    }
+   },
+   {
+    "metric": "gemma_correctness",
+    "type": "continuous",
+    "scale": "0-2 normalised to 0-1",
+    "threshold": {
+     "points": 5
+    }
+   },
+   {
+    "metric": "answer_keyword_recall",
+    "type": "continuous",
+    "threshold": {
+     "points": 5
+    }
+   },
+   {
+    "metric": "answer_similarity",
+    "type": "continuous",
+    "threshold": {
+     "paired_effect_size_dz": 0.2
+    }
+   }
+  ]
+ },
+ "tests": {
+  "binary": "exact two-sided sign test on discordant pairs (McNemar)",
+  "continuous": "two-sided Wilcoxon signed-rank, zero differences dropped",
+  "effect_intervals": "95% percentile bootstrap, 10000 resamples, resampling papers not questions",
+  "multiplicity": "Holm within each metric's family of tests"
+ },
+ "verdict_rules": {
+  "priority_order": "fixed sequence: a comparison is tested on metric 2 only if it passed metric 1, and so on. The verdict is the result on metric 1; the report states how far down the order it held.",
+  "chunkers": {
+   "comparisons": [
+    "grain_growth vs recursive_char",
+    "grain_growth vs fixed_token"
+   ],
+   "family_per_metric": "2 comparisons x 3 parsers = 6 tests, Holm",
+   "better_if": "B and D: significant win after Holm on at least 2 of 3 parsers, no significant loss on any parser, and pooled effect across parsers at or above the metric's threshold",
+   "worse_if": "the same rule with the direction reversed",
+   "otherwise": "no established difference"
+  },
+  "parsers": {
+   "comparisons": [
+    "current vs oss_docling",
+    "current vs oss_pymupdf4llm",
+    "oss_pymupdf4llm vs oss_docling"
+   ],
+   "family_per_metric": "3 pairs x 3 chunkers = 9 tests, Holm",
+   "differ_if": "significant after Holm under at least 2 of 3 chunkers, consistent direction, pooled effect at or above the metric's threshold",
+   "otherwise": "no established difference"
+  },
+  "retrieval_and_answer_verdicts": "reported separately; no combined score"
+ },
+ "parse_fidelity": {
+  "metric": "answer spans missing from the parser's own output, near match",
+  "test": "exact McNemar per parser pair, Holm over 3 pairs",
+  "also_reported": "exact match, and thresholds 0.95 and 0.8"
+ },
+ "supporting_metrics_never_used_for_verdicts": [
+  "span_hit(_near)@1/3/10",
+  "span_hit(_near)@2000ch/8000ch",
+  "precision(_near)@1/3/10",
+  "mrr(_near)",
+  "ndcg(_near)@10 graded and binary",
+  "paper_hit@k",
+  "mrr_paper",
+  "keyword_recall in context",
+  "faithfulness (NLI and Gemma)",
+  "context sufficiency (NLI and Gemma)",
+  "contradiction rate",
+  "refusal rate",
+  "short-answer match",
+  "token F1",
+  "ROUGE-L",
+  "chrF",
+  "cost: parse s/page, VRAM, index s, s/question, chunks, context chars",
+  "chunk shape on the round-2 corpus: mid-sentence starts/ends, overlap, sizes",
+  "breakdowns: arXiv vs never-trained; question writer 120B vs 20B"
+ ],
+ "judge_validation": {
+  "method": "agreement of NLI fact recall and Gemma correctness with the numeric reference set: questions whose short answer contains a number and is not a citation; 'correct' when Qwen's answer contains that number after normalisation",
+  "hand_grading": "none (decision D3)",
+  "use": "reported as validity evidence; does not change the priority order"
+ },
+ "data_handling": {
+  "question_set": "frozen before the first cell; identical 400 questions in every cell",
+  "generation_errors": "excluded pairwise from that comparison, counts reported",
+  "refusals": "scored as incorrect (0) for answer metrics, and counted in refusal rate",
+  "judging": "all local; no external API calls; qwen3:4b never judges; judge sees no parser or chunker labels"
+ }
+}

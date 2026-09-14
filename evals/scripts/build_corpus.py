@@ -38,6 +38,12 @@ UA = "RAGSetup-eval/1.0 (research corpus build; contact themuditchoudhary@gmail.
 # published floor is a limit, not a target: being rate-limited is a signal to
 # sit well under it, not to retry into it.
 MIN_INTERVAL = 15.0
+# Extra spacing on top of the floor, and a long pause every so often. Both only
+# make the build slower and gentler; the User-Agent stays honest, and throttling
+# stops the build rather than being worked around.
+JITTER = (0.0, 10.0)
+BREAK_EVERY = (20, 50)          # fresh downloads between long pauses
+BREAK_SECONDS = (180, 600)
 
 # Chosen to span single-column (NeurIPS/ICML style) and two-column
 # (IEEE / RevTeX style) layouts.
@@ -61,29 +67,35 @@ _LONG_HINT = re.compile(r"appendix|supplementary|supplemental", re.I)
 _last_request = [0.0]
 
 
-def _polite_get(url, attempts=5, **kwargs):
-    """Single-connection GET, well inside arXiv's rate limit, backing off on 429.
+class RateLimited(RuntimeError):
+    """arXiv kept answering 429/503: stop the build, resume another day."""
 
-    A 429 means we are being told to slow down; the response is to wait longer
-    each time rather than retry immediately.
+
+def _polite_get(url, attempts=4, **kwargs):
+    """Single-connection GET, well inside arXiv's rate limit.
+
+    429 and 503 both mean slow down. Wait longer each time, honouring
+    Retry-After when given, and raise RateLimited if it persists so the caller
+    stops instead of moving on to the next request.
     """
     import requests
 
     delay = MIN_INTERVAL
     for attempt in range(attempts):
-        wait = delay - (time.time() - _last_request[0])
+        wait = delay + random.uniform(*JITTER) - (time.time() - _last_request[0])
         if wait > 0:
             time.sleep(wait)
         resp = requests.get(url, headers={"User-Agent": UA}, timeout=90, **kwargs)
         _last_request[0] = time.time()
-        if resp.status_code == 429:
-            delay = min(delay * 2, 120)
-            print(f"    429 from arXiv; backing off to {delay:.0f}s", flush=True)
+        if resp.status_code in (429, 503):
+            retry = resp.headers.get("Retry-After", "")
+            delay = float(retry) if retry.isdigit() else min(delay * 2, 240)
+            print(f"    {resp.status_code} from arXiv; waiting {delay:.0f}s", flush=True)
             time.sleep(delay)
             continue
         resp.raise_for_status()
         return resp
-    raise RuntimeError(f"gave up after {attempts} attempts (rate limited): {url}")
+    raise RateLimited(f"still throttled after {attempts} attempts: {url}")
 
 
 # --------------------------------------------------------------- exclusions
@@ -164,6 +176,8 @@ def build_pool(exclude, target, queries):
         for cat in CATEGORIES:
             try:
                 entries, url = query_category(cat, PER_CATEGORY, start)
+            except RateLimited:
+                raise
             except Exception as e:                               # noqa: BLE001
                 print(f"  {cat:<20} query failed ({str(e)[:60]}); skipping", flush=True)
                 continue
@@ -256,7 +270,8 @@ def sample(pool, seed):
     return None, tried, 0, 0
 
 
-def build_offline():
+def build_offline(known=(), built="offline from cached PDFs (arXiv rate-limited a larger build)",
+                  max_pages=None):
     """Manifest the cached PDFs without touching the network.
 
     arXiv throttled a large build part-way through; rather than keep retrying
@@ -269,8 +284,9 @@ def build_offline():
     prev = {}
     if MANIFEST.exists():
         prev = {p["arxiv_id"]: p for p in json.loads(MANIFEST.read_text())["papers"]}
+    prev.update({e["arxiv_id"]: e for e in known})     # categories of papers fetched this run
 
-    papers = []
+    papers, skipped_long = [], 0
     pdfs = sorted(CORPUS.glob("*.pdf"))
     for i, path in enumerate(pdfs, 1):
         try:
@@ -278,6 +294,19 @@ def build_offline():
         except Exception as e:                                   # noqa: BLE001
             print(f"  skip {path.stem}: {str(e)[:60]}")
             continue
+        if max_pages and facts["pages"] > max_pages:
+            skipped_long += 1
+            continue
+        # Symlinks point into the YOLO PDF folder: papers never used in any
+        # labelled training round (unused_training_pdfs.py). Their filenames are
+        # titles, so the arXiv id comes from the page-1 stamp when there is one.
+        stamp = None
+        try:
+            with pymupdf.open(path) as d:
+                m = _ARXIV_ID.search(d[0].get_text())
+                stamp = m.group(1) if m else None
+        except Exception:                                        # noqa: BLE001
+            pass
         title = prev.get(path.stem, {}).get("title")
         if not title:
             try:
@@ -292,7 +321,9 @@ def build_offline():
             "arxiv_id": path.stem,
             "title": " ".join(title.split())[:200],
             "primary_category": prev.get(path.stem, {}).get("primary_category", "unknown"),
-            "pdf_url": f"https://arxiv.org/pdf/{path.stem}",
+            "source": "unused_training" if path.is_symlink() else "arxiv",
+            "arxiv_stamp": stamp,
+            "pdf_url": f"https://arxiv.org/pdf/{stamp}" if stamp else None,
             **facts,
         })
         if i % 25 == 0:
@@ -302,7 +333,7 @@ def build_offline():
     from collections import Counter
     manifest = {
         "seed": SEED,
-        "built": "offline from cached PDFs (arXiv rate-limited a larger build)",
+        "built": built,
         "sample_size": len(papers),
         "draws_until_valid": 1,
         "api_queries": json.loads(MANIFEST.read_text()).get("api_queries", []) if MANIFEST.exists() else [],
@@ -314,10 +345,14 @@ def build_offline():
         "exclusion_effect": {
             "training_ids_known": len(ex["ids"]),
             "training_id_months": dict(Counter(i[:4] for i in ex["ids"])),
-            "corpus_id_months": dict(Counter(p["arxiv_id"][:4] for p in papers)),
+            "corpus_id_months": dict(Counter((p["arxiv_stamp"] or "none")[:4] for p in papers)),
             "candidates_removed_by_exclusion": 0,
-            "note": "training set and corpus are disjoint by date; the filter removed nothing.",
+            "note": "arXiv-sourced papers are disjoint from training by date; papers from the "
+                    "YOLO PDF folder never appear in any round's labels (unused_training_pdfs.py).",
         },
+        "max_pages": max_pages,
+        "skipped_over_max_pages": skipped_long,
+        "sources": dict(Counter(p["source"] for p in papers)),
         "totals": {
             "papers": len(papers),
             "pages": sum(p["pages"] for p in papers),
@@ -331,7 +366,8 @@ def build_offline():
     t = manifest["totals"]
     print(f"\noffline manifest: {t['papers']} papers, {t['pages']} pages, "
           f"{t['bytes']/1048576:.1f} MB, {t['two_column']} two-column, "
-          f"{t['with_tables']} with tables")
+          f"{t['with_tables']} with tables; {skipped_long} skipped over {max_pages} pages; "
+          f"sources {manifest['sources']}")
     return
 
 
@@ -345,6 +381,11 @@ def main():
     ap.add_argument("--keep", type=int,
                     help="keep this many papers outright instead of rejection-sampling "
                          "a small set; used for the large retrieval corpus")
+    ap.add_argument("--max-pages", type=int,
+                    help="with --offline, leave out PDFs longer than this")
+    ap.add_argument("--target", type=int,
+                    help="download until the corpus folder holds this many PDFs, then "
+                         "manifest all of them")
     args = ap.parse_args()
 
     if args.report:
@@ -355,7 +396,9 @@ def main():
         return
 
     if args.offline:
-        return build_offline()
+        return build_offline(max_pages=args.max_pages,
+                             built=f"offline: cached arXiv PDFs plus never-trained YOLO-folder PDFs, "
+                                   f"capped at {args.max_pages} pages")
 
     CORPUS.mkdir(parents=True, exist_ok=True)
     print("Reading arXiv ids from the YOLO training set (cached after the first run)")
@@ -366,19 +409,45 @@ def main():
     pool = build_pool(exclude, args.pool, queries)
     print(f"\npool: {len(pool)} candidates after excluding the training set")
 
-    print("\nDownloading (cached; 3s apart)")
-    downloaded, failed = [], []
+    print(f"\nDownloading in random order, {MIN_INTERVAL:.0f}-{MIN_INTERVAL + JITTER[1]:.0f}s apart, "
+          f"pausing {BREAK_SECONDS[0] // 60}-{BREAK_SECONDS[1] // 60} min every "
+          f"{BREAK_EVERY[0]}-{BREAK_EVERY[1]} downloads")
+    random.shuffle(pool)
+    downloaded, failed, fresh, stopped = [], [], 0, None
+    next_break = random.randint(*BREAK_EVERY)
     for i, e in enumerate(pool, 1):
+        if args.target and len(list(CORPUS.glob("*.pdf"))) >= args.target:
+            print(f"  target of {args.target} PDFs reached")
+            break
+        cached = (CORPUS / f"{e['arxiv_id']}.pdf").exists()
         try:
             path = fetch_pdf(e)
             e.update(inspect_pdf(path))
             downloaded.append(e)
+        except RateLimited as ex:
+            stopped = str(ex)
+            print(f"\n  STOPPING: {ex}\n  keeping what was fetched; resume later", flush=True)
+            break
         except Exception as ex:                              # noqa: BLE001
             failed.append({"arxiv_id": e["arxiv_id"], "error": str(ex)[:120]})
             print(f"    skip {e['arxiv_id']}: {str(ex)[:70]}", flush=True)
             continue
+        if not cached:
+            fresh += 1
+            if fresh == next_break and i < len(pool):
+                pause = random.uniform(*BREAK_SECONDS)
+                print(f"  {fresh} fresh downloads; pausing {pause / 60:.1f} min", flush=True)
+                time.sleep(pause)
+                next_break += random.randint(*BREAK_EVERY)
         if i % 10 == 0 or i == len(pool):
-            print(f"  {i}/{len(pool)}  usable={len(downloaded)}", flush=True)
+            print(f"  {i}/{len(pool)}  usable={len(downloaded)}  "
+                  f"corpus={len(list(CORPUS.glob('*.pdf')))}", flush=True)
+
+    if args.target:
+        n = len(list(CORPUS.glob("*.pdf")))
+        how = (f"{n} cached PDFs after an online build toward {args.target}"
+               + (f"; stopped early by arXiv rate limiting" if stopped else ""))
+        return build_offline(known=downloaded, built=how)
 
     if args.keep:
         rng = random.Random(SEED)

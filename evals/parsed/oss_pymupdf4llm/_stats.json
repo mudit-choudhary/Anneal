@@ -1,10 +1,10 @@
 {
  "parser": "oss_pymupdf4llm",
- "pages": 2291,
- "bytes": 7745214,
- "seconds": 1700.3301665782928,
+ "pages": 8367,
+ "bytes": 32036473,
+ "seconds": 6836.932688474655,
  "vram_rise_mb": 0.0,
- "documents": 103,
+ "documents": 522,
  "failures": [],
- "sec_per_page": 0.7421781608809659
+ "sec_per_page": 0.8171307145302564
 }

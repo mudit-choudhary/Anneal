@@ -312,8 +312,47 @@ def rag_cell(R, p, c):
     return v if v and v.get("complete") else None
 
 
-def answer_coverage(R):
-    """qids whose verbatim answer is absent from each parser's own output."""
+NEAR_MATCH = 0.9   # share of span words that must appear in one span-length window
+
+
+def span_overlap(span_key, doc_key):
+    """Best share of the span's words found in any window of the document of the
+    same length, in text_key form. 1.0 for an exact substring.
+
+    The questions were verified against PyMuPDF text, and two of the three
+    parsers read words through PyMuPDF while Docling uses its own engine. A strict
+    substring test therefore scores Docling down for symbol, spacing and
+    line-number differences in text it did extract. Counting words in a sliding
+    window tolerates those differences while still rejecting a missing passage.
+    """
+    from collections import Counter
+    if span_key in doc_key:
+        return 1.0
+    s, d = span_key.split(), doc_key.split()
+    n = len(s)
+    if not n:
+        return 0.0
+    # a chunk shorter than the span is compared whole: the window cannot slide
+    need, win = Counter(s), Counter(d[:n])
+    hit = sum(min(c, win[w]) for w, c in need.items())
+    best = hit
+    for i in range(n, len(d)):
+        out, inn = d[i - n], d[i]
+        if out in need and win[out] <= need[out]:
+            hit -= 1
+        win[out] -= 1
+        win[inn] += 1
+        if inn in need and win[inn] <= need[inn]:
+            hit += 1
+        best = max(best, hit)
+    return best / n
+
+
+def answer_coverage(R, threshold=1.0):
+    """qids whose answer span is absent from each parser's own output.
+
+    threshold 1.0 is a strict substring match; NEAR_MATCH tolerates text-engine
+    differences (see span_overlap)."""
     import sys
     sys.path.insert(0, str(REPO / "evals" / "scripts"))
     from build_questions import text_key
@@ -327,7 +366,7 @@ def answer_coverage(R):
                 f = PARSED / p / f"{q['paper']}.json"
                 cache[key] = text_key(" ".join(b.get("text", "") for b in
                                                json.loads(f.read_text())["blocks"])) if f.exists() else ""
-            if text_key(q["answer_span"]) not in cache[key]:
+            if span_overlap(text_key(q["answer_span"]), cache[key]) < threshold:
                 miss.add(q["qid"])
         out[p] = miss
     return out
@@ -518,26 +557,31 @@ def fig_shape_vs_retrieval(r, R):
     return "\n".join(s)
 
 
-def fig_coverage(R, cov):
+def fig_coverage(R, exact, near):
     n = len(json.loads(DATASET.read_text())["questions"])
-    W, top, step = 700, 76, 34
-    H = top + len(RAG_PARSERS) * step + 40
-    x0, x1 = 140, 520
-    hi = (max(len(v) for v in cov.values()) * 1.3) or 1
+    W, top, step = 720, 92, 46
+    H = top + len(RAG_PARSERS) * step + 44
+    x0, x1 = 140, 540
+    hi = (max(len(v) for v in exact.values()) * 1.25) or 1
     rescued = sum(1 for p in RAG_PARSERS for c in CHUNKERS if rag_cell(R, p, c)
-                  for x in rag_cell(R, p, c)["_rows"] if x["qid"] in cov[p] and x.get("span_hit@10"))
+                  for x in rag_cell(R, p, c)["_rows"] if x["qid"] in near[p] and x.get("span_hit@10"))
     s = svg_open(W, H, "Answers lost before retrieval")
     s.append(text(0, 20, "Answers the parser lost before retrieval began", 13, INK, weight="600"))
-    s.append(text(0, 38, f"questions whose verbatim answer is missing from the parser's own output, out of {n}", 10))
+    s.append(text(0, 38, f"questions whose answer span is missing from the parser's own output, out of {n}", 10))
+    s.append(f'<rect x="0" y="52" width="12" height="9" rx="2" fill="{INK}" opacity="0.35"/>')
+    s.append(text(18, 60, "exact text match", 10))
+    s.append(f'<rect x="130" y="52" width="12" height="9" rx="2" fill="{INK}"/>')
+    s.append(text(148, 60, f"near match, {int(NEAR_MATCH * 100)}% of span words: really missing", 10))
     y = top
     for p in RAG_PARSERS:
-        k = len(cov[p])
-        w = (x1 - x0) * k / hi
-        s.append(text(x0 - 10, y + 13, SHORT[p], 10.5, INK, "end"))
-        s.append(f'<rect x="{x0}" y="{y}" width="{max(w, 2):.1f}" height="18" rx="3" fill="{PARSER_COLOUR[p]}"/>')
-        s.append(text(x0 + w + 8, y + 13, f"{k} of {n}", 10))
+        s.append(text(x0 - 10, y + 17, SHORT[p], 10.5, INK, "end"))
+        for k, h, dy, op in ((len(exact[p]), 14, 0, 0.35), (len(near[p]), 14, 16, 1.0)):
+            w = (x1 - x0) * k / hi
+            s.append(f'<rect x="{x0}" y="{y + dy}" width="{max(w, 2):.1f}" height="{h}" rx="3" '
+                     f'fill="{PARSER_COLOUR[p]}" opacity="{op}"/>')
+            s.append(text(x0 + w + 8, y + dy + 11, str(k), 10))
         y += step
-    s.append(text(0, H - 10, "none of these answers was retrieved by any chunker: a parse loss is unrecoverable"
+    s.append(text(0, H - 12, "none of the really missing answers was retrieved by any chunker"
                   if rescued == 0 else f"{rescued} retrievals recovered an answer missing from the parse", 9.5))
     s.append("</svg>")
     return "\n".join(s)
@@ -567,7 +611,7 @@ def main():
         put("fig7_budget_curves.svg", fig_budget_curves(R))
         put("fig8_home_advantage.svg", fig_home_advantage(R))
         put("fig9_shape_vs_retrieval.svg", fig_shape_vs_retrieval(r, R))
-        put("fig10_coverage.svg", fig_coverage(R, answer_coverage(R)))
+        put("fig10_coverage.svg", fig_coverage(R, answer_coverage(R), answer_coverage(R, NEAR_MATCH)))
 
     for n in sorted(written):
         print(f"  {n}")

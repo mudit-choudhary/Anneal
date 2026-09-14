@@ -94,7 +94,7 @@ def boot_ci(values, n=2000, seed=1):
 
 # ============================================================ retrieval stats
 def rag_analysis(RR, ds, r):
-    from make_figures import answer_coverage
+    from make_figures import answer_coverage, NEAR_MATCH
 
     cells = {k: v for k, v in RR["cells"].items() if v.get("complete")}
     rows = {k: {x["qid"]: x for x in v["_rows"]} for k, v in cells.items()}
@@ -157,10 +157,15 @@ def rag_analysis(RR, ds, r):
     for k in cells:
         ra["ci"][k] = {f: boot_ci(vals(k, f)) for f in ("span_hit@4000ch", "correctness", "faithfulness")}
 
-    cov = answer_coverage(RR)
-    ra["coverage"] = {p: (len(cov[p]), sum(1 for c in CHUNKERS if f"{p}|{c}" in rows
-                                           for q in cov[p] if rows[f"{p}|{c}"].get(q, {}).get("span_hit@10")))
+    # [0] near-match losses, the ones reported; [1] of those, retrieved anyway; [2] exact-match losses
+    exact, near = answer_coverage(RR), answer_coverage(RR, NEAR_MATCH)
+    ra["near_match"] = NEAR_MATCH
+    ra["coverage"] = {p: (len(near[p]), sum(1 for c in CHUNKERS if f"{p}|{c}" in rows
+                                            for q in near[p] if rows[f"{p}|{c}"].get(q, {}).get("span_hit@10")),
+                          len(exact[p]))
                       for p in RAG_PARSERS}
+    ra["cov_sweep"] = {t: {p: len(v) for p, v in answer_coverage(RR, t).items()}
+                       for t in (1.0, 0.95, NEAR_MATCH, 0.8)}
 
     keys = [k for k in cells if r["cells"].get(k, {}).get("mid_start_pct") is not None]
     ns = [k for k in keys if "semantic" not in k]
@@ -242,7 +247,8 @@ def build():
           f"Scored only on neutral questions, {neutral_sig} of {len(ra['parser'])} pairwise "
           f"parser comparisons reach significance. What separates the parsers is what reaches "
           f"the index at all, plus speed: "
-          + ", ".join(f"`{p}` loses {ra['coverage'][p][0]} answers in parsing" for p in RAG_PARSERS)
+          + ", ".join(f"`{p}` loses {ra['coverage'][p][0]}" for p in RAG_PARSERS)
+          + " of the answers in parsing, allowing for text-engine differences"
           + (f", and `current` parses {spd:.2f}x faster than Docling." if spd else "."))
         A("")
     elif cur and doc:
@@ -674,23 +680,51 @@ def build():
         A("")
 
         # ---- finding 5
-        A("### Finding 5: answers lost in parsing are never recovered")
+        A("### Finding 5: parse losses are real, but smaller than an exact match suggests")
         A("")
-        A("| Parser | Answers missing from its own output | Retrieved anyway, any chunker |")
-        A("|---|---|---|")
+        A("An answer span missing from a parser's output caps every chunker behind it. Counting "
+          "those losses needs care, because the spans were verified against PyMuPDF text and "
+          "**two of the three parsers read their words through PyMuPDF**: `current` fills YOLO "
+          "boxes with `page.get_text(\"words\")`, and PyMuPDF4LLM is built on it. Docling uses "
+          "its own text engine. An exact match therefore counts Docling's differences in maths "
+          "symbols, spacing and stray line numbers as lost text, even where it extracted the "
+          "passage. A near match, a span-length window holding at least "
+          f"{int(ra['near_match'] * 100)}% of the span's words, tolerates those differences and "
+          "still rejects a passage that is really missing.")
+        A("")
+        ths = list(ra["cov_sweep"])
+        A("| Parser | Text engine | " + " | ".join("exact" if t == 1.0 else f">= {int(t * 100)}% of words"
+                                               for t in ths) + " | Really missing, retrieved anyway |")
+        A("|" + "---|" * (len(ths) + 3))
         for p in RAG_PARSERS:
-            miss, got = ra["coverage"][p]
-            A(f"| `{p}` | {miss} of {len(ds['questions'])} | {got} |")
+            eng = "Docling" if p == "oss_docling" else "PyMuPDF"
+            A(f"| `{p}` | {eng} | " + " | ".join(
+                (f"**{ra['cov_sweep'][t][p]}**" if t == ra["near_match"] else str(ra["cov_sweep"][t][p]))
+                for t in ths) + f" | {ra['coverage'][p][1]} |")
         A("")
         A("![answers lost before retrieval](assets/fig10_coverage.svg)")
         A("")
-        worst = max(RAG_PARSERS, key=lambda p: ra["coverage"][p][0])
-        bestc = min(RAG_PARSERS, key=lambda p: ra["coverage"][p][0])
-        A(f"A parser that drops or mangles the passage holding an answer caps every chunker "
-          f"behind it: no retrieval or generation step can put the text back. `{worst}` loses "
-          f"{ra['coverage'][worst][0]} answers before retrieval begins, `{bestc}` "
-          f"{ra['coverage'][bestc][0]}. This is the clearest parser difference the run produced, "
-          "and it is a text-fidelity difference, not a ranking one.")
+        d_ex, d_nr = ra["coverage"]["oss_docling"][2], ra["coverage"]["oss_docling"][0]
+        cur_low = all(ra["cov_sweep"][t]["current"] <= min(ra["cov_sweep"][t][p] for p in RAG_PARSERS)
+                      for t in ths)
+        A(f"Half the gap was the engine. Docling's exact-match losses fall from {d_ex} to {d_nr} at "
+          f"the {int(ra['near_match'] * 100)}% threshold. "
+          + ("`current` loses the fewest answers at every threshold, so the ordering survives the "
+             "correction, but the margin is a handful of questions out of "
+             f"{len(ds['questions'])}, not a decisive difference. " if cur_low else
+             "The ordering between parsers changes with the threshold, so no parser can be said "
+             "to lose fewer answers. ")
+          + "No really-missing answer was retrieved by any chunker in any cell: a parse loss is "
+          "unrecoverable downstream."
+          if all(ra["coverage"][p][1] == 0 for p in RAG_PARSERS) else
+          f"Docling's exact-match losses fall from {d_ex} to {d_nr} at the near-match threshold.")
+        A("")
+        A("**The same effect reaches the retrieval metrics.** Every span-hit figure in this report, "
+          "including MRR and nDCG, uses the exact match, so Docling's retrieval scores carry the "
+          "same penalty and are probably understated in every cell. The run did not save the text "
+          "of retrieved chunks, so they cannot be re-scored without re-running retrieval; that "
+          "needs no answer generation or judging, only re-indexing. This strengthens rather than "
+          "weakens Finding 4: Docling was level with the others despite the handicap.")
         A("")
 
         # ---- finding 6
@@ -750,6 +784,10 @@ def build():
         A(f"- **Corpus.** {m['totals']['papers']} papers rather than the planned 201, after arXiv "
           "rate-limited the build. A larger corpus would make paper-level retrieval harder and "
           "stop those metrics saturating.")
+        A("- **Text-engine bias.** Answer spans were verified against PyMuPDF, the engine behind "
+          "`current` and PyMuPDF4LLM, and span hits use an exact match. Docling is scored down "
+          "for character-level differences (Finding 5). The next run should verify against a "
+          "third engine and score with a near match.")
         A("- **Two runs, two corpora.** Shape metrics come from the smaller corpus, so Finding 6 "
           "correlates measurements taken on different papers.")
         A("")
@@ -774,7 +812,7 @@ def build():
         A("")
         A(f"- **Retrieval does not separate the parsers** once question bias is removed (Finding 4).")
         A(f"- **It loses the fewest answers before retrieval:** "
-          + ", ".join(f"`{p}` {ra['coverage'][p][0]}" for p in RAG_PARSERS) + " (Finding 5).")
+          + ", ".join(f"`{p}` {ra['coverage'][p][0]}" for p in RAG_PARSERS) + f", allowing for text-engine differences (Finding 5). The margin is small.")
         if spd:
             A(f"- **It is {spd:.2f}x faster than Docling and lighter on VRAM**, and it recovers "
               "`title` and `authors`, which Docling does not deliver.")

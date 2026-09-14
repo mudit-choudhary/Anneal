@@ -33,8 +33,17 @@ env_setup.sh
 /UI/frontend/node_modules
 /UI/static
 
-# eval scratch
+# Eval scratch: large or regenerable. Kept in git: scripts, manifests, question
+# sets, parser timing stats, pre-registration, results and per-question rows.
 .worktrees/
 evals/corpus/*.pdf
+evals/text/
 evals/parsed/*/*.json
 !evals/parsed/*/_stats.json
+!evals/parsed/*/_stats_round1.json
+evals/vector_db_eval/
+evals/**/*.log
+evals/**/*.tmp
+
+# API credentials
+evals/keys_export.sh

@@ -36,6 +36,7 @@ def main():
 
     # the parser implementations and the VRAM probe already exist in the matrix
     from run_matrix import PARSERS as IMPL, VramProbe
+    from build_questions import write_json
 
     manifest = json.loads((CORPUS / "manifest.json").read_text())
     pdfs = [CORPUS / f"{p['arxiv_id']}.pdf" for p in manifest["papers"]]
@@ -64,24 +65,22 @@ def main():
             except Exception as e:                               # noqa: BLE001
                 print(f"  [{i}/{len(todo)}] FAILED {pdf.stem}: {str(e)[:90]}", flush=True)
                 stats["failures"].append({"paper": pdf.stem, "error": str(e)[:200]})
-                stats_path.write_text(json.dumps(stats, indent=1))
+                write_json(stats_path, stats, indent=1)
                 continue
             dt = time.time() - t0
-            (out / f"{pdf.stem}.json").write_text(
-                json.dumps({"stem": pdf.stem, "pages": pages, "blocks": blocks}),
-                encoding="utf-8")
+            write_json(out / f"{pdf.stem}.json", {"stem": pdf.stem, "pages": pages, "blocks": blocks})
             stats["pages"] += pages or 0
             stats["seconds"] += dt
             stats["documents"] += 1
             stats["bytes"] += sum(len(b.get("text", "").encode()) for b in blocks)
             stats["vram_rise_mb"] = max(stats["vram_rise_mb"], rise)
             if i % 10 == 0 or i == len(todo):
-                stats_path.write_text(json.dumps(stats, indent=1))
+                write_json(stats_path, stats, indent=1)
                 print(f"  [{i}/{len(todo)}] {pdf.stem} {pages}p {dt:.1f}s "
                       f"(total {stats['seconds']/60:.0f} min)", flush=True)
 
         stats["sec_per_page"] = (stats["seconds"] / stats["pages"]) if stats["pages"] else None
-        stats_path.write_text(json.dumps(stats, indent=1))
+        write_json(stats_path, stats, indent=1)
         print(f"  {name}: {stats['documents']} docs, {stats['pages']} pages, "
               f"{stats['seconds']/60:.1f} min, {stats['vram_rise_mb']:.0f} MB peak rise")
 

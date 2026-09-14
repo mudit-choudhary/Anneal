@@ -1,34 +1,41 @@
-"""End-to-end retrieval evaluation: 3 parsers x 4 chunkers, 12 cells.
+"""End-to-end retrieval evaluation, round 2: 3 parsers x 3 chunkers, 9 cells.
 
-    python evals/scripts/run_rag_eval.py                # all 12, checkpointed
+    python evals/scripts/run_rag_eval.py                # all 9, checkpointed
     python evals/scripts/run_rag_eval.py --cells current:grain_growth
     python evals/scripts/run_rag_eval.py --no-generate  # retrieval metrics only
 
 For each cell: chunk the cached parse, embed into an isolated vector store,
 run every question through the product's own retrieval and generation path,
-score, then drop the collection and move on.
+score retrieval, save everything, then drop the collection and move on.
 
 **The production vector store is never touched.** Everything happens in
 evals/vector_db_eval, set through VECTOR_DB_PATH before embedding_manager is
-imported. "Clear the vector DB between combinations" means dropping that
-collection, not the live one.
+imported.
 
-Metrics, and why these
-----------------------
-Retrieval metrics are the TREC / MS MARCO / BEIR set — hit rate, recall,
-precision, MRR, nDCG — because those are what the IR literature is built on.
-nDCG is reported with graded relevance and is the one to weight most heavily:
-it accounts for rank position and correlates best with end-to-end RAG quality.
+What changed from round 1
+-------------------------
+- Semantic chunking is gone: round 1 settled it (last on every parser at an
+  equal character budget, 2.2x slower).
+- No LLM judge in the loop. Qwen's answers and the ten retrieved chunks are
+  saved per question, and answers are scored offline against the reference
+  answer, short answer and atomic facts (string metrics and NLI).
+- Every span metric is computed twice: exact match, and near match (NEAR_MATCH
+  of the span's words in a span-length window). An exact match penalises
+  parsers whose text engine differs from the one the spans were verified with.
+- Rows checkpoint every 10 questions, so a crash costs minutes, not a cell.
 
-Every rank-based metric is reported twice: at fixed k, which is conventional
-but favours whichever cell has the largest chunks, and at a fixed character
-budget, which is comparable across cells. The budget figures are the ones to
-trust when comparing chunkers.
+Metrics
+-------
+Retrieval metrics are the TREC / MS MARCO / BEIR set: hit rate, precision, MRR,
+nDCG. Every rank-based metric is also reported at a fixed character budget,
+because a fixed k favours whichever cell has the largest chunks.
 
-Generation metrics follow RAGAS: faithfulness (is the answer grounded in the
-retrieved context), answer correctness against a written ideal answer, and
-context sufficiency. Deterministic proxies (keyword coverage, embedding
-similarity) are recorded alongside because LLM judges are noisy.
+Outputs
+-------
+    evals/Reports/rag_results_round2.json          per-cell aggregates
+    evals/Reports/rag_round2_rows/<parser>__<chunker>.json
+                                                    per-question rows: metrics,
+                                                    retrieved chunks, answer
 """
 
 import argparse
@@ -53,15 +60,17 @@ sys.path.insert(0, str(REPO / "evals" / "scripts"))
 PARSED = REPO / "evals" / "parsed"
 QDIR = REPO / "evals" / "questions"
 REPORTS = REPO / "evals" / "Reports"
-RESULTS = REPORTS / "rag_results.json"
+RESULTS = REPORTS / "rag_results_round2.json"
+ROWS = REPORTS / "rag_round2_rows"
 
 PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
-CHUNKERS = ["fixed_token", "recursive_char", "semantic", "grain_growth"]
+CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
 KS = (1, 3, 5, 10)
 BUDGETS = (2000, 4000, 8000)
 TOP_K = 10                       # retrieved per query; metrics slice into it
 CONTEXT_K = 6                    # what the product hands the model
 EMBED_MODEL = "BAAI/bge-base-en-v1.5"
+CHECKPOINT_EVERY = 10
 
 
 def norm(s):
@@ -69,9 +78,9 @@ def norm(s):
 
 
 # The same comparison the question set was verified with: ligatures folded,
-# wrap hyphens removed, punctuation dropped. Scoring with anything stricter
-# would count a chunk that plainly contains the span as a miss.
-from build_questions import text_key                              # noqa: E402
+# wrap hyphens removed, punctuation dropped.
+from build_questions import text_key, write_json                  # noqa: E402
+from make_figures import NEAR_MATCH, span_overlap                 # noqa: E402
 
 
 # ============================================================ index
@@ -109,10 +118,11 @@ def build_index(parser, chunker, stems, device):
     col = client.get_or_create_collection(name=name, embedding_function=fn,
                                           metadata={"hnsw:space": "cosine"})
 
-    total = 0
+    total, missing = 0, 0
     for i, stem in enumerate(stems, 1):
         path = PARSED / parser / f"{stem}.json"
         if not path.exists():
+            missing += 1
             continue
         blocks = json.loads(path.read_text(encoding="utf-8"))["blocks"]
         text = "\n\n".join(
@@ -130,8 +140,10 @@ def build_index(parser, chunker, stems, device):
                 metadatas=[{"filename": stem, "chunk_id": j} for j in range(len(chunks))],
                 ids=[f"{stem}__{j}" for j in range(len(chunks))])
         total += len(chunks)
-        if i % 40 == 0:
+        if i % 50 == 0:
             print(f"    indexed {i}/{len(stems)} papers, {total} chunks", flush=True)
+    if missing:
+        print(f"    WARNING: {missing} papers have no cached {parser} parse", flush=True)
     return col, total
 
 
@@ -154,44 +166,43 @@ def ndcg(gains, ideal):
 
 def score_question(q, hits):
     """hits: ordered list of (filename, chunk_text). Graded relevance:
-    2 = chunk carries the verbatim answer span, 1 = right paper, 0 = neither."""
+    2 = chunk carries the answer span, 1 = right paper, 0 = neither.
+
+    Span metrics come in two forms: exact (substring in text_key form) and
+    `_near` (NEAR_MATCH of the span's words in one window)."""
     span = text_key(q["answer_span"])
     kws = [norm(k) for k in q.get("keywords", []) if k.strip()]
     paper = q["paper"]
-
-    grades, span_ranks, paper_ranks, sizes = [], [], [], []
-    for i, (fn_, text) in enumerate(hits):
-        t = text_key(text)
-        has_span = span in t
-        right = fn_ == paper
-        grades.append(2 if has_span else (1 if right else 0))
-        if has_span:
-            span_ranks.append(i + 1)
-        if right:
-            paper_ranks.append(i + 1)
-        sizes.append(len(text))
+    keyed = [(fn_, text, text_key(text)) for fn_, text in hits]
 
     out = {}
+    paper_ranks = [i + 1 for i, (fn_, _, _) in enumerate(keyed) if fn_ == paper]
     for k in KS:
-        out[f"span_hit@{k}"] = 1.0 if any(r <= k for r in span_ranks) else 0.0
         out[f"paper_hit@{k}"] = 1.0 if any(r <= k for r in paper_ranks) else 0.0
-        out[f"precision@{k}"] = sum(1 for g in grades[:k] if g > 0) / k
-    out["mrr"] = 1.0 / span_ranks[0] if span_ranks else 0.0
     out["mrr_paper"] = 1.0 / paper_ranks[0] if paper_ranks else 0.0
-    # one span per question, so the ideal ranking is that chunk first
-    out["ndcg@10"] = ndcg(grades[:10], [2] + [1] * 9)
 
-    # budget-fair: fill a character budget in rank order, then ask the same thing
-    for b in BUDGETS:
-        used, found = 0, False
-        for (fn_, text) in hits:
-            if used >= b:
-                break
-            used += len(text)
-            if span in text_key(text):
-                found = True
-                break
-        out[f"span_hit@{b}ch"] = 1.0 if found else 0.0
+    for suffix, has in (("", lambda t: span in t),
+                        ("_near", lambda t: span_overlap(span, t) >= NEAR_MATCH)):
+        found = [has(t) for _, _, t in keyed]
+        grades = [2 if f else (1 if fn_ == paper else 0) for f, (fn_, _, _) in zip(found, keyed)]
+        span_ranks = [i + 1 for i, f in enumerate(found) if f]
+        for k in KS:
+            out[f"span_hit{suffix}@{k}"] = 1.0 if any(r <= k for r in span_ranks) else 0.0
+            out[f"precision{suffix}@{k}"] = sum(1 for g in grades[:k] if g > 0) / k
+        out[f"mrr{suffix}"] = 1.0 / span_ranks[0] if span_ranks else 0.0
+        # one span per question, so the ideal ranking is that chunk first
+        out[f"ndcg{suffix}@10"] = ndcg(grades[:10], [2] + [1] * 9)
+        # budget-fair: fill a character budget in rank order, then ask the same thing
+        for b in BUDGETS:
+            used, hit = 0, False
+            for f, (_, text, _) in zip(found, keyed):
+                if used >= b:
+                    break
+                used += len(text)
+                if f:
+                    hit = True
+                    break
+            out[f"span_hit{suffix}@{b}ch"] = 1.0 if hit else 0.0
 
     ctx = norm(" ".join(t for _, t in hits[:CONTEXT_K]))
     out["keyword_recall"] = (sum(1 for k in kws if k in ctx) / len(kws)) if kws else None
@@ -199,65 +210,14 @@ def score_question(q, hits):
     return out
 
 
-JUDGE = """You are grading a retrieval-augmented answer. Be strict.
-
-QUESTION: {q}
-
-REFERENCE ANSWER (correct by construction): {ideal}
-
-RETRIEVED CONTEXT GIVEN TO THE MODEL:
-{ctx}
-
-THE MODEL'S ANSWER: {ans}
-
-Score three things, each 0 to 2:
-- "faithfulness": 2 if every claim in the model's answer is supported by the
-  context, 1 if mostly, 0 if it asserts things the context does not contain.
-- "correctness": 2 if the model's answer matches the reference, 1 if partly,
-  0 if wrong or evasive.
-- "context_sufficiency": 2 if the context alone contains what is needed to
-  answer, 1 if partly, 0 if not.
-
-Reply with JSON only: {{"faithfulness": n, "correctness": n, "context_sufficiency": n}}
-"""
-
-
-def judge(q, context, answer, cfg):
-    import requests
-    local = cfg["llm"]["local"]
-    prompt = JUDGE.format(q=q["question"], ideal=q["ideal_answer"],
-                          ctx=context[:6000], ans=answer[:2000])
-    try:
-        r = requests.post(f"{local['url'].rstrip('/')}/api/chat", json={
-            "model": local["model"],
-            "messages": [{"role": "user", "content": prompt}],
-            "stream": False, "think": False,
-            "options": {"num_ctx": int(local.get("num_ctx", 6144)), "temperature": 0.0},
-        }, timeout=300)
-        r.raise_for_status()
-        m = re.search(r"\{.*\}", r.json()["message"]["content"], re.S)
-        if not m:
-            return {}
-        d = json.loads(m.group(0))
-        return {k: float(d[k]) / 2.0 for k in
-                ("faithfulness", "correctness", "context_sufficiency") if k in d}
-    except Exception:                                            # noqa: BLE001
-        return {}
-
-
 # ============================================================ run
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--cells", nargs="*", help="parser:chunker, default all 12")
+    ap.add_argument("--cells", nargs="*", help="parser:chunker, default all 9")
     ap.add_argument("--device", default="cuda")
     ap.add_argument("--no-generate", action="store_true")
     ap.add_argument("--limit-questions", type=int)
     args = ap.parse_args()
-
-    # The semantic chunker stays on CPU. Putting it on the card alongside the
-    # indexing embedder exhausted 4 GB and failed a third of the corpus with
-    # CUDA OOM; the time it saves is not worth the fragility.
-    os.environ.setdefault("SEMANTIC_DEVICE", "cpu")
 
     import rag
     from common.settings import load
@@ -265,12 +225,10 @@ def main():
 
     cfg = load()
     REPORTS.mkdir(parents=True, exist_ok=True)
+    ROWS.mkdir(parents=True, exist_ok=True)
     data = json.loads((QDIR / "dataset.json").read_text())
     questions = data["questions"][:args.limit_questions] if args.limit_questions \
         else data["questions"]
-    stems = sorted({q["paper"] for q in
-                    json.loads((QDIR / "candidates.json").read_text())["questions"]}
-                   | {q["paper"] for q in questions})
     # index the whole corpus, not just the papers questions came from
     corpus = json.loads((REPO / "evals" / "corpus" / "manifest.json").read_text())
     stems = sorted({p["arxiv_id"] for p in corpus["papers"]})
@@ -281,7 +239,7 @@ def main():
     results = json.loads(RESULTS.read_text()) if RESULTS.exists() else {
         "config": {"top_k": TOP_K, "context_k": CONTEXT_K, "ks": list(KS),
                    "budgets": list(BUDGETS), "embed_model": EMBED_MODEL,
-                   "llm": cfg["llm"]["local"]["model"],
+                   "near_match": NEAR_MATCH, "llm": cfg["llm"]["local"]["model"],
                    "questions": len(questions), "corpus_papers": len(stems)},
         "cells": {}}
 
@@ -291,33 +249,41 @@ def main():
 
     for parser, chunker in cells:
         key = f"{parser}|{chunker}"
-        if key in results["cells"] and results["cells"][key].get("complete"):
+        if results["cells"].get(key, {}).get("complete"):
             print(f"== {key}: already done, skipping")
             continue
-        print(f"\n== {key}", flush=True)
+        rows_path = ROWS / f"{parser}__{chunker}.json"
+        rows = json.loads(rows_path.read_text()) if rows_path.exists() else []
+        done = {r["qid"] for r in rows if "error" not in r and (args.no_generate or "answer" in r)}
+        rows = [r for r in rows if r["qid"] in done]
+        print(f"\n== {key}" + (f" (resuming: {len(done)} questions already done)" if done else ""),
+              flush=True)
+
         t0 = time.time()
         unload_llm(cfg)
         try:
             col, n_chunks = build_index(parser, chunker, stems, args.device)
         except Exception as e:                                   # noqa: BLE001
             results["cells"][key] = {"error": f"index: {str(e)[:200]}", "complete": False}
-            RESULTS.write_text(json.dumps(results, indent=1))
+            write_json(RESULTS, results, indent=1)
             print(f"   INDEX FAILED: {str(e)[:120]}")
             continue
-        print(f"   {n_chunks} chunks indexed in {time.time()-t0:.0f}s", flush=True)
+        index_seconds = time.time() - t0
+        print(f"   {n_chunks} chunks indexed in {index_seconds:.0f}s", flush=True)
 
         # Re-open with a CPU embedder for querying. One query embeds in
         # milliseconds on CPU, and it leaves all 4 GB for the answering model.
-        if not args.no_generate:
-            import chromadb as _ch
-            from embeddings import BGEEmbeddingFunction as _BGE
-            col = _ch.PersistentClient(path=str(EVAL_DB)).get_collection(
-                f"eval_{parser}_{chunker}",
-                embedding_function=_BGE(model_name=EMBED_MODEL, device="cpu",
-                                        normalize_embeddings=True))
+        import chromadb as _ch
+        from embeddings import BGEEmbeddingFunction as _BGE
+        col = _ch.PersistentClient(path=str(EVAL_DB)).get_collection(
+            f"eval_{parser}_{chunker}",
+            embedding_function=_BGE(model_name=EMBED_MODEL, device="cpu",
+                                    normalize_embeddings=True))
 
-        rows = []
+        t_q = time.time()
         for qi, q in enumerate(questions):
+            if q["qid"] in done:
+                continue
             try:
                 res = col.query(query_texts=[q["question"]], n_results=TOP_K,
                                 include=["documents", "metadatas"])
@@ -326,8 +292,8 @@ def main():
             except Exception as e:                               # noqa: BLE001
                 rows.append({"qid": q["qid"], "error": str(e)[:150]})
                 continue
-            row = {"qid": q["qid"], "paper": q["paper"],
-                   "generated_from": q["generated_from"], **score_question(q, hits)}
+            row = {"qid": q["qid"], "paper": q["paper"], "source": q.get("source"),
+                   **score_question(q, hits), "hits": [[f, t] for f, t in hits]}
 
             if not args.no_generate:
                 results_fmt = [{"text": t, "metadata": {"filename": f}}
@@ -346,40 +312,39 @@ def main():
                     kws = [norm(k) for k in q.get("keywords", [])]
                     row["answer_keyword_recall"] = (
                         sum(1 for k in kws if k in norm(ans)) / len(kws)) if kws else None
-                    row.update(judge(q, context, ans, cfg))
             rows.append(row)
-            if (qi + 1) % 20 == 0:
-                print(f"   {qi+1}/{len(questions)} questions "
-                      f"({(time.time()-t0)/60:.0f} min)", flush=True)
+            new = len(rows) - len(done)
+            if new % CHECKPOINT_EVERY == 0:
+                write_json(rows_path, rows)
+            if new % 25 == 0:
+                rate = (time.time() - t_q) / new
+                left = (len(questions) - len(rows)) * rate / 60
+                print(f"   {len(rows)}/{len(questions)} questions "
+                      f"({rate:.0f}s each, ~{left:.0f} min left in cell)", flush=True)
+        write_json(rows_path, rows)
 
         # aggregate
-        def mean(field):
-            vals = [r[field] for r in rows if isinstance(r.get(field), (int, float))]
+        def mean(field, sub=None):
+            vals = [r[field] for r in (sub or rows) if isinstance(r.get(field), (int, float))]
             return sum(vals) / len(vals) if vals else None
 
-        fields = ([f"span_hit@{k}" for k in KS] + [f"paper_hit@{k}" for k in KS]
-                  + [f"precision@{k}" for k in KS] + [f"span_hit@{b}ch" for b in BUDGETS]
-                  + ["mrr", "mrr_paper", "ndcg@10", "keyword_recall", "context_chars",
-                     "answer_similarity", "answer_keyword_recall",
-                     "faithfulness", "correctness", "context_sufficiency"])
+        fields = [f for f in rows[0] if isinstance(rows[0].get(f), (int, float))] if rows else []
         agg = {f: mean(f) for f in fields}
-        agg.update({"chunks": n_chunks, "seconds": round(time.time() - t0, 1),
-                    "questions": len(rows), "complete": True})
-        # bias check: does an arm do better on questions written from its own text?
+        agg.update({"chunks": n_chunks, "index_seconds": round(index_seconds, 1),
+                    "seconds": round(time.time() - t0, 1), "questions": len(rows),
+                    "errors": sum(1 for r in rows if "error" in r or "gen_error" in r),
+                    "complete": True})
+        # do never-trained YOLO-folder papers behave differently from fresh arXiv ones?
         agg["by_source"] = {}
-        for src in PARSERS:
-            sub = [r for r in rows if r.get("generated_from") == src]
-            if sub:
-                agg["by_source"][src] = {
-                    "n": len(sub),
-                    "span_hit@5": sum(r.get("span_hit@5", 0) for r in sub) / len(sub),
-                    "ndcg@10": sum(r.get("ndcg@10", 0) for r in sub) / len(sub)}
+        for src in sorted({r.get("source") for r in rows if r.get("source")}):
+            sub = [r for r in rows if r.get("source") == src]
+            agg["by_source"][src] = {"n": len(sub), "span_hit_near@5": mean("span_hit_near@5", sub),
+                                     "span_hit_near@4000ch": mean("span_hit_near@4000ch", sub)}
         results["cells"][key] = agg
-        results["cells"][key]["_rows"] = rows
-        RESULTS.write_text(json.dumps(results, indent=1))
+        write_json(RESULTS, results, indent=1)
         drop_index(parser, chunker)
-        print(f"   span_hit@5={agg['span_hit@5']:.3f} ndcg@10={agg['ndcg@10']:.3f} "
-              f"correctness={agg.get('correctness')} ({agg['seconds']/60:.0f} min)",
+        print(f"   span_hit@5={agg.get('span_hit@5', 0):.3f} near={agg.get('span_hit_near@5', 0):.3f} "
+              f"@4000ch near={agg.get('span_hit_near@4000ch', 0):.3f} ({agg['seconds']/60:.0f} min)",
               flush=True)
 
     if EVAL_DB.exists():
@@ -388,4 +353,12 @@ def main():
 
 
 if __name__ == "__main__":
+    q = {"answer_span": "the model reaches 43 percent lower latency on CPU", "keywords": ["latency"],
+         "paper": "p1"}
+    s = score_question(q, [("p2", "unrelated text"), ("p1", "The model reaches 43 percent lower latency on CPU.")])
+    assert s["span_hit@1"] == 0.0 and s["span_hit@3"] == 1.0 and s["mrr"] == 0.5
+    # one word of twelve differs ("percent" vs "%"): 11/12 is above NEAR_MATCH, not exact
+    q = {**q, "answer_span": "on the benchmark the model reaches 43 percent lower latency on CPU"}
+    s = score_question(q, [("p1", "On the benchmark, the model reaches 43 % lower latency on CPU.")])
+    assert s["span_hit@1"] == 0.0 and s["span_hit_near@1"] == 1.0 and s["mrr_near"] == 1.0
     main()
