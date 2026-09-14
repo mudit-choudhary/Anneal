@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 218" width="700" height="218" font-family="ui-monospace,Menlo,monospace">
+<title>Answers lost before retrieval</title>
+<text x="0.0" y="20.0" font-size="13" fill="#8b949e" text-anchor="start" font-weight="600">Answers the parser lost before retrieval began</text>
+<text x="0.0" y="38.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">questions whose verbatim answer is missing from the parser's own output, out of 100</text>
+<text x="130.0" y="89.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">docling</text>
+<rect x="140" y="76" width="292.3" height="18" rx="3" fill="#a87bd6"/>
+<text x="440.3" y="89.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">10 of 100</text>
+<text x="130.0" y="123.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">pymupdf4llm</text>
+<rect x="140" y="110" width="175.4" height="18" rx="3" fill="#eda100"/>
+<text x="323.4" y="123.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">6 of 100</text>
+<text x="130.0" y="157.0" font-size="10.5" fill="#8b949e" text-anchor="end" font-weight="normal">current</text>
+<rect x="140" y="144" width="58.5" height="18" rx="3" fill="#2a78d6"/>
+<text x="206.5" y="157.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">2 of 100</text>
+<text x="0.0" y="208.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">none of these answers was retrieved by any chunker: a parse loss is unrecoverable</text>
+</svg>

@@ -36,3 +36,5 @@ env_setup.sh
 # eval scratch
 .worktrees/
 evals/corpus/*.pdf
+evals/parsed/*/*.json
+!evals/parsed/*/_stats.json

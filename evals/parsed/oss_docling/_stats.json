@@ -1,0 +1,10 @@
+{
+ "parser": "oss_docling",
+ "pages": 2291,
+ "bytes": 8249328,
+ "seconds": 858.5073084831238,
+ "vram_rise_mb": 1386.0,
+ "documents": 103,
+ "failures": [],
+ "sec_per_page": 0.3747303834496394
+}

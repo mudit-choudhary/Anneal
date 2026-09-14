@@ -2,8 +2,9 @@
 
     python evals/scripts/make_figures.py
 
-Reads evals/Reports/results.json and nothing else. Every value is taken from
-that file; no number is written into this script. Emits SVG to
+Reads results.json (chunk-shape run) and, when present, rag_results.json,
+questions/dataset.json and the parse cache (retrieval run). Every value comes
+from those files; no number is written into this script. Emits SVG to
 evals/Reports/assets/.
 
 Colours are fixed hexes rather than CSS variables because a markdown viewer
@@ -295,21 +296,278 @@ def fig_size_ranges(r):
     return "\n".join(s)
 
 
+# ============================================================ retrieval run
+RAG = REPO / "evals" / "Reports" / "rag_results.json"
+DATASET = REPO / "evals" / "questions" / "dataset.json"
+PARSED = REPO / "evals" / "parsed"
+RAG_PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+# grain_growth takes the blue that marks "ours" elsewhere; the baseline is grey
+CHUNKER_COLOUR = {"fixed_token": "#9aa3ab", "recursive_char": "#1baf7a",
+                  "semantic": "#e87ba4", "grain_growth": "#2a78d6"}
+SHORT = {"oss_docling": "docling", "oss_pymupdf4llm": "pymupdf4llm", "current": "current"}
+
+
+def rag_cell(R, p, c):
+    v = R["cells"].get(f"{p}|{c}")
+    return v if v and v.get("complete") else None
+
+
+def answer_coverage(R):
+    """qids whose verbatim answer is absent from each parser's own output."""
+    import sys
+    sys.path.insert(0, str(REPO / "evals" / "scripts"))
+    from build_questions import text_key
+    qs = json.loads(DATASET.read_text())["questions"]
+    cache, out = {}, {}
+    for p in RAG_PARSERS:
+        miss = set()
+        for q in qs:
+            key = (p, q["paper"])
+            if key not in cache:
+                f = PARSED / p / f"{q['paper']}.json"
+                cache[key] = text_key(" ".join(b.get("text", "") for b in
+                                               json.loads(f.read_text())["blocks"])) if f.exists() else ""
+            if text_key(q["answer_span"]) not in cache[key]:
+                miss.add(q["qid"])
+        out[p] = miss
+    return out
+
+
+def fig_rag_heatmap(R, field, title):
+    cw, ch, left, top = 132, 46, 130, 92
+    W, H = left + cw * len(CHUNKERS) + 20, top + ch * len(RAG_PARSERS) + 30
+    vals = [rag_cell(R, p, c)[field] for p in RAG_PARSERS for c in CHUNKERS
+            if rag_cell(R, p, c) and rag_cell(R, p, c).get(field) is not None]
+    if not vals:
+        return None
+    lo, hi = min(vals), max(vals)
+    s = svg_open(W, H, title)
+    s.append(text(0, 20, title, 13, INK, weight="600"))
+    s.append(text(0, 38, "darker is better; outlined cell is the best chunker for that parser", 10))
+    for j, c in enumerate(CHUNKERS):
+        s.append(text(left + j * cw + cw / 2, top - 12, c, 10, INK, "middle"))
+    for i, p in enumerate(RAG_PARSERS):
+        y = top + i * ch
+        s.append(text(left - 10, y + ch / 2 + 4, SHORT[p], 10.5, INK, "end"))
+        row = {c: rag_cell(R, p, c) for c in CHUNKERS}
+        best = max((c for c in CHUNKERS if row[c] and row[c].get(field) is not None),
+                   key=lambda c: row[c][field], default=None)
+        for j, c in enumerate(CHUNKERS):
+            x = left + j * cw
+            d = row[c]
+            if not d or d.get(field) is None:
+                s.append(text(x + cw / 2, y + ch / 2 + 4, "NOT RUN", 9, BAD, "middle"))
+                continue
+            v = d[field]
+            s.append(f'<rect x="{x}" y="{y}" width="{cw-4}" height="{ch-4}" rx="3" '
+                     f'fill="{ramp_for(v, lo, hi)}"/>')
+            if c == best:
+                s.append(f'<rect x="{x+1.5}" y="{y+1.5}" width="{cw-7}" height="{ch-7}" rx="3" '
+                         f'fill="none" stroke="#eda100" stroke-width="3"/>')
+            dark = v > lo + 0.55 * (hi - lo)
+            s.append(text(x + cw / 2 - 2, y + ch / 2 + 2, f"{v:.3f}", 12,
+                          "#ffffff" if dark else "#1d3050", "middle", "600"))
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+def fig_dumbbell(rows, title, sub, a_name, b_name):
+    """rows: (label, a, b, colour); a is the filled dot, b the ring."""
+    x0, x1, col = 250, 640, 668
+    top, step = 88, 24
+    W, H = 830, top + len(rows) * step + 24
+    s = svg_open(W, H, title)
+    s.append(text(0, 20, title, 13, INK, weight="600"))
+    s.append(text(0, 38, sub, 10))
+    s.append(f'<circle cx="6" cy="55" r="5" fill="{INK}"/>')
+    s.append(text(16, 59, a_name, 10))
+    bx = 16 + len(a_name) * 6.2 + 26
+    s.append(f'<circle cx="{bx:.0f}" cy="55" r="4.5" fill="none" stroke="{INK}" stroke-width="2"/>')
+    s.append(text(bx + 10, 59, b_name, 10))
+    for t in (0, .25, .5, .75, 1):
+        gx = x0 + (x1 - x0) * t
+        s.append(f'<line x1="{gx:.0f}" y1="{top-8}" x2="{gx:.0f}" y2="{H-16}" '
+                 f'stroke="{GRID}" stroke-width="1" opacity="0.18"/>')
+        s.append(text(gx, top - 12, f"{t:.2f}", 9, INK, "middle"))
+    y = top + 4
+    for label, a, b, colour in rows:
+        ax, bxx = x0 + (x1 - x0) * a, x0 + (x1 - x0) * b
+        s.append(text(x0 - 10, y + 4, label, 9.5, INK, "end"))
+        s.append(f'<line x1="{ax:.1f}" y1="{y}" x2="{bxx:.1f}" y2="{y}" stroke="{colour}" '
+                 f'stroke-width="3" opacity="0.4"/>')
+        s.append(f'<circle cx="{ax:.1f}" cy="{y}" r="5" fill="{colour}"/>')
+        s.append(f'<circle cx="{bxx:.1f}" cy="{y}" r="4.5" fill="none" stroke="{colour}" stroke-width="2"/>')
+        s.append(text(col, y + 4, f"{a:.2f} → {b:.2f}  ({b - a:+.2f})", 9.5))
+        y += step
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+def fig_k_vs_budget(R):
+    rows = [(f"{SHORT[p]} · {c}", rag_cell(R, p, c)["span_hit@5"],
+             rag_cell(R, p, c)["span_hit@4000ch"], CHUNKER_COLOUR[c])
+            for p in RAG_PARSERS for c in CHUNKERS if rag_cell(R, p, c)]
+    return fig_dumbbell(rows, "Fixed k flatters large chunks",
+                        "the same answer-retrieval measure at k=5 and at an equal 4,000-character budget",
+                        "at k=5", "at 4,000 characters")
+
+
+def fig_budget_curves(R):
+    B = R["config"]["budgets"]
+    pw, ph, gap, left, top = 220, 190, 34, 46, 100
+    W, H = left + len(RAG_PARSERS) * (pw + gap), top + ph + 44
+    lo, hi = 0.2, 0.9
+    s = svg_open(W, H, "Answer found within a character budget")
+    s.append(text(0, 20, "Answer found within an equal character budget", 13, INK, weight="600"))
+    s.append(text(0, 38, "share of questions whose verbatim answer is inside the first N characters retrieved", 10))
+    lx = 0
+    for c in CHUNKERS:
+        s.append(f'<line x1="{lx}" y1="58" x2="{lx+16}" y2="58" stroke="{CHUNKER_COLOUR[c]}" stroke-width="3"/>')
+        s.append(text(lx + 22, 62, c, 10))
+        lx += 44 + len(c) * 6.3
+    for i, p in enumerate(RAG_PARSERS):
+        x0 = left + i * (pw + gap)
+        sy = lambda v: top + ph - (v - lo) / (hi - lo) * ph
+        sx = lambda j: x0 + j / (len(B) - 1) * pw
+        s.append(text(x0, top - 12, SHORT[p], 11, INK, weight="600"))
+        for t in (0.2, 0.4, 0.6, 0.8):
+            s.append(f'<line x1="{x0}" y1="{sy(t):.1f}" x2="{x0+pw}" y2="{sy(t):.1f}" '
+                     f'stroke="{GRID}" stroke-width="1" opacity="0.18"/>')
+            if i == 0:
+                s.append(text(x0 - 6, sy(t) + 3, f"{t:.1f}", 9, INK, "end"))
+        for j, b in enumerate(B):
+            s.append(text(sx(j), top + ph + 16, f"{b // 1000}k ch", 9, INK, "middle"))
+        for c in CHUNKERS:
+            d = rag_cell(R, p, c)
+            if not d:
+                continue
+            pts = [(sx(j), sy(d[f"span_hit@{b}ch"])) for j, b in enumerate(B)]
+            s.append('<polyline points="' + " ".join(f"{x:.1f},{y:.1f}" for x, y in pts) +
+                     f'" fill="none" stroke="{CHUNKER_COLOUR[c]}" stroke-width="2.5"/>')
+            for x, y in pts:
+                s.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.5" fill="{CHUNKER_COLOUR[c]}"/>')
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+def fig_home_advantage(R):
+    src = {q["qid"]: q["generated_from"] for q in json.loads(DATASET.read_text())["questions"]}
+    rows = []
+    for p in RAG_PARSERS:
+        for c in CHUNKERS:
+            d = rag_cell(R, p, c)
+            if not d:
+                continue
+            own = [x["span_hit@5"] for x in d["_rows"] if src.get(x["qid"]) == p and "span_hit@5" in x]
+            oth = [x["span_hit@5"] for x in d["_rows"]
+                   if src.get(x["qid"]) not in (None, p) and "span_hit@5" in x]
+            if own and oth:
+                rows.append((f"{SHORT[p]} · {c}", sum(oth) / len(oth), sum(own) / len(own), PARSER_COLOUR[p]))
+    return fig_dumbbell(rows, "Home advantage: questions written from a parser's own output",
+                        "answer retrieved in the top 5; a long line means the parser does better on its own questions",
+                        "other parsers' questions", "its own questions")
+
+
+def fig_shape_vs_retrieval(r, R):
+    """Does a chunk-shape measure predict retrieval? One point per cell."""
+    pts = []
+    for p in RAG_PARSERS:
+        for c in CHUNKERS:
+            a, d = cell(r, p, c), rag_cell(R, p, c)
+            if a and d and a.get("mid_start_pct") is not None:
+                pts.append((p, c, a["mid_start_pct"], d["span_hit@4000ch"]))
+    if not pts:
+        return None
+    W, H = 720, 440
+    x0, x1, y0, y1 = 80, 520, 80, 370
+    xmax = max(q[2] for q in pts) * 1.1 or 1.0
+    ylo, yhi = min(q[3] for q in pts) - 0.04, max(q[3] for q in pts) + 0.04
+    sx = lambda v: x0 + v / xmax * (x1 - x0)
+    sy = lambda v: y1 - (v - ylo) / (yhi - ylo) * (y1 - y0)
+    s = svg_open(W, H, "Chunk fragmentation against retrieval")
+    s.append(text(0, 20, "Does chunk fragmentation predict retrieval?", 13, INK, weight="600"))
+    s.append(text(0, 38, "one point per parser x chunker cell; the letter marks the parser", 10))
+    for i in range(5):
+        vx, vy = xmax * i / 4, ylo + (yhi - ylo) * i / 4
+        s.append(f'<line x1="{sx(vx):.1f}" y1="{y0}" x2="{sx(vx):.1f}" y2="{y1}" '
+                 f'stroke="{GRID}" stroke-width="1" opacity="0.18"/>')
+        s.append(f'<line x1="{x0}" y1="{sy(vy):.1f}" x2="{x1}" y2="{sy(vy):.1f}" '
+                 f'stroke="{GRID}" stroke-width="1" opacity="0.18"/>')
+        s.append(text(sx(vx), y1 + 16, f"{100 * vx:.0f}%", 9, INK, "middle"))
+        s.append(text(x0 - 8, sy(vy) + 3, f"{vy:.2f}", 9, INK, "end"))
+    s.append(text((x0 + x1) / 2, y1 + 36, "chunks starting mid-sentence (15-paper shape run)", 10, INK, "middle"))
+    mid = (y0 + y1) / 2
+    s.append(text(18, mid, "answer within 4,000 ch", 10, INK, "middle")
+             .replace("<text ", f'<text transform="rotate(-90 18 {mid:.0f})" '))
+    offset = {"oss_docling": (9, 4, "start"), "oss_pymupdf4llm": (-9, 4, "end"), "current": (0, -10, "middle")}
+    for p, c, xv, yv in pts:
+        cx, cy = sx(xv), sy(yv)
+        dx, dy, anchor = offset[p]
+        s.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="6" fill="{CHUNKER_COLOUR[c]}" opacity="0.9"/>')
+        s.append(text(cx + dx, cy + dy, SHORT[p][0].upper(), 10, INK, anchor, "600"))
+    ly = y0 + 6
+    for c in CHUNKERS:
+        s.append(f'<circle cx="{x1 + 44}" cy="{ly}" r="5" fill="{CHUNKER_COLOUR[c]}"/>')
+        s.append(text(x1 + 56, ly + 4, c, 10))
+        ly += 20
+    ly += 12
+    for p in RAG_PARSERS:
+        s.append(text(x1 + 40, ly + 4, f"{SHORT[p][0].upper()}  {SHORT[p]}", 10))
+        ly += 18
+    s.append("</svg>")
+    return "\n".join(s)
+
+
+def fig_coverage(R, cov):
+    n = len(json.loads(DATASET.read_text())["questions"])
+    W, top, step = 700, 76, 34
+    H = top + len(RAG_PARSERS) * step + 40
+    x0, x1 = 140, 520
+    hi = (max(len(v) for v in cov.values()) * 1.3) or 1
+    rescued = sum(1 for p in RAG_PARSERS for c in CHUNKERS if rag_cell(R, p, c)
+                  for x in rag_cell(R, p, c)["_rows"] if x["qid"] in cov[p] and x.get("span_hit@10"))
+    s = svg_open(W, H, "Answers lost before retrieval")
+    s.append(text(0, 20, "Answers the parser lost before retrieval began", 13, INK, weight="600"))
+    s.append(text(0, 38, f"questions whose verbatim answer is missing from the parser's own output, out of {n}", 10))
+    y = top
+    for p in RAG_PARSERS:
+        k = len(cov[p])
+        w = (x1 - x0) * k / hi
+        s.append(text(x0 - 10, y + 13, SHORT[p], 10.5, INK, "end"))
+        s.append(f'<rect x="{x0}" y="{y}" width="{max(w, 2):.1f}" height="18" rx="3" fill="{PARSER_COLOUR[p]}"/>')
+        s.append(text(x0 + w + 8, y + 13, f"{k} of {n}", 10))
+        y += step
+    s.append(text(0, H - 10, "none of these answers was retrieved by any chunker: a parse loss is unrecoverable"
+                  if rescued == 0 else f"{rescued} retrievals recovered an answer missing from the parse", 9.5))
+    s.append("</svg>")
+    return "\n".join(s)
+
+
 def main():
     r = load()
     ASSETS.mkdir(parents=True, exist_ok=True)
     written = []
 
-    for name, svg in [("fig1_parser_tradeoff.svg", fig_parser_tradeoff(r)),
-                      ("fig3_overlap.svg", fig_overlap(r)),
-                      ("fig4_size_ranges.svg", fig_size_ranges(r))]:
+    def put(name, svg):
         if svg:
             (ASSETS / name).write_text(svg, encoding="utf-8")
             written.append(name)
+
+    put("fig1_parser_tradeoff.svg", fig_parser_tradeoff(r))
+    put("fig3_overlap.svg", fig_overlap(r))
+    put("fig4_size_ranges.svg", fig_size_ranges(r))
     for field, svg in fig_fragment_heatmap(r):
-        name = f"fig2_{field}.svg"
-        (ASSETS / name).write_text(svg, encoding="utf-8")
-        written.append(name)
+        put(f"fig2_{field}.svg", svg)
+
+    if RAG.exists():
+        R = json.loads(RAG.read_text())
+        put("fig5_rag_span4k.svg", fig_rag_heatmap(R, "span_hit@4000ch", "Answer retrieved within 4,000 characters"))
+        put("fig5_rag_correctness.svg", fig_rag_heatmap(R, "correctness", "Answer correctness, judged against the reference"))
+        put("fig6_k_vs_budget.svg", fig_k_vs_budget(R))
+        put("fig7_budget_curves.svg", fig_budget_curves(R))
+        put("fig8_home_advantage.svg", fig_home_advantage(R))
+        put("fig9_shape_vs_retrieval.svg", fig_shape_vs_retrieval(r, R))
+        put("fig10_coverage.svg", fig_coverage(R, answer_coverage(R)))
 
     for n in sorted(written):
         print(f"  {n}")

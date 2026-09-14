@@ -324,9 +324,17 @@ _FENCED_BLOCK = re.compile(r"^(~{3,})\S*\n.*?\n\1$", re.M | re.S)
 
 
 def _sem_model():
+    """Semantic chunking embeds every sentence, which dominates its cost.
+
+    CPU by default so the chunk-shape matrix never competes with the answering
+    model for the card; SEMANTIC_DEVICE=cuda when the GPU is known to be free,
+    which it is while an index is being built.
+    """
     if "m" not in _SEM:
+        import os
         from sentence_transformers import SentenceTransformer
-        _SEM["m"] = SentenceTransformer(EMBED_MODEL, device="cpu")
+        _SEM["m"] = SentenceTransformer(
+            EMBED_MODEL, device=os.environ.get("SEMANTIC_DEVICE", "cpu"))
     return _SEM["m"]
 
 

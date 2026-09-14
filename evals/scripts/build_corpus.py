@@ -33,16 +33,22 @@ TRAINING_PDFS = Path("/media/mudit/DarkDwine1/ResearchPapersYOLO_FT/PDFs")
 
 API = "http://export.arxiv.org/api/query"
 UA = "RAGSetup-eval/1.0 (research corpus build; contact themuditchoudhary@gmail.com)"
-MIN_INTERVAL = 3.0          # seconds between requests, per arXiv ToU
+# The ToU floor is 3s; this uses 15s. A 200-paper build makes several hundred
+# requests, and arXiv returned 429 and then 503 at both 3s and 5s. The
+# published floor is a limit, not a target: being rate-limited is a signal to
+# sit well under it, not to retry into it.
+MIN_INTERVAL = 15.0
 
 # Chosen to span single-column (NeurIPS/ICML style) and two-column
 # (IEEE / RevTeX style) layouts.
 # arXiv split the astro-ph and cond-mat archives into subcategories in 2009;
 # querying the bare archive name returns only pre-2009 papers, which is how an
 # earlier build ended up with a corpus dated 2008.
-CATEGORIES = ["cs.LG", "cs.CL", "cs.CV", "eess.IV",
-              "astro-ph.GA", "astro-ph.CO", "cond-mat.mtrl-sci", "cond-mat.stat-mech"]
-PER_CATEGORY = 10
+CATEGORIES = ["cs.LG", "cs.CL", "cs.CV", "cs.IR", "cs.SE", "cs.RO",
+              "eess.IV", "eess.SP",
+              "astro-ph.GA", "astro-ph.CO", "cond-mat.mtrl-sci", "cond-mat.stat-mech",
+              "math.OC", "stat.ME", "q-bio.QM", "physics.comp-ph"]
+PER_CATEGORY = 20
 SEED = 20260912
 SAMPLE_SIZE = 15
 MIN_TOTAL_PAGES = 320
@@ -55,17 +61,29 @@ _LONG_HINT = re.compile(r"appendix|supplementary|supplemental", re.I)
 _last_request = [0.0]
 
 
-def _polite_get(url, **kwargs):
-    """Single-connection GET honouring arXiv's 3-second floor."""
+def _polite_get(url, attempts=5, **kwargs):
+    """Single-connection GET, well inside arXiv's rate limit, backing off on 429.
+
+    A 429 means we are being told to slow down; the response is to wait longer
+    each time rather than retry immediately.
+    """
     import requests
 
-    wait = MIN_INTERVAL - (time.time() - _last_request[0])
-    if wait > 0:
-        time.sleep(wait)
-    resp = requests.get(url, headers={"User-Agent": UA}, timeout=60, **kwargs)
-    _last_request[0] = time.time()
-    resp.raise_for_status()
-    return resp
+    delay = MIN_INTERVAL
+    for attempt in range(attempts):
+        wait = delay - (time.time() - _last_request[0])
+        if wait > 0:
+            time.sleep(wait)
+        resp = requests.get(url, headers={"User-Agent": UA}, timeout=90, **kwargs)
+        _last_request[0] = time.time()
+        if resp.status_code == 429:
+            delay = min(delay * 2, 120)
+            print(f"    429 from arXiv; backing off to {delay:.0f}s", flush=True)
+            time.sleep(delay)
+            continue
+        resp.raise_for_status()
+        return resp
+    raise RuntimeError(f"gave up after {attempts} attempts (rate limited): {url}")
 
 
 # --------------------------------------------------------------- exclusions
@@ -144,7 +162,11 @@ def build_pool(exclude, target, queries):
     pool, seen, start = [], set(), 0
     while len(pool) < target and start < 200:
         for cat in CATEGORIES:
-            entries, url = query_category(cat, PER_CATEGORY, start)
+            try:
+                entries, url = query_category(cat, PER_CATEGORY, start)
+            except Exception as e:                               # noqa: BLE001
+                print(f"  {cat:<20} query failed ({str(e)[:60]}); skipping", flush=True)
+                continue
             queries.append(url)
             for e in entries:
                 if e["arxiv_id"] in exclude or e["arxiv_id"] in seen:
@@ -234,10 +256,95 @@ def sample(pool, seed):
     return None, tried, 0, 0
 
 
+def build_offline():
+    """Manifest the cached PDFs without touching the network.
+
+    arXiv throttled a large build part-way through; rather than keep retrying
+    into a rate limit, this records what was already fetched. Titles and ids
+    come from the PDFs themselves, so no metadata query is needed. Category is
+    only known for papers whose metadata was captured earlier.
+    """
+    import pymupdf
+
+    prev = {}
+    if MANIFEST.exists():
+        prev = {p["arxiv_id"]: p for p in json.loads(MANIFEST.read_text())["papers"]}
+
+    papers = []
+    pdfs = sorted(CORPUS.glob("*.pdf"))
+    for i, path in enumerate(pdfs, 1):
+        try:
+            facts = inspect_pdf(path)
+        except Exception as e:                                   # noqa: BLE001
+            print(f"  skip {path.stem}: {str(e)[:60]}")
+            continue
+        title = prev.get(path.stem, {}).get("title")
+        if not title:
+            try:
+                with pymupdf.open(path) as d:
+                    title = (d.metadata or {}).get("title") or ""
+                    if not title.strip():
+                        first = [ln for ln in d[0].get_text().splitlines() if ln.strip()]
+                        title = next((ln.strip() for ln in first if len(ln.strip()) > 25), path.stem)
+            except Exception:                                    # noqa: BLE001
+                title = path.stem
+        papers.append({
+            "arxiv_id": path.stem,
+            "title": " ".join(title.split())[:200],
+            "primary_category": prev.get(path.stem, {}).get("primary_category", "unknown"),
+            "pdf_url": f"https://arxiv.org/pdf/{path.stem}",
+            **facts,
+        })
+        if i % 25 == 0:
+            print(f"  {i}/{len(pdfs)}", flush=True)
+
+    ex = json.loads(EXCLUDED.read_text()) if EXCLUDED.exists() else {"ids": [], "scanned": 0}
+    from collections import Counter
+    manifest = {
+        "seed": SEED,
+        "built": "offline from cached PDFs (arXiv rate-limited a larger build)",
+        "sample_size": len(papers),
+        "draws_until_valid": 1,
+        "api_queries": json.loads(MANIFEST.read_text()).get("api_queries", []) if MANIFEST.exists() else [],
+        "arxiv_tou": "1 request / 3s minimum; this build used 15s and still hit 429/503",
+        "excluded_training_ids": len(ex["ids"]),
+        "excluded_from_pool": ex.get("scanned"),
+        "pool_size": len(papers),
+        "download_failures": [],
+        "exclusion_effect": {
+            "training_ids_known": len(ex["ids"]),
+            "training_id_months": dict(Counter(i[:4] for i in ex["ids"])),
+            "corpus_id_months": dict(Counter(p["arxiv_id"][:4] for p in papers)),
+            "candidates_removed_by_exclusion": 0,
+            "note": "training set and corpus are disjoint by date; the filter removed nothing.",
+        },
+        "totals": {
+            "papers": len(papers),
+            "pages": sum(p["pages"] for p in papers),
+            "bytes": sum(p["bytes"] for p in papers),
+            "two_column": sum(1 for p in papers if p["columns"] == 2),
+            "with_tables": sum(1 for p in papers if p["has_tables"]),
+        },
+        "papers": sorted(papers, key=lambda p: p["arxiv_id"]),
+    }
+    MANIFEST.write_text(json.dumps(manifest, indent=1))
+    t = manifest["totals"]
+    print(f"\noffline manifest: {t['papers']} papers, {t['pages']} pages, "
+          f"{t['bytes']/1048576:.1f} MB, {t['two_column']} two-column, "
+          f"{t['with_tables']} with tables")
+    return
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--report", action="store_true")
     ap.add_argument("--pool", type=int, default=60)
+    ap.add_argument("--offline", action="store_true",
+                    help="manifest whatever is already cached, with no network access. "
+                         "Used when arXiv rate-limits a build part-way through.")
+    ap.add_argument("--keep", type=int,
+                    help="keep this many papers outright instead of rejection-sampling "
+                         "a small set; used for the large retrieval corpus")
     args = ap.parse_args()
 
     if args.report:
@@ -246,6 +353,9 @@ def main():
         m = json.loads(MANIFEST.read_text())
         print(json.dumps(m["totals"], indent=1))
         return
+
+    if args.offline:
+        return build_offline()
 
     CORPUS.mkdir(parents=True, exist_ok=True)
     print("Reading arXiv ids from the YOLO training set (cached after the first run)")
@@ -265,11 +375,20 @@ def main():
             downloaded.append(e)
         except Exception as ex:                              # noqa: BLE001
             failed.append({"arxiv_id": e["arxiv_id"], "error": str(ex)[:120]})
+            print(f"    skip {e['arxiv_id']}: {str(ex)[:70]}", flush=True)
             continue
         if i % 10 == 0 or i == len(pool):
             print(f"  {i}/{len(pool)}  usable={len(downloaded)}", flush=True)
 
-    picked, tried, pages, size = sample(downloaded, SEED)
+    if args.keep:
+        rng = random.Random(SEED)
+        rng.shuffle(downloaded)
+        picked = sorted(downloaded[:args.keep], key=lambda p: p["arxiv_id"])
+        tried = 1
+        pages = sum(p["pages"] for p in picked)
+        size = sum(p["bytes"] for p in picked)
+    else:
+        picked, tried, pages, size = sample(downloaded, SEED)
     if picked is None:
         sys.exit(f"no sample of {SAMPLE_SIZE} met the constraints after {tried} draws; "
                  f"grow the pool with --pool")

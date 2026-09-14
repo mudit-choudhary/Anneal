@@ -19,6 +19,8 @@ optional web search, saved conversations as memory, and Mermaid rendering.
 - [docs/SYSTEM_WALKTHROUGH.md](docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
 - [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
 - [docs/parse_manager.md](docs/parse_manager.md) — layout-aware parsing design
+- [docs/AssemblerLogic.md](docs/AssemblerLogic.md) — the assembler: input format, reading order, paragraph reconstruction, output
+- [evals/README.md](evals/README.md) — the parser x chunker harness and its report
 - [docs/setup.md](docs/setup.md) — environments, models, building the UI, running, scheduling
 - [docs/yolo_finetuning.md](docs/yolo_finetuning.md) — fine-tuning the layout model
 
