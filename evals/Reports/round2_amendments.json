@@ -1,0 +1,23 @@
+{
+ "note": "Changes to the analysis plan after round2_preregistration.json was written. Each entry records when it was made and what results existed at that time. The pre-registration file itself is never edited.",
+ "amendments": [
+  {
+   "id": 1,
+   "made_at": "2026-09-15 08:12:59 +0530",
+   "results_existing_at_the_time": "retrieval run in progress on cell 1 of 9; no answer had been scored by any method",
+   "affects": "judge_validation (numeric reference set); no primary metric, test or verdict rule",
+   "change": "A question joins the numeric reference set only if its reference answer passes its own numeric check, in addition to the pre-registered conditions (number in the short answer, not a citation). Number parsing also normalises Unicode (NFKC, hyphen and minus variants).",
+   "reason": "Measured on the frozen 400 questions before scoring: 298 had a numeric non-citation short answer, but 20 of their reference answers write the number differently (for example 'a few hundredths' for 10^-2, or counts in words), so 'correct' could not be determined for them. 278 remain (counted after the Unicode normalisation in this same change).",
+   "decided_by": "Claude, as a correction to a validation step; reported to the user"
+  },
+  {
+   "id": 2,
+   "made_at": "2026-09-15 08:53:38 +0530",
+   "results_existing_at_the_time": "retrieval run indexing cell 1 of 9; no answer had been generated for the full run or scored by any method",
+   "affects": "definition of the primary answer metric nli_fact_recall (priority 1); priority order, tests and verdict rules unchanged",
+   "change": "nli_fact_recall counts only the facts that the question's own reference answer entails (NLI, same model). Questions whose reference entails none of its facts have no value for this metric and drop out of its paired comparisons. The pre-registered definition over every fact is kept as the supporting metric nli_fact_recall_all.",
+   "reason": "Measured on the frozen 400 questions before scoring: the reference answer entails 716 of its 937 facts (76%), all of them for 219 questions and none for 25. The question writer often added details to the facts that its reference answer does not state, so recall over every fact would score answers on content the reference itself omits. Every cell faces the same facts, so this was noise rather than bias, but it reduced the power to detect a real difference.",
+   "decided_by": "the user, on Claude's recommendation"
+  }
+ ]
+}

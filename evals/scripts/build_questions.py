@@ -51,6 +51,10 @@ MODELS = [m.strip() for m in os.environ.get(
     "QGEN_MODELS", "groq/openai/gpt-oss-120b,nvidia/openai/gpt-oss-20b").split(",") if m.strip()]
 PRIMARY_SERVED = "openai/gpt-oss-120b"   # how the gateway reports MODELS[0]
 COOLDOWN = 90.0                  # seconds, when the provider gives no Retry-After
+# Groq usually asks for 2-3 s. Waiting that out keeps questions on the primary
+# model; handing over on every short throttle sent most of them to the fallback.
+SHORT_WAIT = 15.0
+MAX_SHORT_WAITS = 5              # per request, before handing over anyway
 _cooled = {}                     # model -> time it may be used again
 _cool_lock = threading.Lock()
 
@@ -152,9 +156,10 @@ def _retry_after(e):
 def ask(client, prompt, rounds=6):
     """One generation with failover; returns (reply text, model that served it).
 
-    Each round tries the models that are not cooling down, in order. A 429
-    cools that model; any other error moves on to the next. If every model is
-    cooling, wait for the earliest to come back.
+    Each round tries the models that are not cooling down, in order. A short
+    429 (Retry-After up to SHORT_WAIT) is waited out on the same model, a few
+    times; a longer one cools that model and moves on. Any other error moves on.
+    If every model is cooling, wait for the earliest to come back.
     """
     from openai import RateLimitError
     last = None
@@ -167,20 +172,28 @@ def ask(client, prompt, rounds=6):
             time.sleep(max(1.0, wake - now))
             continue
         for m in ready:
-            try:
-                r = client.chat.completions.create(
-                    model=m, temperature=0.4,
-                    messages=[{"role": "user", "content": prompt}])
-                return r.choices[0].message.content or "", r.model
-            except RateLimitError as e:
-                wait = _retry_after(e)
-                with _cool_lock:
-                    _cooled[m] = time.time() + wait
-                print(f"    {m} rate-limited; cooling {wait:.0f}s", flush=True)
-                last = e
-            except Exception as e:                               # noqa: BLE001
-                print(f"    {m} failed: {type(e).__name__}: {str(e)[:70]}", flush=True)
-                last = e
+            short_waits = 0
+            while True:
+                try:
+                    r = client.chat.completions.create(
+                        model=m, temperature=0.4,
+                        messages=[{"role": "user", "content": prompt}])
+                    return r.choices[0].message.content or "", r.model
+                except RateLimitError as e:
+                    wait = _retry_after(e)
+                    last = e
+                    if wait <= SHORT_WAIT and short_waits < MAX_SHORT_WAITS:
+                        short_waits += 1
+                        time.sleep(wait + 0.5)
+                        continue
+                    with _cool_lock:
+                        _cooled[m] = time.time() + wait
+                    print(f"    {m} rate-limited; cooling {wait:.0f}s", flush=True)
+                    break
+                except Exception as e:                           # noqa: BLE001
+                    print(f"    {m} failed: {type(e).__name__}: {str(e)[:70]}", flush=True)
+                    last = e
+                    break
         time.sleep(5)
     raise last or RuntimeError("no model answered")
 

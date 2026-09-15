@@ -12,10 +12,17 @@ source virtual_environments/globalragsetup_env/bin/activate
 echo "== $(date '+%F %T') parse: cached papers are skipped"
 python -u evals/scripts/parse_cache.py
 
-# Once the retrieval run has answered anything, the question set is frozen:
-# every cell must answer the same 400 questions.
-if [ -n "$(ls -A evals/Reports/rag_round2_rows 2>/dev/null)" ]; then
-    echo "== questions: frozen, retrieval run already started"
+# Once the pre-registration records a dataset hash, the question set is frozen:
+# every cell must answer the same 400 questions, so it is never rebuilt, and the
+# run refuses to start if dataset.json no longer matches the recorded hash.
+FROZEN_SHA=$(python -c "import json; print(json.load(open('evals/Reports/round2_preregistration.json')).get('dataset_sha256') or '')")
+if [ -n "$FROZEN_SHA" ]; then
+    ACTUAL_SHA=$(sha256sum evals/questions/dataset.json | cut -d' ' -f1)
+    if [ "$ACTUAL_SHA" != "$FROZEN_SHA" ]; then
+        echo "!! dataset.json does not match the frozen hash; refusing to run" >&2
+        exit 1
+    fi
+    echo "== questions: frozen, hash verified"
 else
     echo "== $(date '+%F %T') questions: papers with questions are skipped"
     source evals/keys_export.sh

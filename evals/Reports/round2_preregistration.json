@@ -3,7 +3,7 @@
  "git_commit": "de28f20",
  "working_tree_dirty": true,
  "status_when_written": "question generation and parsing in progress; no retrieval or answer results exist",
- "dataset_sha256": null,
+ "dataset_sha256": "2c1f553f2e26bcb71e8889f7dc2a485726c52bd53231382eb31c9ee7403ccb8c",
  "dataset_sha256_note": "filled once, when the 400-question shortlist is frozen and before the first cell runs",
  "questions_answered": [
   "Q1 chunkers, retrieval: does grain_growth retrieve better than recursive_char and fixed_token?",
@@ -142,5 +142,18 @@
   "generation_errors": "excluded pairwise from that comparison, counts reported",
   "refusals": "scored as incorrect (0) for answer metrics, and counted in refusal rate",
   "judging": "all local; no external API calls; qwen3:4b never judges; judge sees no parser or chunker labels"
+ },
+ "dataset_frozen_at": "2026-09-15 07:31:31 +0530",
+ "dataset_summary_at_freeze": {
+  "questions": 400,
+  "papers": 400,
+  "written_by": {
+   "openai/gpt-oss-120b": 340,
+   "openai/gpt-oss-20b": 60
+  },
+  "source": {
+   "arxiv": 72,
+   "unused_training": 328
+  }
  }
 }
