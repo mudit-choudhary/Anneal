@@ -8,6 +8,23 @@ into ChromaDB, and queried through a **React web app** backed by a locally
 hosted Qwen3-4B (Ollama) or any OpenAI-compatible API — with citations,
 optional web search, saved conversations as memory, and Mermaid rendering.
 
+## Results
+
+The parsing and chunking choices here were evaluated twice, the second time with
+the metrics, tests and thresholds fixed in writing **before** the run:
+
+**→ [evals/Reports/Report.md](evals/Reports/Report.md)** — 3 parsers x 3 chunkers,
+400 questions, 514 papers, every comparison paired and corrected for multiplicity.
+
+- The fine-tuned YOLOv11 parser **retrieves significantly better** than Docling and
+  PyMuPDF4LLM under every chunker tested, and loses the fewest answers in parsing
+  (24 of 400, against 48 and 61).
+- Structure-aware chunking beats a fixed-token window; against a recursive character
+  splitter the difference is **not established**, and the report says so rather than
+  moving the threshold.
+- Faithfulness and context sufficiency **could not be measured reliably** by either
+  method tried; both were demoted before any comparison was run.
+
 ## Documentation
 
 - [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected

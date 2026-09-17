@@ -24,6 +24,11 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent.parent
 R = REPO / "evals" / "Reports"
 OUT = R / "Report.md"
+# Round 2 took over these two paths. --round1 points them back at round 1's own
+# inputs so this report can still be regenerated from the data it was built on.
+MANIFEST = REPO / "evals" / "corpus" / "manifest.json"
+DATASET = REPO / "evals" / "questions" / "dataset.json"
+STATS_NAME = "_stats.json"
 sys.path.insert(0, str(REPO / "evals" / "scripts"))
 
 PARSERS = ["raw_dump", "legacy", "oss_docling", "oss_pymupdf4llm", "current"]
@@ -183,12 +188,12 @@ def rag_analysis(RR, ds, r):
 # ============================================================ report
 def build():
     r = json.loads((R / "results.json").read_text())
-    m = json.loads((REPO / "evals" / "corpus" / "manifest.json").read_text())
+    m = json.loads(MANIFEST.read_text())
     qpath = R / "parser_quality.json"
     q = json.loads(qpath.read_text()) if qpath.exists() else None
     rag_path = R / "rag_results.json"
     RR = json.loads(rag_path.read_text()) if rag_path.exists() else None
-    ds_path = REPO / "evals" / "questions" / "dataset.json"
+    ds_path = DATASET
     ds = json.loads(ds_path.read_text()) if ds_path.exists() else None
     ra = rag_analysis(RR, ds, r) if RR and ds else None
 
@@ -199,7 +204,7 @@ def build():
     sp_papers = shape.get("papers", "—")
     stats = {}
     for p in RAG_PARSERS:
-        f = REPO / "evals" / "parsed" / p / "_stats.json"
+        f = REPO / "evals" / "parsed" / p / STATS_NAME
         if f.exists():
             stats[p] = json.loads(f.read_text())
     # parse speed from the larger retrieval corpus when available
@@ -858,8 +863,24 @@ def build():
 
 
 def main():
-    OUT.write_text(build(), encoding="utf-8")
-    print(f"wrote {OUT}")
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--round1", action="store_true",
+                    help="read round 1's own inputs, which round 2 displaced")
+    ap.add_argument("--out", help="write here instead of Report.md")
+    args = ap.parse_args()
+
+    global MANIFEST, DATASET, STATS_NAME
+    if args.round1:
+        MANIFEST = REPO / "evals" / "corpus" / "manifest_103.json"
+        DATASET = REPO / "evals" / "questions" / "round1" / "dataset.json"
+        STATS_NAME = "_stats_round1.json"
+        import make_figures
+        make_figures.DATASET = DATASET          # answer_coverage reads this
+
+    out = Path(args.out) if args.out else OUT
+    out.write_text(build(), encoding="utf-8")
+    print(f"wrote {out}")
 
 
 if __name__ == "__main__":

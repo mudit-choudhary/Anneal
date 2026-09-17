@@ -89,6 +89,18 @@ half-written one. A machine failure during round 2 cost two hours, not the run.
 **Status at any time:** `python evals/scripts/eval_status.py` shows finished
 cells, the cell in flight, an ETA, and scoring progress. It only reads.
 
+**Regenerating round 1.** Round 2 took over `questions/dataset.json` and
+`corpus/manifest.json`, so round 1's generator needs pointing back at its own
+inputs:
+
+```bash
+python evals/scripts/make_main_report.py --round1 --out evals/Reports/Report_round1.md
+```
+
+`--round1` reads `manifest_103.json`, `questions/round1/dataset.json` and each
+parser's `_stats_round1.json`. It reproduces the published round-1 report
+byte-for-byte, and that file is what opens `Report.md`.
+
 ## Scripts
 
 | Script | Does |

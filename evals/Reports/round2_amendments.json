@@ -39,6 +39,16 @@
    "reason": "Measured on the first 500 judged answers: the three scores are identical for 467 of 500 (93%). Pearson correlations are correctness~faithfulness +0.93, correctness~sufficiency +0.91, faithfulness~sufficiency +0.98. The judge appears to make one overall good/bad decision and apply it to all three dimensions, so the two extra dimensions add no independent signal.",
    "judge_validation_result": "The pre-registered validation of the answer judges passed on the same 500. Against the numeric reference set (n=353), gemma_correctness agrees 92% of the time, averaging 0.98 when the answer contains the right number and 0.21 when it does not. Its distribution is 369 correct, 126 wrong, 5 partial, so it discriminates. nli_fact_recall and gemma_correctness agree substantively (Pearson +0.67; fact recall averages 0.73 when Gemma says correct and 0.02 when Gemma says wrong), which is independent support for the priority-1 answer metric.",
    "decided_by": "Claude, as a correction to supporting metrics; reported to the user"
+  },
+  {
+   "id": 5,
+   "made_at": "2026-09-17 10:25:23 +0530",
+   "results_existing_at_the_time": "all results complete; verdicts computed and reported",
+   "affects": "record-keeping only. No metric, test, threshold or verdict changes, and no code was changed after results existed.",
+   "change": "Documents a mismatch between the plan and the implementation of the multiplicity correction. The pre-registration defines the chunker family as '2 comparisons x 3 parsers = 6 tests, Holm'. round2_analysis.py applies Holm within each baseline separately, a family of 3 tests, which is a looser correction than registered.",
+   "reason": "Found while explaining the correction to the user after the report was written. Both were computed on the primary retrieval metric and give identical outcomes: grain_growth vs fixed_token is significant on 2 of 3 parsers either way, and grain_growth vs recursive_char on 0 of 3 either way. Under the registered family of 6, the Holm ladder is p=0.0004 vs 0.0083 (pass), p=0.0004 vs 0.0100 (pass), p=0.0222 vs 0.0125 (stop). So the stricter reading that was actually registered supports the same verdicts as the looser one that was run.",
+   "not_done": "The code was deliberately not changed. Editing the analysis after results exist is a worse failure than the mismatch itself; the record is corrected instead.",
+   "decided_by": "the user, on Claude's recommendation, after Claude found and disclosed the mismatch"
   }
  ]
 }
