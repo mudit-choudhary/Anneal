@@ -4,7 +4,7 @@ A chronological account of how this repository went from a working-but-poor
 RAG pipeline to the current system: what was built, what was measured, what
 was deliberately rejected, and what is still open.
 
-Companion documents: [architecture.md](architecture.md) (short overview),
+Companion documents: [SYSTEM_WALKTHROUGH.md](SYSTEM_WALKTHROUGH.md) (the full account),
 [SYSTEM_WALKTHROUGH.md](SYSTEM_WALKTHROUGH.md) (per-module reference),
 [PENDING_IMPROVEMENTS.md](PENDING_IMPROVEMENTS.md) (open items in detail).
 

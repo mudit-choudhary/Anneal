@@ -119,7 +119,7 @@ vision-language model for:
 
 This would run as a **third overnight batch model** alongside YOLO and the
 embedder — same GPU-sharing pattern already established
-(`docs/architecture.md`'s day/night split), so it doesn't touch the daytime
+(`docs/SYSTEM_WALKTHROUGH.md`'s day/night split), so it doesn't touch the daytime
 Qwen budget.
 
 **Open questions to resolve before implementing** (why this is shelved, not

@@ -1,62 +1,82 @@
-# Research-Paper RAG Setup
+# Anneal
 
-A local RAG system over research papers, built to run on a single machine
-with a 4GB GPU (GTX 1650). Papers are downloaded from arXiv (or by link),
-parsed with a **fine-tuned YOLOv11 document-layout model** (paragraph-accurate,
-layout-aware extraction), chunked structure-aware and embedded with bge-base
-into ChromaDB, and queried through a **React web app** backed by a locally
-hosted Qwen3-4B (Ollama) or any OpenAI-compatible API — with citations,
-optional web search, saved conversations as memory, and Mermaid rendering.
+To anneal is to relieve the internal stresses a forming process leaves behind —
+heat the material past recrystallisation, hold it, cool it slowly, and let a
+strained structure settle back into a sound one.
+
+Extracting text from a PDF is such a forming process. The document itself is
+intact: columns sit where the author placed them, a figure interrupts the page
+without interrupting the argument. Extraction flattens that two-dimensional
+arrangement into a single stream and, in doing so, fractures it — paragraphs
+severed at column boundaries, sentences broken across pages, words split by wrap
+hyphens, captions welded into the middle of a thought. Nothing is missing. It is
+the structure that is damaged, and every chunk cut from that stream inherits the
+damage.
+
+Anneal relieves it. A fine-tuned YOLOv11 model recovers twelve region types per
+page, and a parser-agnostic assembler rebuilds reading order and rejoins prose
+across columns, pages and interruptions. The clearest measure of the assembler's
+worth is what it does to *someone else's* layout: run Docling's output through
+it and Docling's own mid-sentence paragraph rate falls from **17.4% to 2.9%**
+(5 papers, `evals/Reports/parser_quality.json`) — the gain belongs to the
+assembler, not to any one detector. Chunking then grows along the document's own
+grain instead of a character count: `grain_growth` nucleates at section headings
+and expands until it meets a structural barrier, keeping tables and equations
+whole. All of it runs on a 4 GB consumer GPU with no cloud dependency in the
+parse or embed path.
+
+Whether any of that helps is measured, not claimed.
 
 ## Results
 
-The parsing and chunking choices here were evaluated twice, the second time with
-the metrics, tests and thresholds fixed in writing **before** the run:
+**→ [evals/Reports/Report.md](evals/Reports/Report.md)** — two rounds over a
+514-paper corpus, the second with metrics, tests and thresholds fixed in writing
+**before** the run: 3 parsers × 3 chunkers, 400 questions, every comparison
+paired and corrected for multiplicity.
 
-**→ [evals/Reports/Report.md](evals/Reports/Report.md)** — 3 parsers x 3 chunkers,
-400 questions, 514 papers, every comparison paired and corrected for multiplicity.
-
-- The fine-tuned YOLOv11 parser **retrieves significantly better** than Docling and
-  PyMuPDF4LLM under every chunker tested, and loses the fewest answers in parsing
-  (24 of 400, against 48 and 61).
-- Structure-aware chunking beats a fixed-token window; against a recursive character
-  splitter the difference is **not established**, and the report says so rather than
-  moving the threshold.
-- Faithfulness and context sufficiency **could not be measured reliably** by either
-  method tried; both were demoted before any comparison was run.
-
-## Documentation
-
-- [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
-- [docs/DAILY_USE.md](docs/DAILY_USE.md) — morning start, asking questions, adding papers
-- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — testing & tuning each RAG stage
-- [docs/FRESH_START.md](docs/FRESH_START.md) — purge everything and re-ingest
-- [docs/PENDING_IMPROVEMENTS.md](docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
-- [docs/architecture.md](docs/architecture.md) — services, data flow, file lifecycle (short)
-- [docs/SYSTEM_WALKTHROUGH.md](docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
-- [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
-- [docs/parse_manager.md](docs/parse_manager.md) — layout-aware parsing design
-- [docs/AssemblerLogic.md](docs/AssemblerLogic.md) — the assembler: input format, reading order, paragraph reconstruction, output
-- [evals/README.md](evals/README.md) — the parser x chunker harness and its report
-- [docs/setup.md](docs/setup.md) — environments, models, building the UI, running, scheduling
-- [docs/yolo_finetuning.md](docs/yolo_finetuning.md) — fine-tuning the layout model
-
-## Layout
-
-```
-common/  docs/  diagrams/  tests/  UI/  ops/  scripts/
-download_manager/  parse_manager/  prune_manager/
-embedding_manager/  registry_manager/  rag_setup/
-models/*  data/*  vector_db/*  run/*              (* git-ignored)
-```
+- The fine-tuned YOLOv11 parser **retrieves significantly better** than Docling
+  and PyMuPDF4LLM under every chunker tested, and loses the fewest answers in
+  parsing (24 of 400, against 48 and 61).
+- `grain_growth` beats a fixed-token window; against a stock recursive character
+  splitter the difference is **not established** — it did not clear its own
+  pre-set threshold, and the report says so rather than moving it.
+- Faithfulness and context sufficiency **could not be measured reliably** by
+  either method tried; both were demoted before any comparison was run.
 
 ## Quick start
 
 ```bash
-cd UI/frontend && npm install && npm run build && cd ../..   # once: build the web app
-scripts/fresh_start.sh --yes      # once: purge + ingest every PDF in data/raw_pdfs/
-scripts/start_query.sh            # daily: start query services → http://127.0.0.1:4002
-scripts/stop_services.sh          # stop everything
+ln -s "$PWD/bin/anneal" ~/.local/bin/anneal   # once
+anneal                                        # start everything, open the app
+anneal status                                 # what is running, what is indexed
+anneal stop                                   # stop everything
+```
+
+The first run builds the React app if needed and opens
+<http://127.0.0.1:4002>. `anneal fresh-start --yes` purges and re-ingests every
+PDF in `data/raw_pdfs/`. Full detail in [docs/OPERATIONS.md](docs/OPERATIONS.md).
+
+> `npm run dev` serves the frontend **only**, with no backend behind it. Use
+> `anneal`.
+
+## Documentation
+
+- [docs/OPERATIONS.md](docs/OPERATIONS.md) — install, run, ingest, rebuild, troubleshoot
+- [docs/PARSING.md](docs/PARSING.md) — layout detection, the assembler, fine-tuning the model
+- [docs/SYSTEM_WALKTHROUGH.md](docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
+- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — testing and tuning each RAG stage
+- [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
+- [docs/PENDING_IMPROVEMENTS.md](docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
+- [evals/README.md](evals/README.md) — how the evaluation was run and how to reproduce it
+- [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
+
+## Layout
+
+```
+common/  docs/  diagrams/  tests/  UI/  ops/  scripts/  bin/
+download_manager/  parse_manager/  prune_manager/
+embedding_manager/  registry_manager/  rag_setup/  evals/
+models/*  data/*  vector_db/*  run/*              (* git-ignored)
 ```
 
 Tests: `python -m pytest tests/ -q`

@@ -1,6 +1,9 @@
 """Cross-platform process management for the pipeline (replaces the bash
 launchers; the .sh files are thin wrappers around this).
 
+    anneal                                                           start everything, open the UI
+    anneal status                                                    what is running, what is indexed
+    anneal stop [--all]                                              stop everything
     python scripts/ops.py fresh-start [--yes] [--limit N] [--no-ui]   purge + register + start all
     python scripts/ops.py start-query [--with-ingest]                 daily start (registry, embedder on CPU, UI)
     python scripts/ops.py stop [--all]                                stop services (+ orphan sweep with --all)
@@ -217,7 +220,55 @@ def check_ollama():
                                "NOT running — local answers will fail (sudo systemctl start ollama)"))
 
 
+def ensure_ui_built():
+    """The UI service serves UI/static; `npm run dev` bypasses it and serves the
+    frontend with no backend behind it, which is the usual first-run confusion."""
+    if (REPO_ROOT / "UI" / "static" / "index.html").exists():
+        return
+    npm = shutil.which("npm")
+    if not npm:
+        sys.exit("the web UI is not built and npm was not found.\n"
+                 "  install Node, then: cd UI/frontend && npm install && npm run build")
+    say("== building the web UI (first run only, ~1 min)")
+    front = REPO_ROOT / "UI" / "frontend"
+    subprocess.run([npm, "install"], cwd=front, check=True)
+    subprocess.run([npm, "run", "build"], cwd=front, check=True)
+
+
 # --------------------------------------------------------------- commands
+def cmd_up(a):
+    """Bare `anneal`: everything a person needs to start asking questions."""
+    ensure_ui_built()
+    cmd_start_query(a)
+    if not a.no_open:
+        import webbrowser
+        if webbrowser.open(UI_URL):
+            say(f"  opened {UI_URL}")
+
+
+def cmd_status(a):
+    import requests
+    say(f"  {'service':<11}{'state':<11}{'port':<7}what it does")
+    for name in SERVICES:
+        label, desc, port = SERVICE_INFO[name]
+        state = f"running" if running(name) else "-"
+        say(f"  {label:<11}{state:<11}{str(port or ''):<7}{desc}")
+    ollama = http_ok("http://127.0.0.1:11434/api/version")
+    say(f"\n  ollama     {'running' if ollama else 'NOT running'}")
+    say(f"  web UI     {UI_URL} {'reachable' if http_ok(f'{UI_URL}/v1/status') else 'not reachable'}")
+    try:
+        stats = RegistryClient().stats()
+        say(f"  registry   {stats['total']} papers: " +
+            ", ".join(f"{k} {v}" for k, v in sorted(stats["counts"].items())))
+    except Exception:                                            # noqa: BLE001
+        say("  registry   not reachable")
+    try:
+        n = len(requests.get(f"{EMBEDDING_URL}/v1/papers", timeout=3).json()["papers"])
+        say(f"  vectors    {n} papers in the vector store")
+    except Exception:                                            # noqa: BLE001
+        say("  vectors    embedder not reachable")
+
+
 def cmd_fresh_start(a):
     say("== 1/5 stopping any running services")
     stop(sweep=True)
@@ -352,7 +403,16 @@ def cmd_daily_ingest(a):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    sub = ap.add_subparsers(dest="cmd", required=True)
+    ap.add_argument("--with-ingest", action="store_true",
+                    help="also run parse/prune, embedder on GPU (with the default command)")
+    ap.add_argument("--no-open", action="store_true",
+                    help="do not open a browser (with the default command)")
+    sub = ap.add_subparsers(dest="cmd")
+    u = sub.add_parser("up", help="start everything and open the UI (the default)")
+    u.add_argument("--with-ingest", action="store_true")
+    u.add_argument("--no-open", action="store_true")
+    u.set_defaults(fn=cmd_up)
+    sub.add_parser("status", help="what is running and what is indexed").set_defaults(fn=cmd_status)
     f = sub.add_parser("fresh-start"); f.add_argument("--yes", action="store_true"); f.add_argument("--limit", type=int); f.add_argument("--no-ui", action="store_true"); f.set_defaults(fn=cmd_fresh_start)
     q = sub.add_parser("start-query"); q.add_argument("--with-ingest", action="store_true"); q.set_defaults(fn=cmd_start_query)
     s = sub.add_parser("stop"); s.add_argument("--all", action="store_true", help="also sweep orphans by name and port"); s.set_defaults(fn=lambda a: stop(sweep=a.all))
@@ -360,6 +420,8 @@ def main():
     st = sub.add_parser("start"); st.add_argument("services", nargs="+", choices=list(SERVICES)); st.set_defaults(fn=lambda a: [start(n) for n in a.services])
     rs = sub.add_parser("restart"); rs.add_argument("services", nargs="+", choices=list(SERVICES)); rs.set_defaults(fn=lambda a: (stop(names=a.services), [start(n) for n in a.services]))
     args = ap.parse_args()
+    if args.cmd is None:                     # bare `anneal` == `anneal up`
+        args.fn = cmd_up
     if not VENV_PYTHON.exists():
         sys.exit(f"venv python not found at {VENV_PYTHON}")
     args.fn(args)

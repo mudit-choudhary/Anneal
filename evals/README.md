@@ -86,6 +86,14 @@ already have questions, finished cells and answered questions are all skipped,
 and every file is written through a temporary file, so a crash cannot leave a
 half-written one. A machine failure during round 2 cost two hours, not the run.
 
+**Round 1 needs a second worktree.** `run_matrix.py` compares the current parser
+against the legacy one by checking that commit out beside the repo. The path is
+gitignored, so a fresh clone has to create it once:
+
+```bash
+git worktree add .worktrees/legacy 057ce0e9   # the legacy parser arm
+```
+
 **Status at any time:** `python evals/scripts/eval_status.py` shows finished
 cells, the cell in flight, an ETA, and scoring progress. It only reads.
 

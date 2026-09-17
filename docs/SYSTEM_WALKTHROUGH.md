@@ -1,7 +1,7 @@
 # System Walkthrough — how every piece fits together
 
-This is the long-form companion to [architecture.md](architecture.md) (the
-short overview) and to the multi-page diagram
+This is the full account of the system, and the companion to the multi-page
+diagram
 [diagrams/system_architecture_detailed.drawio](../diagrams/system_architecture_detailed.drawio)
 (page 1 = system, pages 2–8 = one per module). It answers, for every
 module and every store: **what** it does, **why** it exists in that form,
@@ -44,25 +44,6 @@ writes back when done. The **prune** service deletes intermediates once a
 later stage has consumed them. A set of **scripts** starts, stops, resets
 and inspects all of this.
 
-```mermaid
-flowchart LR
-    AX[arXiv] --> DL[download_manager]
-    DL --> RAW[(data/raw_pdfs)]
-    RP[scripts/register_pdfs.py] -.registers.-> REG
-    RAW --> P1[parse stage 1<br/>YOLO layout] --> PARSED[(data/parsed)]
-    PARSED --> P2[parse stage 2<br/>reading order] --> PROC[(data/processed)]
-    PROC --> EM[embedding_manager<br/>chunk + bge-base] --> VDB[(vector_db<br/>ChromaDB)]
-    VDB --> Q[rag_setup / UI] --> OL[Ollama<br/>qwen3:4b-instruct]
-    REG[(registry_manager<br/>SQLite)]
-    DL -. status .-> REG
-    P1 -. status .-> REG
-    P2 -. status .-> REG
-    EM -. status .-> REG
-    PR[prune_manager] -. reads status .-> REG
-    PR -. deletes .-> PARSED
-    PR -. deletes .-> PROC
-```
-
 Two design ideas explain almost everything else:
 
 - **Status-driven, poll-based stages.** No stage calls the next one.
@@ -78,13 +59,88 @@ Two design ideas explain almost everything else:
   and metadata `filename`. Every stage derives the key from the file it is
   holding; nothing has to be looked up.
 
+### Pipeline overview
+
+```mermaid
+flowchart LR
+    subgraph sources
+        AX[arXiv]
+        URL[direct links]
+    end
+    subgraph services
+        DL[download_manager]
+        PM[parse_manager]
+        EM[embedding_manager]
+        UI[UI + rag_setup]
+        PR[prune_manager]
+        REG[(registry_manager\nSQLite + FastAPI :4000)]
+    end
+    subgraph storage
+        RAWPDF[(data/raw_pdfs)]
+        PARSED[(data/parsed\nlayout JSON)]
+        PROC[(data/processed\ntagged text)]
+        VDB[(vector_db\nChromaDB: papers + chats)]
+        APP[(data/app.db\nchats · data/settings.json)]
+    end
+    subgraph answering
+        OL[Ollama]
+        API[OpenAI-compatible API]
+        WEB[web search]
+    end
+
+    AX --> DL --> RAWPDF
+    URL --> DL
+    RAWPDF --> PM --> PARSED --> PM --> PROC
+    PROC --> EM --> VDB
+    VDB --> UI
+    UI --> OL
+    UI -.-> API
+    UI -.-> WEB
+    UI --> APP
+    DL <-.status.-> REG
+    PM <-.status.-> REG
+    EM <-.status.-> REG
+    PR <-.status.-> REG
+    PR -. deletes .-> PARSED & PROC
+```
+
+### File lifecycle
+
+Every paper is tracked in the registry by filename stem:
+
+```
+downloaded → parsed → processed → embedded      (any stage may set → error)
+```
+
+| Status | Set by | Meaning |
+|---|---|---|
+| `downloaded` | download_manager / `scripts/register_pdfs.py` | PDF in `data/raw_pdfs/` |
+| `parsed` | parse_manager stage 1 | YOLO layout JSON in `data/parsed/` |
+| `processed` | parse_manager stage 2 | assembled tagged text in `data/processed/` |
+| `embedded` | embedding_manager | chunks in ChromaDB |
+| `error` | the failing stage | `last_error` holds the message; skipped until retried (`register_pdfs.py --retry-errors`) |
+
+### Directory layout
+
+```
+Anneal/
+├── common/                # shared: paths, logging, registry client, settings, chats
+├── docs/  diagrams/  tests/
+├── download_manager/  parse_manager/  prune_manager/
+├── embedding_manager/  registry_manager/  rag_setup/
+├── UI/                    # main.py (API) · frontend/ (React source) · static/ (build) · index.html (legacy)
+├── ops/systemd/           # daily-ingest timer units + install.sh
+├── scripts/               # ops.py, rag_inspect.py, register_pdfs.py, docling_compare.py, …
+├── models/*  data/*  vector_db/*  run/*  virtual_environments/*     (* git-ignored)
+```
+
 ## 2. Every component at a glance
 
 | Component | Kind | Port | Trigger | Reads | Writes | Next |
 |---|---|---|---|---|---|---|
 | `registry_manager` | FastAPI + SQLite | 4000 | HTTP calls from all others | `rag_registry.db` | `rag_registry.db` | — (everyone polls it) |
 | `download_manager` | loop, 10 threads | — | manual start; every 3600 s | arXiv, registry checkpoint | `data/raw_pdfs/`, status `downloaded` | parse stage 1 |
-| `scripts/register_pdfs.py` | one-shot | — | manual / `fresh_start.sh` | `data/raw_pdfs/` | status `downloaded` | parse stage 1 |
+| `scripts/register_pdfs.py` | one-shot | — | manual / `anneal fresh-start` | `data/raw_pdfs/` | status `downloaded` | parse stage 1 |
 | `parse_manager` stage 1 (`pdf_parser.py`) | loop | — | every 5 s: status `downloaded` | PDF, YOLO weights | `data/parsed/*.json`, status `parsed` | stage 2 |
 | `parse_manager` stage 2 (`txt_processor.py`) | loop (same process) | — | every 5 s: status `parsed` | `data/parsed/*.json` | `data/processed/*.{txt,json}`, status `processed` | embedder |
 | `embedding_manager` ingest loop | loop | — | every 60 s: status `processed` | `data/processed/*.json`, bge-base | ChromaDB, status `embedded` | queryable |
@@ -167,7 +223,7 @@ impossible to get wrong silently.
 | `data/raw_pdfs/` | downloader, you | parse stage 1 | **never** (unless `PRUNE_RAW_PDFS=True`) |
 | `data/parsed/` | parse stage 1 | parse stage 2 | once status ∈ {processed, embedded} |
 | `data/processed/` | parse stage 2 | embedder (`.json`), you (`.txt`) | once status = embedded |
-| `run/logs/`, `run/pids/` | start scripts | you, `stop_services.sh`, `pipeline_status.py` | — |
+| `run/logs/`, `run/pids/` | start scripts | you, `anneal stop`, `pipeline_status.py` | — |
 
 ## 4. The coordination model: statuses and polling
 
@@ -233,7 +289,7 @@ to arXiv).
 
 **Via `scripts/register_pdfs.py`** for PDFs you copied in: for each PDF,
 a status lookup; if unknown, sets `downloaded`. Same end
-state, no `domain`/`published_at`. `fresh_start.sh` runs this after
+state, no `domain`/`published_at`. `anneal fresh-start` runs this after
 recreating the registry DB.
 
 *What follows*: within 5 s `parser_loop` notices.
@@ -379,7 +435,7 @@ filter) now includes it.
 `RULES` it lists files, looks each stem up in the registry, and deletes
 the file if the status is in the set: `parsed/` once processed/embedded,
 `processed/` once embedded, `raw_pdfs/` only if `PRUNE_RAW_PDFS` is True
-(default False — *why*: PDFs are the only input `fresh_start.sh` can rebuild
+(default False — *why*: PDFs are the only input `anneal fresh-start` can rebuild
 from, and the planned VLM pass over tables/figures needs their page
 images). Files unknown to the registry are left alone; if the registry is
 unreachable the sweep aborts and retries next interval.
@@ -442,38 +498,41 @@ One 4 GB card, time-shared rather than partitioned:
 
 | when | on the GPU | notes |
 |---|---|---|
-| ingestion (overnight / `fresh_start.sh`) | YOLO (small; batches of 4 pages at 1024) + bge-base embedder (`EMBED_DEVICE=cuda`, ~1 GB peak) | YOLO falls back to CPU on OOM |
-| querying (daytime / `start_query.sh`) | Qwen3-4B Q4 (~3.5 GB incl. 6144-token KV cache) | embedder runs on **CPU** (`EMBED_DEVICE=cpu`; one query ≈ tens of ms) so Qwen gets the whole card |
+| ingestion (overnight / `anneal fresh-start`) | YOLO (small; batches of 4 pages at 1024) + bge-base embedder (`EMBED_DEVICE=cuda`, ~1 GB peak) | YOLO falls back to CPU on OOM |
+| querying (daytime / `anneal`) | Qwen3-4B Q4 (~3.5 GB incl. 6144-token KV cache) | embedder runs on **CPU** (`EMBED_DEVICE=cpu`; one query ≈ tens of ms) so Qwen gets the whole card |
 
 Ollama decides a model's CPU/GPU split *when it loads* and keeps it while
 the model is warm. A model loaded while the embedder held the GPU sits
-mostly on CPU (slow) until unloaded — so both start scripts call
+mostly on CPU (slow) until unloaded — so `anneal` calls
 `unload_ollama_models` first, and `ollama ps` should read `~90–100% GPU`
 during the day.
 
 ## 8. The operations layer
 
-All in `scripts/`; the two start scripts source `service_lib.sh`.
+One command covers the common cases — `anneal` (start everything and open the
+app), `anneal status`, `anneal stop`. It is `bin/anneal`, a wrapper around
+`scripts/ops.py`; the `.sh` files in `scripts/` are older wrappers around the
+same code. See [OPERATIONS.md](OPERATIONS.md).
 
 | script | what it touches | when to use |
 |---|---|---|
-| `fresh_start.sh [--yes] [--limit N] [--no-ui]` | stops services, unloads Ollama models, **deletes** `vector_db/`, the registry DB file, `data/parsed/*`, `data/processed/*`; starts registry; registers every raw PDF; starts parse, embedding (GPU), prune, UI | after any change to parsing, chunking, the embedding model, or the registry schema |
-| `start_query.sh [--with-ingest]` | stops services, unloads Ollama models, starts registry + embedding (CPU) + UI; `--with-ingest` adds parse + prune and puts the embedder on the GPU | every morning; `--with-ingest` when adding papers that day |
-| `stop_services.sh` | kills each recorded pid's process tree, then sweeps orphans by process name and by port 4000/4001/4002 | end of day, before a fresh start, whenever a port is "already in use" |
-| `reset_ingestion.py [--yes]` | the purge (dry run without `--yes`) | called by `fresh_start.sh` |
+| `anneal fresh-start [--yes] [--limit N] [--no-ui]` | stops services, unloads Ollama models, **deletes** `vector_db/`, the registry DB file, `data/parsed/*`, `data/processed/*`; starts registry; registers every raw PDF; starts parse, embedding (GPU), prune, UI | after any change to parsing, chunking, the embedding model, or the registry schema |
+| `anneal [--with-ingest]` | stops services, unloads Ollama models, starts registry + embedding (CPU) + UI; `--with-ingest` adds parse + prune and puts the embedder on the GPU | every morning; `--with-ingest` when adding papers that day |
+| `anneal stop --all` | kills each recorded pid's process tree, then sweeps orphans by process name and by port 4000/4001/4002 | end of day, before a fresh start, whenever a port is "already in use" |
+| `reset_ingestion.py [--yes]` | the purge (dry run without `--yes`) | called by `anneal fresh-start` |
 | `register_pdfs.py [--limit N] [files]` | registry inserts | after a fresh DB; after copying PDFs in by hand |
 | `pipeline_status.py` | reads pids, the registry DB (read-only), directories, `:4001/list_files` | watching a run |
 | `wait_for_ingestion.py [--stall M] [--once]` | reads the registry DB and pids; exits 0 when all papers are terminal, 1 if a service died, 2 if stalled | chaining a shutdown after an overnight run |
 | `rag_inspect.py parse\|chunks\|retrieve\|answer` | stage-by-stage quality inspection (see [USER_GUIDE.md](USER_GUIDE.md)) | tuning |
 | `download_layout_model.py [n\|s\|m]` | `models/` | fetching the pretrained YOLO fallback |
 
-Process management: `service_lib.sh:start` launches `nohup env
-PYTHONUNBUFFERED=1 … python <script> &` **without a subshell**, so the
-recorded pid is the service itself; logs go to `run/logs/<name>.log`. The
-one time this was done with `( cd … && … & )` the recorded pid was a bash
-wrapper, the real service outlived it, and a stale registry shadowed a
-fresh one — hence the orphan sweeps and the port check
-(`require_port_free`) before starting anything.
+Process management: `scripts/ops.py` starts each service with `Popen(...,
+start_new_session=True)` and records **the service's own pid** in
+`run/pids/<name>.pid`; logs go to `run/logs/<name>.log`. An earlier shell
+version launched services in a subshell, so the recorded pid was a bash
+wrapper: the real service outlived it and a stale registry shadowed a fresh
+one. Hence the orphan sweep by process name **and** by port, and the
+`require_ports_free` check before starting anything.
 
 ## 9. Configuration map
 
@@ -563,7 +622,7 @@ A Plan Reuse Mechanism for LLM-Driven Agent › 6.5 Performance Gain Analysis
 | CUDA out of memory during parsing | detector switches to CPU for the rest of the run |
 | a paper fails to parse or embed | exception is logged; status stays put; **retried every poll, forever** — see below |
 | a service crashes mid-paper | nothing lost: output file is rewritten and status advanced on the next poll |
-| stale process holds a port | `stop_services.sh` sweeps it; `fresh_start`/`start_query` refuse to start over it |
+| stale process holds a port | `anneal stop --all` sweeps it; `anneal` and `anneal fresh-start` refuse to start over it |
 
 | a paper fails repeatedly | its status becomes `error` with the message in `last_error`; the loops skip it, and the Ingestion page and `pipeline_status.py` list it. Retry with `scripts/register_pdfs.py --retry-errors` |
 

@@ -73,7 +73,7 @@ python scripts/rag_inspect.py parse Some_Paper.pdf --show 20  # print more block
 
 **Knobs** (`parse_manager/config.py`): `YOLO_CONF`, `RENDER_DPI`,
 `FULL_WIDTH_FRACTION`, `SINGLE_COLUMN_FRACTION`, `MODEL_CANDIDATES`. See
-[parse_manager.md](parse_manager.md).
+[PARSING.md](PARSING.md).
 
 Outputs: `data/parsed/<name>.json` (raw regions) and
 `data/processed/<name>.txt` + `.json` (assembled blocks plus everything
@@ -200,7 +200,7 @@ and `SYSTEM_PROMPT` in `rag_setup/rag.py`.
 scripts/fresh_start.sh          # purge + register PDFs + start all services
 ```
 
-See [FRESH_START.md](FRESH_START.md). Re-embedding a single paper is
+See [OPERATIONS.md](OPERATIONS.md). Re-embedding a single paper is
 idempotent (`python scripts/register_pdfs.py --force Paper.pdf`).
 
 ## Suggested iteration loop
