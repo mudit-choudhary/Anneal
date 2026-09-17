@@ -39,7 +39,7 @@ ALPHA = 0.05
 
 PARSER_NOTE = {
     "raw_dump": "PyMuPDF `page.get_text()`, no structure",
-    "legacy": "commit `3a577c0`, page dump plus regex paragraph rules",
+    "legacy": "commit `057ce0e9`, page dump plus regex paragraph rules",
     "oss_docling": "Docling layout, our stage-2 assembler",
     "oss_pymupdf4llm": "PyMuPDF4LLM markdown mapped to typed blocks",
     "current": "YOLOv11 layout, column-aware reading order",

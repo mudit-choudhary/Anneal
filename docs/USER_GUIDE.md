@@ -233,7 +233,7 @@ python scripts/retrieval_eval.py --device cpu run --judge     # the slow, meanin
 | `rechunked` | PyMuPDF page dump | recursive 512/103 chars | bge-base-en-v1.5 |
 | `current` | YOLO layout parse | structure-aware | bge-base-en-v1.5 |
 
-`original` and `rechunked` are reconstructed from commit `b2a0d23`, so the
+`original` and `rechunked` are reconstructed from commit `c41e756`, so the
 baseline is the code that actually ran, not an approximation of it.
 `original → rechunked` isolates the embedding-model change;
 `rechunked → current` isolates parsing plus chunking.
@@ -310,7 +310,7 @@ under `/tmp/chunking_bench` (override with `BENCH_DIR`). It never touches
 
 | class | what it is |
 |---|---|
-| `LegacyParser` | commit `3a577c0`: PyMuPDF page dump, then the regex paragraph builder |
+| `LegacyParser` | commit `057ce0e9`: PyMuPDF page dump, then the regex paragraph builder |
 | `CurrentParser` | today: YOLO layout detection, then typed blocks |
 
 Both return the same two artefacts — the **parsed JSON** a pipeline would

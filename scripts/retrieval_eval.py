@@ -16,7 +16,7 @@ Three arms, so the two changes can be separated instead of confounded:
   rechunked vs current   → what layout parsing + structure chunking bought
   original vs current    → the whole change
 
-`original` and `rechunked` are reconstructed from commit b2a0d23: a plain
+`original` and `rechunked` are reconstructed from commit c41e756: a plain
 `page.get_text()` per page prefixed with "Page: N", split by
 RecursiveCharacterTextSplitter(512, overlap 103).
 
@@ -86,7 +86,7 @@ ARMS = {
 }
 
 BASELINE_CHUNK_SIZE = 512
-BASELINE_OVERLAP = int(BASELINE_CHUNK_SIZE * 0.2) + 1   # 103, as in b2a0d23
+BASELINE_OVERLAP = int(BASELINE_CHUNK_SIZE * 0.2) + 1   # 103, as in c41e756
 KS = (1, 3, 5, 10)
 # Recall@k is not comparable between arms whose chunks differ in size: the
 # baseline's 512-char chunks with 103 chars of overlap give the same passage

@@ -10,7 +10,7 @@ error and is reported as NOT RUN.
 
 Parsers
   raw_dump          PyMuPDF page.get_text(), no structure, no reading-order fix
-  legacy            the parser as of commit 3a577c0, loaded from a git worktree
+  legacy            the parser as of commit 057ce0e9, loaded from a git worktree
   oss_docling       Docling layout -> our stage-2 assembler
   oss_pymupdf4llm   PyMuPDF4LLM markdown -> blocks
   current           YOLOv11 layout + column-aware reading order
@@ -127,7 +127,7 @@ _LEGACY = {}
 
 
 def _legacy_module():
-    """Load commit 3a577c0's txt_processor with its registry call stubbed."""
+    """Load commit 057ce0e9's txt_processor with its registry call stubbed."""
     if _LEGACY:
         return _LEGACY["mod"]
     import importlib.util
@@ -153,7 +153,7 @@ def _legacy_module():
 
 
 def parse_legacy(pdf):
-    """The 3a577c0 pipeline: page dump, then its regex paragraph builder."""
+    """The 057ce0e9 pipeline: page dump, then its regex paragraph builder."""
     import pymupdf
     import tempfile
 

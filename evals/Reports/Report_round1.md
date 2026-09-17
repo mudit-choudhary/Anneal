@@ -27,7 +27,7 @@ Chunk-shape run, 15 papers:
 | Parser | Pages | Text | Sec/page | VRAM rise | Section barriers | What it is |
 |---|---|---|---|---|---|---|
 | `raw_dump` | 401 | 1.22 MB | 0.0319 | 0 MB | 0 | PyMuPDF `page.get_text()`, no structure |
-| `legacy` | 401 | 1.07 MB | 0.0320 | 0 MB | 0 | commit `3a577c0`, page dump plus regex paragraph rules |
+| `legacy` | 401 | 1.07 MB | 0.0320 | 0 MB | 0 | commit `057ce0e9`, page dump plus regex paragraph rules |
 | `oss_docling` | 401 | 1.34 MB | 0.4462 | 1,380 MB | 406 | Docling layout, our stage-2 assembler |
 | `oss_pymupdf4llm` | 401 | 1.22 MB | 0.9146 | 0 MB | 393 | PyMuPDF4LLM markdown mapped to typed blocks |
 | `current` | 401 | 1.20 MB | 0.1557 | 1,044 MB | 399 | YOLOv11 layout, column-aware reading order |

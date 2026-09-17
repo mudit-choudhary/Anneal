@@ -16,7 +16,7 @@ Three parsers
 -------------
 `RawDumpParser` PyMuPDF page text and nothing else — no paragraph rules, no
                 cleanup. The floor both other arms are measured against.
-`LegacyParser`  reproduces commit 3a577c0 (identical to b2a0d23 for these
+`LegacyParser`  reproduces commit 057ce0e9 (identical to c41e756 for these
                 files): PyMuPDF `page.get_text()` per page prefixed "Page: N",
                 then `txt_processor.process_pdf_txt`'s regex paragraph builder.
 `CurrentParser` runs today's pipeline: YOLO layout detection through
@@ -66,7 +66,7 @@ EMBED_MODEL = "BAAI/bge-base-en-v1.5"
 
 # ============================================================ parsers
 class LegacyParser:
-    """The pipeline as of 3a577c0: no layout model, regex paragraph rules."""
+    """The pipeline as of 057ce0e9: no layout model, regex paragraph rules."""
 
     name = "legacy"
     label = "legacy (page dump + regex paragraphs)"
@@ -98,7 +98,7 @@ class LegacyParser:
 
     @staticmethod
     def _paragraphs(content):
-        """Verbatim port of txt_processor.process_pdf_txt at 3a577c0.
+        """Verbatim port of txt_processor.process_pdf_txt at 057ce0e9.
 
         The hardcoded `title_pattern` in the original matched one specific
         paper's running header; it is kept, because removing it would be
@@ -410,7 +410,7 @@ def build_chunkers():
     return [
         # the two knobs everyone tunes on a fixed-size splitter
         RecursiveChunker(512, 0),
-        RecursiveChunker(512, 103),      # 20% — the b2a0d23 setting
+        RecursiveChunker(512, 103),      # 20% — the c41e756 setting
         RecursiveChunker(1024, 0),
         RecursiveChunker(1024, 102),     # 10%
         # unique to semantic: how the breakpoint threshold is chosen
