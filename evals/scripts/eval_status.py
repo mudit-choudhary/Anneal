@@ -86,6 +86,32 @@ def main():
                       f"{g('span_hit@5'):>8}{g('span_hit_near@5'):>7}{g('precision_near@5'):>8}"
                       f"{v['seconds'] / 60:>9.0f}")
 
+    # stage 2: offline scoring (string -> nli -> gemma), written per cell
+    scores_dir = REPO / "evals" / "Reports" / "rag_round2_scores"
+    if scores_dir.exists():
+        scoring = subprocess.run(["pgrep", "-f", "score_answers.py"], capture_output=True).returncode == 0
+        stages = {"string": "token_f1", "nli": "nli_fact_recall_all", "gemma": "gemma_raw"}
+        counts = {k: 0 for k in stages}
+        for f in scores_dir.glob("*__*.json"):
+            try:
+                rows = json.loads(f.read_text()).values()
+            except json.JSONDecodeError:
+                continue
+            for k, key in stages.items():
+                counts[k] += sum(1 for r in rows if key in r)
+        total = TOTAL * QUESTIONS
+        print(f"\n  scoring  {'RUNNING' if scoring else 'NOT RUNNING'}")
+        for k in stages:
+            done_n = counts[k]
+            bar = "done" if done_n >= total else (f"{100 * done_n / total:.0f}%" if done_n else "queued")
+            print(f"    {k:<8} {done_n:>5}/{total}  {bar}")
+        slog = REPO / "evals" / "Reports" / "round2_scoring.log"
+        if slog.exists():
+            last = [l.strip() for l in slog.read_text(errors="ignore").splitlines()
+                    if "h left" in l or "s each" in l]
+            if last:
+                print(f"    last     {last[-1]}")
+
     failed = {k: v for k, v in cells.items() if v.get("error")}
     for k, v in failed.items():
         print(f"\n  FAILED {k}: {v['error'][:80]}")

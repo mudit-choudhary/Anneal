@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 422" width="760" height="422" font-family="ui-monospace,Menlo,monospace">
+<title>Answer retrieved within 4,000 characters</title>
+<text x="0.0" y="20.0" font-size="13" fill="#8b949e" text-anchor="start" font-weight="600">Answer found within 4,000 characters retrieved</text>
+<text x="0.0" y="38.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">near match; every cell answered the same 400 questions</text>
+<rect x="300" y="50" width="11" height="9" rx="2" fill="#9aa3ab"/>
+<text x="316.0" y="58.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">fixed_token</text>
+<rect x="450" y="50" width="11" height="9" rx="2" fill="#1baf7a"/>
+<text x="466.0" y="58.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">recursive_char</text>
+<rect x="600" y="50" width="11" height="9" rx="2" fill="#2a78d6"/>
+<text x="616.0" y="58.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">grain_growth</text>
+<text x="138.0" y="108.0" font-size="11" fill="#8b949e" text-anchor="end" font-weight="normal">docling</text>
+<rect x="150" y="74" width="288.6" height="26" rx="3" fill="#9aa3ab"/>
+<text x="446.6" y="91.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.555</text>
+<rect x="150" y="104" width="306.8" height="26" rx="3" fill="#1baf7a"/>
+<text x="464.8" y="121.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.590</text>
+<rect x="150" y="134" width="330.2" height="26" rx="3" fill="#2a78d6"/>
+<text x="488.2" y="151.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.635</text>
+<text x="138.0" y="214.0" font-size="11" fill="#8b949e" text-anchor="end" font-weight="normal">pymupdf4llm</text>
+<rect x="150" y="180" width="276.9" height="26" rx="3" fill="#9aa3ab"/>
+<text x="434.9" y="197.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.532</text>
+<rect x="150" y="210" width="267.8" height="26" rx="3" fill="#1baf7a"/>
+<text x="425.8" y="227.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.515</text>
+<rect x="150" y="240" width="291.2" height="26" rx="3" fill="#2a78d6"/>
+<text x="449.2" y="257.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.560</text>
+<text x="138.0" y="320.0" font-size="11" fill="#8b949e" text-anchor="end" font-weight="normal">current</text>
+<rect x="150" y="286" width="317.2" height="26" rx="3" fill="#9aa3ab"/>
+<text x="475.2" y="303.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.610</text>
+<rect x="150" y="316" width="344.5" height="26" rx="3" fill="#1baf7a"/>
+<text x="502.5" y="333.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.662</text>
+<rect x="150" y="346" width="364.0" height="26" rx="3" fill="#2a78d6"/>
+<text x="522.0" y="363.0" font-size="10.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.700</text>
+</svg>

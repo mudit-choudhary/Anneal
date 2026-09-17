@@ -27,6 +27,7 @@ Refusals score 0 on the answer metrics, as pre-registered.
 
 import argparse
 import json
+import os
 import random
 import re
 import subprocess
@@ -34,6 +35,11 @@ import sys
 import time
 from collections import Counter
 from pathlib import Path
+
+# DeBERTa's disentangled attention is memory-hungry on 400-token pairs; on a 4 GB
+# card it OOMs at batch 32. Smaller batches plus expandable segments keep it inside.
+for _var in ("PYTORCH_ALLOC_CONF", "PYTORCH_CUDA_ALLOC_CONF"):   # new name, then the old one
+    os.environ.setdefault(_var, "expandable_segments:True")
 
 REPO = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(REPO))
@@ -228,6 +234,26 @@ def stage_string(cells, qs):
         print(f"  {cell}: {n} scored", flush=True)
 
 
+_BATCH = [8]                     # shrinks itself if the card runs out of memory
+
+
+def predict(model, pairs):
+    """Label each pair, halving the batch size on CUDA OOM rather than dying."""
+    import torch
+    if not pairs:
+        return []
+    while True:
+        try:
+            return [int(x.argmax()) for x in
+                    model.predict(pairs, batch_size=_BATCH[0], show_progress_bar=False)]
+        except torch.OutOfMemoryError:
+            torch.cuda.empty_cache()
+            if _BATCH[0] <= 1:
+                raise
+            _BATCH[0] = max(1, _BATCH[0] // 2)
+            print(f"    CUDA out of memory; retrying at batch {_BATCH[0]}", flush=True)
+
+
 def fact_validity(model, ent, qs):
     """For each question, which of its facts the reference answer itself entails.
 
@@ -239,7 +265,7 @@ def fact_validity(model, ent, qs):
     if path.exists():
         return json.loads(path.read_text())
     pairs = [(q["ideal_answer"], f) for q in qs.values() for f in q["facts"]]
-    labels = [int(x.argmax()) for x in model.predict(pairs, batch_size=32, show_progress_bar=False)]
+    labels = predict(model, pairs)
     out, i = {}, 0
     for qid, q in qs.items():
         out[qid] = [labels[i + k] == ent for k in range(len(q["facts"]))]
@@ -248,10 +274,11 @@ def fact_validity(model, ent, qs):
     return out
 
 
-def stage_nli(cells, qs, threads, device):
+def stage_nli(cells, qs, threads, device, batch=8):
     import torch
     from sentence_transformers import CrossEncoder
     torch.set_num_threads(threads)
+    _BATCH[0] = batch
     model = CrossEncoder(NLI_MODEL, device=device)
     lab = {v.lower(): int(k) for k, v in model.model.config.id2label.items()}
     ENT, CON = lab["entailment"], lab["contradiction"]
@@ -278,8 +305,7 @@ def stage_nli(cells, qs, threads, device):
             add("contra", [(q["ideal_answer"], s) for s in sents])
             add("faith", [(w, s) for s in sents for w in ctx_w])
             add("suff", [(w, f) for f in facts for w in ctx_w])
-            labels = [int(x.argmax()) for x in model.predict(pairs, batch_size=32, show_progress_bar=False)] \
-                if pairs else []
+            labels = predict(model, pairs)
 
             def grid(name, n_items, n_windows):
                 a, b = spans[name]
@@ -371,6 +397,7 @@ def main():
     ap.add_argument("--cells", nargs="*", help="parser:chunker; default every finished cell")
     ap.add_argument("--threads", type=int, default=4, help="NLI CPU threads")
     ap.add_argument("--device", default="cpu", help="NLI device")
+    ap.add_argument("--batch", type=int, default=8, help="NLI batch size (halves itself on OOM)")
     ap.add_argument("--force", action="store_true", help="run Gemma even if retrieval is running")
     args = ap.parse_args()
 
@@ -381,7 +408,7 @@ def main():
     if args.stage == "string":
         stage_string(cells, qs)
     elif args.stage == "nli":
-        stage_nli(cells, qs, args.threads, args.device)
+        stage_nli(cells, qs, args.threads, args.device, args.batch)
     else:
         stage_gemma(cells, qs, args.force)
 

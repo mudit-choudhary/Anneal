@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 380" width="820" height="380" font-family="ui-monospace,Menlo,monospace">
+<title>Chunk shape against retrieval</title>
+<text x="0.0" y="20.0" font-size="13" fill="#8b949e" text-anchor="start" font-weight="600">Chunks ending mid-sentence against answer retrieval</text>
+<text x="0.0" y="38.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">one point per cell, both measured on the same 514 papers; Spearman -0.72</text>
+<line x1="92" y1="300.0" x2="640" y2="300.0" stroke="#8b949e" stroke-width="0.6" opacity="0.18"/>
+<text x="84.0" y="304.0" font-size="9" fill="#8b949e" text-anchor="end" font-weight="normal">0.48</text>
+<text x="92.0" y="318.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">0%</text>
+<line x1="92" y1="245.0" x2="640" y2="245.0" stroke="#8b949e" stroke-width="0.6" opacity="0.18"/>
+<text x="84.0" y="249.0" font-size="9" fill="#8b949e" text-anchor="end" font-weight="normal">0.55</text>
+<text x="229.0" y="318.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">25%</text>
+<line x1="92" y1="190.0" x2="640" y2="190.0" stroke="#8b949e" stroke-width="0.6" opacity="0.18"/>
+<text x="84.0" y="194.0" font-size="9" fill="#8b949e" text-anchor="end" font-weight="normal">0.61</text>
+<text x="366.0" y="318.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">50%</text>
+<line x1="92" y1="135.0" x2="640" y2="135.0" stroke="#8b949e" stroke-width="0.6" opacity="0.18"/>
+<text x="84.0" y="139.0" font-size="9" fill="#8b949e" text-anchor="end" font-weight="normal">0.67</text>
+<text x="503.0" y="318.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">75%</text>
+<line x1="92" y1="80.0" x2="640" y2="80.0" stroke="#8b949e" stroke-width="0.6" opacity="0.18"/>
+<text x="84.0" y="84.0" font-size="9" fill="#8b949e" text-anchor="end" font-weight="normal">0.73</text>
+<text x="640.0" y="318.0" font-size="9" fill="#8b949e" text-anchor="middle" font-weight="normal">100%</text>
+<text x="366.0" y="340.0" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="normal">chunks ending mid-sentence</text>
+<circle cx="601.3" cy="236.0" r="7" fill="#9aa3ab" opacity="0.9"/>
+<text x="612.3" y="240.0" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">docling</text>
+<circle cx="300.0" cy="204.5" r="7" fill="#1baf7a" opacity="0.9"/>
+<text x="311.0" y="208.5" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">docling</text>
+<circle cx="135.9" cy="163.9" r="7" fill="#2a78d6" opacity="0.9"/>
+<text x="146.9" y="167.9" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">docling</text>
+<circle cx="605.3" cy="256.3" r="7" fill="#9aa3ab" opacity="0.9"/>
+<text x="616.3" y="260.3" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">pymupdf4llm</text>
+<circle cx="361.2" cy="272.1" r="7" fill="#1baf7a" opacity="0.9"/>
+<text x="372.2" y="276.1" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">pymupdf4llm</text>
+<circle cx="196.8" cy="231.5" r="7" fill="#2a78d6" opacity="0.9"/>
+<text x="207.8" y="235.5" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">pymupdf4llm</text>
+<circle cx="595.5" cy="186.4" r="7" fill="#9aa3ab" opacity="0.9"/>
+<text x="606.5" y="190.4" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">current</text>
+<circle cx="281.4" cy="139.1" r="7" fill="#1baf7a" opacity="0.9"/>
+<text x="292.4" y="143.1" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">current</text>
+<circle cx="133.2" cy="105.3" r="7" fill="#2a78d6" opacity="0.9"/>
+<text x="144.2" y="109.3" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">current</text>
+<circle cx="680" cy="90" r="6" fill="#9aa3ab"/>
+<text x="692.0" y="94.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">fixed_token</text>
+<circle cx="680" cy="110" r="6" fill="#1baf7a"/>
+<text x="692.0" y="114.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">recursive_char</text>
+<circle cx="680" cy="130" r="6" fill="#2a78d6"/>
+<text x="692.0" y="134.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">grain_growth</text>
+</svg>

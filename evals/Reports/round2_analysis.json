@@ -1,0 +1,3052 @@
+{
+ "generated_at": "2026-09-17 06:20:54 +0530",
+ "questions": 400,
+ "dataset_sha256_matches_preregistration": true,
+ "amendments_applied": [
+  1,
+  2,
+  3,
+  4
+ ],
+ "scored_counts": {
+  "span_hit_near@4000ch": 3600,
+  "span_hit_near@5": 3600,
+  "precision_near@5": 3600,
+  "nli_fact_recall": 3375,
+  "gemma_correctness": 3600,
+  "answer_keyword_recall": 3600,
+  "answer_similarity": 3600
+ },
+ "cells": {
+  "oss_docling|fixed_token": {
+   "answer_keyword_recall": 0.7432500000000001,
+   "answer_similarity": 0.8336586099863053,
+   "answer_words": 77.3975,
+   "chrf": 0.3814048425557792,
+   "context_chars": 6680.6925,
+   "gemma_context_sufficiency": 0.7625,
+   "gemma_correctness": 0.7325,
+   "gemma_faithfulness": 0.7575,
+   "keyword_recall": 0.60125,
+   "mrr": 0.3847668650793651,
+   "mrr_near": 0.43770734126984123,
+   "mrr_paper": 0.8771041666666666,
+   "ndcg@10": 0.6121300661031245,
+   "ndcg_near@10": 0.6237238655872851,
+   "nli_context_sufficiency": 0.34708333333333335,
+   "nli_contradiction": 0.3375,
+   "nli_fact_recall": 0.5862222222222222,
+   "nli_fact_recall_all": 0.52375,
+   "nli_faithfulness": 0.3834570529652497,
+   "numeric_anchor_correct": 0.6690647482014388,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.8525,
+   "paper_hit@10": 0.925,
+   "paper_hit@3": 0.8975,
+   "paper_hit@5": 0.91,
+   "precision@1": 0.8525,
+   "precision@10": 0.596,
+   "precision@3": 0.7691666666666667,
+   "precision@5": 0.701,
+   "precision_near@1": 0.8525,
+   "precision_near@10": 0.596,
+   "precision_near@3": 0.7691666666666667,
+   "precision_near@5": 0.701,
+   "refusal": 0.2375,
+   "rouge_l": 0.31521824501117435,
+   "short_answer_match": 0.5525,
+   "span_hit@1": 0.2925,
+   "span_hit@10": 0.5775,
+   "span_hit@2000ch": 0.405,
+   "span_hit@3": 0.45,
+   "span_hit@4000ch": 0.4875,
+   "span_hit@5": 0.51,
+   "span_hit@8000ch": 0.56,
+   "span_hit_near@1": 0.3325,
+   "span_hit_near@10": 0.65,
+   "span_hit_near@2000ch": 0.4675,
+   "span_hit_near@3": 0.5125,
+   "span_hit_near@4000ch": 0.555,
+   "span_hit_near@5": 0.58,
+   "span_hit_near@8000ch": 0.6325,
+   "token_f1": 0.3583802388496622
+  },
+  "oss_docling|recursive_char": {
+   "answer_keyword_recall": 0.7646250000000001,
+   "answer_similarity": 0.8343731047213078,
+   "answer_words": 83.15,
+   "chrf": 0.3996234884733952,
+   "context_chars": 7131.1075,
+   "gemma_context_sufficiency": 0.81125,
+   "gemma_correctness": 0.7875,
+   "gemma_faithfulness": 0.8075,
+   "keyword_recall": 0.74625,
+   "mrr": 0.4366428571428571,
+   "mrr_near": 0.4802708333333333,
+   "mrr_paper": 0.8762202380952381,
+   "ndcg@10": 0.6001894495178298,
+   "ndcg_near@10": 0.6089626328347191,
+   "nli_context_sufficiency": 0.14583333333333334,
+   "nli_contradiction": 0.295,
+   "nli_fact_recall": 0.568,
+   "nli_fact_recall_all": 0.5279166666666666,
+   "nli_faithfulness": 0.12599187736382858,
+   "numeric_anchor_correct": 0.737410071942446,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.845,
+   "paper_hit@10": 0.93,
+   "paper_hit@3": 0.9025,
+   "paper_hit@5": 0.9125,
+   "precision@1": 0.845,
+   "precision@10": 0.5660000000000001,
+   "precision@3": 0.7466666666666667,
+   "precision@5": 0.6785,
+   "precision_near@1": 0.845,
+   "precision_near@10": 0.5660000000000001,
+   "precision_near@3": 0.7466666666666667,
+   "precision_near@5": 0.6785,
+   "refusal": 0.18,
+   "rouge_l": 0.321741147095404,
+   "short_answer_match": 0.6,
+   "span_hit@1": 0.3325,
+   "span_hit@10": 0.6275,
+   "span_hit@2000ch": 0.4875,
+   "span_hit@3": 0.5225,
+   "span_hit@4000ch": 0.5375,
+   "span_hit@5": 0.57,
+   "span_hit@8000ch": 0.6125,
+   "span_hit_near@1": 0.3675,
+   "span_hit_near@10": 0.6875,
+   "span_hit_near@2000ch": 0.535,
+   "span_hit_near@3": 0.5725,
+   "span_hit_near@4000ch": 0.59,
+   "span_hit_near@5": 0.6225,
+   "span_hit_near@8000ch": 0.6675,
+   "token_f1": 0.3656257594863959
+  },
+  "oss_docling|grain_growth": {
+   "answer_keyword_recall": 0.7727916666666667,
+   "answer_similarity": 0.839917126595974,
+   "answer_words": 84.605,
+   "chrf": 0.40544143564925794,
+   "context_chars": 6133.77,
+   "gemma_context_sufficiency": 0.84875,
+   "gemma_correctness": 0.80625,
+   "gemma_faithfulness": 0.8375,
+   "keyword_recall": 0.7469166666666667,
+   "mrr": 0.4684474206349206,
+   "mrr_near": 0.5142390873015873,
+   "mrr_paper": 0.8873392857142858,
+   "ndcg@10": 0.6125101612383153,
+   "ndcg_near@10": 0.6219867801516719,
+   "nli_context_sufficiency": 0.2025,
+   "nli_contradiction": 0.2975,
+   "nli_fact_recall": 0.6213333333333333,
+   "nli_fact_recall_all": 0.5620833333333334,
+   "nli_faithfulness": 0.1587358992582873,
+   "numeric_anchor_correct": 0.7482014388489209,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.8575,
+   "paper_hit@10": 0.935,
+   "paper_hit@3": 0.9125,
+   "paper_hit@5": 0.93,
+   "precision@1": 0.8575,
+   "precision@10": 0.57475,
+   "precision@3": 0.7483333333333333,
+   "precision@5": 0.6940000000000001,
+   "precision_near@1": 0.8575,
+   "precision_near@10": 0.57475,
+   "precision_near@3": 0.7483333333333333,
+   "precision_near@5": 0.6940000000000001,
+   "refusal": 0.1625,
+   "rouge_l": 0.32939119508807474,
+   "short_answer_match": 0.61,
+   "span_hit@1": 0.385,
+   "span_hit@10": 0.64,
+   "span_hit@2000ch": 0.5175,
+   "span_hit@3": 0.5275,
+   "span_hit@4000ch": 0.5725,
+   "span_hit@5": 0.585,
+   "span_hit@8000ch": 0.6375,
+   "span_hit_near@1": 0.415,
+   "span_hit_near@10": 0.7075,
+   "span_hit_near@2000ch": 0.5775,
+   "span_hit_near@3": 0.5875,
+   "span_hit_near@4000ch": 0.635,
+   "span_hit_near@5": 0.6525,
+   "span_hit_near@8000ch": 0.705,
+   "token_f1": 0.3744943616712613
+  },
+  "oss_pymupdf4llm|fixed_token": {
+   "answer_keyword_recall": 0.742875,
+   "answer_similarity": 0.8330606023967266,
+   "answer_words": 82.55,
+   "chrf": 0.3710623590365161,
+   "context_chars": 6396.5925,
+   "gemma_context_sufficiency": 0.7525,
+   "gemma_correctness": 0.72,
+   "gemma_faithfulness": 0.74125,
+   "keyword_recall": 0.609625,
+   "mrr": 0.378984126984127,
+   "mrr_near": 0.43119940476190477,
+   "mrr_paper": 0.8873710317460318,
+   "ndcg@10": 0.6128548082300704,
+   "ndcg_near@10": 0.6241678806835662,
+   "nli_context_sufficiency": 0.35625,
+   "nli_contradiction": 0.3425,
+   "nli_fact_recall": 0.5724444444444444,
+   "nli_fact_recall_all": 0.5195833333333334,
+   "nli_faithfulness": 0.3923539086740122,
+   "numeric_anchor_correct": 0.6546762589928058,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.865,
+   "paper_hit@10": 0.9275,
+   "paper_hit@3": 0.9075,
+   "paper_hit@5": 0.9075,
+   "precision@1": 0.865,
+   "precision@10": 0.602,
+   "precision@3": 0.7633333333333333,
+   "precision@5": 0.6984999999999999,
+   "precision_near@1": 0.865,
+   "precision_near@10": 0.602,
+   "precision_near@3": 0.7633333333333333,
+   "precision_near@5": 0.6984999999999999,
+   "refusal": 0.2375,
+   "rouge_l": 0.3040573124432543,
+   "short_answer_match": 0.5425,
+   "span_hit@1": 0.3,
+   "span_hit@10": 0.5475,
+   "span_hit@2000ch": 0.4075,
+   "span_hit@3": 0.4325,
+   "span_hit@4000ch": 0.4625,
+   "span_hit@5": 0.4875,
+   "span_hit@8000ch": 0.5275,
+   "span_hit_near@1": 0.3375,
+   "span_hit_near@10": 0.6275,
+   "span_hit_near@2000ch": 0.47,
+   "span_hit_near@3": 0.4975,
+   "span_hit_near@4000ch": 0.5325,
+   "span_hit_near@5": 0.56,
+   "span_hit_near@8000ch": 0.605,
+   "token_f1": 0.3450371625446912
+  },
+  "oss_pymupdf4llm|recursive_char": {
+   "answer_keyword_recall": 0.7543333333333334,
+   "answer_similarity": 0.8306933139264584,
+   "answer_words": 88.1225,
+   "chrf": 0.3768471352110744,
+   "context_chars": 7369.2725,
+   "gemma_context_sufficiency": 0.785,
+   "gemma_correctness": 0.755,
+   "gemma_faithfulness": 0.775,
+   "keyword_recall": 0.7393333333333334,
+   "mrr": 0.3822946428571429,
+   "mrr_near": 0.4202529761904762,
+   "mrr_paper": 0.8616101190476191,
+   "ndcg@10": 0.5818166699761236,
+   "ndcg_near@10": 0.5896911327702539,
+   "nli_context_sufficiency": 0.10625,
+   "nli_contradiction": 0.3225,
+   "nli_fact_recall": 0.5986666666666667,
+   "nli_fact_recall_all": 0.5454166666666667,
+   "nli_faithfulness": 0.10381319731459789,
+   "numeric_anchor_correct": 0.6690647482014388,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.8275,
+   "paper_hit@10": 0.9275,
+   "paper_hit@3": 0.8875,
+   "paper_hit@5": 0.9075,
+   "precision@1": 0.8275,
+   "precision@10": 0.56,
+   "precision@3": 0.7241666666666667,
+   "precision@5": 0.669,
+   "precision_near@1": 0.8275,
+   "precision_near@10": 0.56,
+   "precision_near@3": 0.7241666666666667,
+   "precision_near@5": 0.669,
+   "refusal": 0.2125,
+   "rouge_l": 0.3042891428994469,
+   "short_answer_match": 0.5625,
+   "span_hit@1": 0.3025,
+   "span_hit@10": 0.5675,
+   "span_hit@2000ch": 0.3825,
+   "span_hit@3": 0.425,
+   "span_hit@4000ch": 0.4675,
+   "span_hit@5": 0.505,
+   "span_hit@8000ch": 0.5425,
+   "span_hit_near@1": 0.3325,
+   "span_hit_near@10": 0.62,
+   "span_hit_near@2000ch": 0.425,
+   "span_hit_near@3": 0.47,
+   "span_hit_near@4000ch": 0.515,
+   "span_hit_near@5": 0.5525,
+   "span_hit_near@8000ch": 0.5925,
+   "token_f1": 0.34621979717957196
+  },
+  "oss_pymupdf4llm|grain_growth": {
+   "answer_keyword_recall": 0.763375,
+   "answer_similarity": 0.8314595344662666,
+   "answer_words": 84.2825,
+   "chrf": 0.3863846268653265,
+   "context_chars": 6641.65,
+   "gemma_context_sufficiency": 0.78,
+   "gemma_correctness": 0.75875,
+   "gemma_faithfulness": 0.77375,
+   "keyword_recall": 0.7329166666666667,
+   "mrr": 0.40869841269841267,
+   "mrr_near": 0.444406746031746,
+   "mrr_paper": 0.8613809523809524,
+   "ndcg@10": 0.5833978450571999,
+   "ndcg_near@10": 0.5905730960336814,
+   "nli_context_sufficiency": 0.12583333333333335,
+   "nli_contradiction": 0.3225,
+   "nli_fact_recall": 0.6102222222222222,
+   "nli_fact_recall_all": 0.5570833333333334,
+   "nli_faithfulness": 0.12278372699425331,
+   "numeric_anchor_correct": 0.6834532374100719,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.825,
+   "paper_hit@10": 0.925,
+   "paper_hit@3": 0.89,
+   "paper_hit@5": 0.9025,
+   "precision@1": 0.825,
+   "precision@10": 0.5535,
+   "precision@3": 0.7283333333333333,
+   "precision@5": 0.6629999999999999,
+   "precision_near@1": 0.825,
+   "precision_near@10": 0.5535,
+   "precision_near@3": 0.7283333333333333,
+   "precision_near@5": 0.6629999999999999,
+   "refusal": 0.2125,
+   "rouge_l": 0.31229463415601333,
+   "short_answer_match": 0.59,
+   "span_hit@1": 0.3175,
+   "span_hit@10": 0.605,
+   "span_hit@2000ch": 0.4525,
+   "span_hit@3": 0.48,
+   "span_hit@4000ch": 0.515,
+   "span_hit@5": 0.5175,
+   "span_hit@8000ch": 0.5875,
+   "span_hit_near@1": 0.345,
+   "span_hit_near@10": 0.6525,
+   "span_hit_near@2000ch": 0.4975,
+   "span_hit_near@3": 0.5275,
+   "span_hit_near@4000ch": 0.56,
+   "span_hit_near@5": 0.565,
+   "span_hit_near@8000ch": 0.635,
+   "token_f1": 0.3534809938185879
+  },
+  "current|fixed_token": {
+   "answer_keyword_recall": 0.756875,
+   "answer_similarity": 0.8310619860887527,
+   "answer_words": 85.9025,
+   "chrf": 0.3704196266189878,
+   "context_chars": 6770.0425,
+   "gemma_context_sufficiency": 0.77875,
+   "gemma_correctness": 0.7425,
+   "gemma_faithfulness": 0.76875,
+   "keyword_recall": 0.628,
+   "mrr": 0.41076884920634915,
+   "mrr_near": 0.4796805555555556,
+   "mrr_paper": 0.8724890873015874,
+   "ndcg@10": 0.613832178282886,
+   "ndcg_near@10": 0.6284961293165868,
+   "nli_context_sufficiency": 0.35625,
+   "nli_contradiction": 0.33,
+   "nli_fact_recall": 0.576,
+   "nli_fact_recall_all": 0.525,
+   "nli_faithfulness": 0.3521499757834163,
+   "numeric_anchor_correct": 0.658273381294964,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.85,
+   "paper_hit@10": 0.9175,
+   "paper_hit@3": 0.885,
+   "paper_hit@5": 0.9025,
+   "precision@1": 0.85,
+   "precision@10": 0.59425,
+   "precision@3": 0.7475,
+   "precision@5": 0.6940000000000001,
+   "precision_near@1": 0.85,
+   "precision_near@10": 0.59425,
+   "precision_near@3": 0.7475,
+   "precision_near@5": 0.6940000000000001,
+   "refusal": 0.2225,
+   "rouge_l": 0.30083614863897357,
+   "short_answer_match": 0.5475,
+   "span_hit@1": 0.31,
+   "span_hit@10": 0.6125,
+   "span_hit@2000ch": 0.4375,
+   "span_hit@3": 0.4825,
+   "span_hit@4000ch": 0.5325,
+   "span_hit@5": 0.5475,
+   "span_hit@8000ch": 0.59,
+   "span_hit_near@1": 0.37,
+   "span_hit_near@10": 0.705,
+   "span_hit_near@2000ch": 0.5075,
+   "span_hit_near@3": 0.5525,
+   "span_hit_near@4000ch": 0.61,
+   "span_hit_near@5": 0.625,
+   "span_hit_near@8000ch": 0.6775,
+   "token_f1": 0.34480902226124427
+  },
+  "current|recursive_char": {
+   "answer_keyword_recall": 0.7892916666666666,
+   "answer_similarity": 0.835742983520031,
+   "answer_words": 83.1325,
+   "chrf": 0.3982144775996088,
+   "context_chars": 7176.245,
+   "gemma_context_sufficiency": 0.83625,
+   "gemma_correctness": 0.7975,
+   "gemma_faithfulness": 0.82875,
+   "keyword_recall": 0.7957500000000001,
+   "mrr": 0.5073779761904762,
+   "mrr_near": 0.5444196428571428,
+   "mrr_paper": 0.8815128968253968,
+   "ndcg@10": 0.6091347611647033,
+   "ndcg_near@10": 0.6167883101510767,
+   "nli_context_sufficiency": 0.11416666666666667,
+   "nli_contradiction": 0.285,
+   "nli_fact_recall": 0.5924444444444444,
+   "nli_fact_recall_all": 0.5429166666666666,
+   "nli_faithfulness": 0.09531779978767284,
+   "numeric_anchor_correct": 0.7410071942446043,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.8575,
+   "paper_hit@10": 0.9275,
+   "paper_hit@3": 0.895,
+   "paper_hit@5": 0.915,
+   "precision@1": 0.8575,
+   "precision@10": 0.55925,
+   "precision@3": 0.7391666666666667,
+   "precision@5": 0.67,
+   "precision_near@1": 0.8575,
+   "precision_near@10": 0.55925,
+   "precision_near@3": 0.7391666666666667,
+   "precision_near@5": 0.67,
+   "refusal": 0.1775,
+   "rouge_l": 0.3179268324706062,
+   "short_answer_match": 0.615,
+   "span_hit@1": 0.4075,
+   "span_hit@10": 0.7075,
+   "span_hit@2000ch": 0.5375,
+   "span_hit@3": 0.585,
+   "span_hit@4000ch": 0.62,
+   "span_hit@5": 0.64,
+   "span_hit@8000ch": 0.685,
+   "span_hit_near@1": 0.4375,
+   "span_hit_near@10": 0.7575,
+   "span_hit_near@2000ch": 0.5775,
+   "span_hit_near@3": 0.625,
+   "span_hit_near@4000ch": 0.6625,
+   "span_hit_near@5": 0.6875,
+   "span_hit_near@8000ch": 0.735,
+   "token_f1": 0.362680873279334
+  },
+  "current|grain_growth": {
+   "answer_keyword_recall": 0.7770833333333332,
+   "answer_similarity": 0.8379601080715656,
+   "answer_words": 85.9125,
+   "chrf": 0.40502126095169566,
+   "context_chars": 5704.485,
+   "gemma_context_sufficiency": 0.835,
+   "gemma_correctness": 0.79375,
+   "gemma_faithfulness": 0.835,
+   "keyword_recall": 0.7917916666666666,
+   "mrr": 0.5017043650793651,
+   "mrr_near": 0.539704365079365,
+   "mrr_paper": 0.8869047619047619,
+   "ndcg@10": 0.6199232140081758,
+   "ndcg_near@10": 0.6280281954096029,
+   "nli_context_sufficiency": 0.12083333333333333,
+   "nli_contradiction": 0.3,
+   "nli_fact_recall": 0.6164444444444445,
+   "nli_fact_recall_all": 0.56,
+   "nli_faithfulness": 0.10757511713394068,
+   "numeric_anchor_correct": 0.7410071942446043,
+   "numeric_anchor_eligible": 0.695,
+   "paper_hit@1": 0.8575,
+   "paper_hit@10": 0.9325,
+   "paper_hit@3": 0.9175,
+   "paper_hit@5": 0.9225,
+   "precision@1": 0.8575,
+   "precision@10": 0.57325,
+   "precision@3": 0.7633333333333333,
+   "precision@5": 0.6945,
+   "precision_near@1": 0.8575,
+   "precision_near@10": 0.57325,
+   "precision_near@3": 0.7633333333333333,
+   "precision_near@5": 0.6945,
+   "refusal": 0.1675,
+   "rouge_l": 0.32904264085156926,
+   "short_answer_match": 0.6025,
+   "span_hit@1": 0.4,
+   "span_hit@10": 0.7175,
+   "span_hit@2000ch": 0.565,
+   "span_hit@3": 0.575,
+   "span_hit@4000ch": 0.645,
+   "span_hit@5": 0.645,
+   "span_hit@8000ch": 0.7075,
+   "span_hit_near@1": 0.4275,
+   "span_hit_near@10": 0.7725,
+   "span_hit_near@2000ch": 0.615,
+   "span_hit_near@3": 0.6275,
+   "span_hit_near@4000ch": 0.7,
+   "span_hit_near@5": 0.7,
+   "span_hit_near@8000ch": 0.7625,
+   "token_f1": 0.37175404756395997
+  }
+ },
+ "spread_across_cells": {
+  "answer_keyword_recall": 0.04641666666666666,
+  "answer_similarity": 0.009223812669515552,
+  "answer_words": 10.725000000000009,
+  "chrf": 0.035021809030270135,
+  "context_chars": 1664.7875000000004,
+  "gemma_context_sufficiency": 0.09625000000000006,
+  "gemma_correctness": 0.08625000000000005,
+  "gemma_faithfulness": 0.09625000000000006,
+  "keyword_recall": 0.19450000000000012,
+  "mrr": 0.12839384920634922,
+  "mrr_near": 0.12416666666666665,
+  "mrr_paper": 0.025990079365079466,
+  "ndcg@10": 0.03810654403205227,
+  "ndcg_near@10": 0.03880499654633296,
+  "nli_context_sufficiency": 0.25,
+  "nli_contradiction": 0.05750000000000005,
+  "nli_fact_recall": 0.053333333333333344,
+  "nli_fact_recall_all": 0.04249999999999998,
+  "nli_faithfulness": 0.29703610888633936,
+  "numeric_anchor_correct": 0.09352517985611508,
+  "numeric_anchor_eligible": 0.0,
+  "paper_hit@1": 0.040000000000000036,
+  "paper_hit@10": 0.01750000000000007,
+  "paper_hit@3": 0.03249999999999997,
+  "paper_hit@5": 0.02750000000000008,
+  "precision@1": 0.040000000000000036,
+  "precision@10": 0.04849999999999999,
+  "precision@3": 0.04499999999999993,
+  "precision@5": 0.038000000000000034,
+  "precision_near@1": 0.040000000000000036,
+  "precision_near@10": 0.04849999999999999,
+  "precision_near@3": 0.04499999999999993,
+  "precision_near@5": 0.038000000000000034,
+  "refusal": 0.07499999999999998,
+  "rouge_l": 0.028555046449101174,
+  "short_answer_match": 0.07250000000000001,
+  "span_hit@1": 0.11499999999999999,
+  "span_hit@10": 0.17000000000000004,
+  "span_hit@2000ch": 0.18249999999999994,
+  "span_hit@3": 0.15999999999999998,
+  "span_hit@4000ch": 0.1825,
+  "span_hit@5": 0.15750000000000003,
+  "span_hit@8000ch": 0.18000000000000005,
+  "span_hit_near@1": 0.10499999999999998,
+  "span_hit_near@10": 0.15249999999999997,
+  "span_hit_near@2000ch": 0.19,
+  "span_hit_near@3": 0.15749999999999997,
+  "span_hit_near@4000ch": 0.18499999999999994,
+  "span_hit_near@5": 0.14749999999999996,
+  "span_hit_near@8000ch": 0.16999999999999993,
+  "token_f1": 0.029685339410017053
+ },
+ "chunker": {
+  "retrieval": {
+   "tests": {
+    "recursive_char": {
+     "span_hit_near@4000ch": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 37,
+       "losses": 19,
+       "p": 0.022241389472860112,
+       "test": "exact sign test",
+       "mean_a": 0.635,
+       "mean_b": 0.59,
+       "diff": 0.045,
+       "ci95": [
+        0.0075,
+        0.0825
+       ],
+       "dz": 0.12099537351947932,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 43,
+       "losses": 25,
+       "p": 0.038460053348927506,
+       "test": "exact sign test",
+       "mean_a": 0.56,
+       "mean_b": 0.515,
+       "diff": 0.045,
+       "ci95": [
+        0.005,
+        0.085
+       ],
+       "dz": 0.10965959587878688,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 43,
+       "losses": 28,
+       "p": 0.09592363141082376,
+       "test": "exact sign test",
+       "mean_a": 0.7,
+       "mean_b": 0.6625,
+       "diff": 0.0375,
+       "ci95": [
+        -0.0025,
+        0.08
+       ],
+       "dz": 0.0892515462572877,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "span_hit_near@5": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 33,
+       "losses": 21,
+       "p": 0.13367423536410528,
+       "test": "exact sign test",
+       "mean_a": 0.6525,
+       "mean_b": 0.6225,
+       "diff": 0.03,
+       "ci95": [
+        -0.005,
+        0.065
+       ],
+       "dz": 0.08182072397921702,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 39,
+       "losses": 34,
+       "p": 0.6399729317539424,
+       "test": "exact sign test",
+       "mean_a": 0.565,
+       "mean_b": 0.5525,
+       "diff": 0.0125,
+       "ci95": [
+        -0.0275,
+        0.0525
+       ],
+       "dz": 0.029236206731751247,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 35,
+       "losses": 30,
+       "p": 0.620144765081303,
+       "test": "exact sign test",
+       "mean_a": 0.7,
+       "mean_b": 0.6875,
+       "diff": 0.0125,
+       "ci95": [
+        -0.0275,
+        0.0525
+       ],
+       "dz": 0.030984798657316726,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "precision_near@5": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 82,
+       "losses": 57,
+       "p": 0.005196484993776562,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6940000000000001,
+       "mean_b": 0.6785,
+       "diff": 0.015500000000000003,
+       "ci95": [
+        0.0005000000000000011,
+        0.030500000000000006
+       ],
+       "dz": 0.10064288431189733,
+       "pending": false,
+       "holm": true
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 65,
+       "losses": 78,
+       "p": 0.4090727819102511,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6629999999999999,
+       "mean_b": 0.669,
+       "diff": -0.006000000000000001,
+       "ci95": [
+        -0.023000000000000003,
+        0.011000000000000001
+       ],
+       "dz": -0.0346184650981366,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 98,
+       "losses": 59,
+       "p": 0.00326941721466556,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6945,
+       "mean_b": 0.67,
+       "diff": 0.0245,
+       "ci95": [
+        0.0095,
+        0.039
+       ],
+       "dz": 0.16030494001989834,
+       "pending": false,
+       "holm": true
+      }
+     }
+    },
+    "fixed_token": {
+     "span_hit_near@4000ch": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 55,
+       "losses": 23,
+       "p": 0.00037779201420676267,
+       "test": "exact sign test",
+       "mean_a": 0.635,
+       "mean_b": 0.555,
+       "diff": 0.08,
+       "ci95": [
+        0.0375,
+        0.1225
+       ],
+       "dz": 0.18398210987766478,
+       "pending": false,
+       "holm": true
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 49,
+       "losses": 38,
+       "p": 0.2836071084054854,
+       "test": "exact sign test",
+       "mean_a": 0.56,
+       "mean_b": 0.5325,
+       "diff": 0.0275,
+       "ci95": [
+        -0.0175,
+        0.0725
+       ],
+       "dz": 0.05899508816289677,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 67,
+       "losses": 31,
+       "p": 0.0003545338559868335,
+       "test": "exact sign test",
+       "mean_a": 0.7,
+       "mean_b": 0.61,
+       "diff": 0.09,
+       "ci95": [
+        0.0425,
+        0.1375
+       ],
+       "dz": 0.18467853946235468,
+       "pending": false,
+       "holm": true
+      }
+     },
+     "span_hit_near@5": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 56,
+       "losses": 27,
+       "p": 0.0019314374822250473,
+       "test": "exact sign test",
+       "mean_a": 0.6525,
+       "mean_b": 0.58,
+       "diff": 0.0725,
+       "ci95": [
+        0.0275,
+        0.1175
+       ],
+       "dz": 0.16101150300791675,
+       "pending": false,
+       "holm": true
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 44,
+       "losses": 42,
+       "p": 0.9142116370824501,
+       "test": "exact sign test",
+       "mean_a": 0.565,
+       "mean_b": 0.56,
+       "diff": 0.005,
+       "ci95": [
+        -0.04,
+        0.05
+       ],
+       "dz": 0.010770415993891535,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 63,
+       "losses": 33,
+       "p": 0.002878610081200932,
+       "test": "exact sign test",
+       "mean_a": 0.7,
+       "mean_b": 0.625,
+       "diff": 0.075,
+       "ci95": [
+        0.0275,
+        0.1225
+       ],
+       "dz": 0.1547255634987315,
+       "pending": false,
+       "holm": true
+      }
+     },
+     "precision_near@5": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 79,
+       "losses": 85,
+       "p": 0.7039352940259556,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6940000000000001,
+       "mean_b": 0.701,
+       "diff": -0.006999999999999998,
+       "ci95": [
+        -0.025,
+        0.011000000000000001
+       ],
+       "dz": -0.038631556773085135,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 60,
+       "losses": 101,
+       "p": 0.0010677393406609559,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6629999999999999,
+       "mean_b": 0.6984999999999999,
+       "diff": -0.0355,
+       "ci95": [
+        -0.054000000000000006,
+        -0.0175
+       ],
+       "dz": -0.1927397237918857,
+       "pending": false,
+       "holm": true
+      },
+      "current": {
+       "n": 400,
+       "wins": 80,
+       "losses": 69,
+       "p": 0.9367358031473703,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6945,
+       "mean_b": 0.6940000000000001,
+       "diff": 0.0005000000000000001,
+       "ci95": [
+        -0.017,
+        0.0175
+       ],
+       "dz": 0.002778605404268754,
+       "pending": false,
+       "holm": false
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "recursive_char": [
+     {
+      "metric": "span_hit_near@4000ch",
+      "verdict": "no established difference",
+      "reason": "significant on only 0 of 3 parsers; pooled effect +0.043 below the 0.05 threshold"
+     }
+    ],
+    "fixed_token": [
+     {
+      "metric": "span_hit_near@4000ch",
+      "verdict": "better",
+      "reason": "significant on 2 of 3 parsers, pooled +0.066"
+     },
+     {
+      "metric": "span_hit_near@5",
+      "verdict": "better",
+      "reason": "significant on 2 of 3 parsers, pooled +0.051"
+     },
+     {
+      "metric": "precision_near@5",
+      "verdict": "no established difference",
+      "reason": "significant on only 1 of 3 parsers; pooled effect -0.014 below the 0.2 threshold"
+     }
+    ]
+   }
+  },
+  "answers": {
+   "tests": {
+    "recursive_char": {
+     "nli_fact_recall": {
+      "oss_docling": {
+       "n": 375,
+       "wins": 68,
+       "losses": 45,
+       "p": 0.011438271506239328,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6213333333333333,
+       "mean_b": 0.568,
+       "diff": 0.05333333333333334,
+       "ci95": [
+        0.00977777777777778,
+        0.096
+       ],
+       "dz": 0.1268093769083519,
+       "pending": false,
+       "holm": true
+      },
+      "oss_pymupdf4llm": {
+       "n": 375,
+       "wins": 66,
+       "losses": 66,
+       "p": 0.5315454470019985,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6102222222222222,
+       "mean_b": 0.5986666666666667,
+       "diff": 0.011555555555555555,
+       "ci95": [
+        -0.03822222222222223,
+        0.05955555555555555
+       ],
+       "dz": 0.023988807126104916,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 375,
+       "wins": 70,
+       "losses": 60,
+       "p": 0.32025473805483207,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6164444444444445,
+       "mean_b": 0.5924444444444444,
+       "diff": 0.024,
+       "ci95": [
+        -0.02311111111111111,
+        0.07066666666666667
+       ],
+       "dz": 0.05077421378698219,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "gemma_correctness": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 35,
+       "losses": 27,
+       "p": 0.36009607354091144,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.80625,
+       "mean_b": 0.7875,
+       "diff": 0.01875,
+       "ci95": [
+        -0.01875,
+        0.05625
+       ],
+       "dz": 0.048509906299376744,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 45,
+       "losses": 43,
+       "p": 0.9117595041378922,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.75875,
+       "mean_b": 0.755,
+       "diff": 0.00375,
+       "ci95": [
+        -0.0425,
+        0.04875
+       ],
+       "dz": 0.008089373649877689,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 34,
+       "losses": 35,
+       "p": 0.812375861709055,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.79375,
+       "mean_b": 0.7975,
+       "diff": -0.00375,
+       "ci95": [
+        -0.04375,
+        0.03625
+       ],
+       "dz": -0.009382029235251254,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "answer_keyword_recall": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 52,
+       "losses": 41,
+       "p": 0.3860148880009552,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.7727916666666667,
+       "mean_b": 0.7646250000000001,
+       "diff": 0.008166666666666666,
+       "ci95": [
+        -0.0072499999999999995,
+        0.023875
+       ],
+       "dz": 0.05144752380903619,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 58,
+       "losses": 50,
+       "p": 0.1804892286996067,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.763375,
+       "mean_b": 0.7543333333333334,
+       "diff": 0.009041666666666668,
+       "ci95": [
+        -0.008291666666666664,
+        0.02666666666666667
+       ],
+       "dz": 0.0509177631192853,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 36,
+       "losses": 54,
+       "p": 0.17584117653700626,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.7770833333333332,
+       "mean_b": 0.7892916666666666,
+       "diff": -0.012208333333333335,
+       "ci95": [
+        -0.027416666666666666,
+        0.0034999999999999996
+       ],
+       "dz": -0.07759310099996256,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "answer_similarity": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 199,
+       "losses": 171,
+       "p": 0.09823374613399116,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.839917126595974,
+       "mean_b": 0.8343731047213078,
+       "diff": 0.005544021874666214,
+       "ci95": [
+        0.0006775107979774476,
+        0.010429747402668
+       ],
+       "dz": 0.1121584011137976,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 199,
+       "losses": 184,
+       "p": 0.7740108967804531,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.8314595344662666,
+       "mean_b": 0.8306933139264584,
+       "diff": 0.0007662205398082734,
+       "ci95": [
+        -0.005458035469055176,
+        0.006975067406892776
+       ],
+       "dz": 0.012003037720877886,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 194,
+       "losses": 180,
+       "p": 0.24777725473545176,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.8379601080715656,
+       "mean_b": 0.835742983520031,
+       "diff": 0.0022171245515346526,
+       "ci95": [
+        -0.003077162206172943,
+        0.007400205880403518
+       ],
+       "dz": 0.04160829306670249,
+       "pending": false,
+       "holm": false
+      }
+     }
+    },
+    "fixed_token": {
+     "nli_fact_recall": {
+      "oss_docling": {
+       "n": 375,
+       "wins": 71,
+       "losses": 60,
+       "p": 0.12404654766909917,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6213333333333333,
+       "mean_b": 0.5862222222222222,
+       "diff": 0.03511111111111111,
+       "ci95": [
+        -0.015111111111111112,
+        0.08488888888888889
+       ],
+       "dz": 0.07137272354968033,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 375,
+       "wins": 74,
+       "losses": 61,
+       "p": 0.10075592358378771,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6102222222222222,
+       "mean_b": 0.5724444444444444,
+       "diff": 0.03777777777777778,
+       "ci95": [
+        -0.011555555555555555,
+        0.08622222222222223
+       ],
+       "dz": 0.07873381443328209,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 375,
+       "wins": 77,
+       "losses": 60,
+       "p": 0.11978883088257597,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.6164444444444445,
+       "mean_b": 0.576,
+       "diff": 0.04044444444444444,
+       "ci95": [
+        -0.00977777777777778,
+        0.0911111111111111
+       ],
+       "dz": 0.0807341249270107,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "gemma_correctness": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 57,
+       "losses": 26,
+       "p": 0.0014214162852436152,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.80625,
+       "mean_b": 0.7325,
+       "diff": 0.07375,
+       "ci95": [
+        0.03125,
+        0.1175
+       ],
+       "dz": 0.16780058348431362,
+       "pending": false,
+       "holm": true
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 58,
+       "losses": 41,
+       "p": 0.13305188354778985,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.75875,
+       "mean_b": 0.72,
+       "diff": 0.03875,
+       "ci95": [
+        -0.00875,
+        0.085
+       ],
+       "dz": 0.08085249028309563,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 55,
+       "losses": 32,
+       "p": 0.0363629033608025,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.79375,
+       "mean_b": 0.7425,
+       "diff": 0.05125,
+       "ci95": [
+        0.00625,
+        0.095
+       ],
+       "dz": 0.11503220386569542,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "answer_keyword_recall": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 81,
+       "losses": 40,
+       "p": 0.0023641256040808356,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.7727916666666667,
+       "mean_b": 0.7432500000000001,
+       "diff": 0.029541666666666667,
+       "ci95": [
+        0.011583333333333334,
+        0.04775
+       ],
+       "dz": 0.15935196148877193,
+       "pending": false,
+       "holm": true
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 77,
+       "losses": 53,
+       "p": 0.03421573719843196,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.763375,
+       "mean_b": 0.742875,
+       "diff": 0.020500000000000004,
+       "ci95": [
+        0.002083333333333334,
+        0.03854166666666667
+       ],
+       "dz": 0.10978822330110018,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 77,
+       "losses": 53,
+       "p": 0.04989765131140089,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.7770833333333332,
+       "mean_b": 0.756875,
+       "diff": 0.020208333333333335,
+       "ci95": [
+        0.0013333333333333348,
+        0.03904166666666667
+       ],
+       "dz": 0.10579912877737728,
+       "pending": false,
+       "holm": false
+      }
+     },
+     "answer_similarity": {
+      "oss_docling": {
+       "n": 400,
+       "wins": 192,
+       "losses": 195,
+       "p": 0.43220520158363407,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.839917126595974,
+       "mean_b": 0.8336586099863053,
+       "diff": 0.006258516609668732,
+       "ci95": [
+        0.0003616438806056976,
+        0.01235381856560707
+       ],
+       "dz": 0.10286640203859831,
+       "pending": false,
+       "holm": false
+      },
+      "oss_pymupdf4llm": {
+       "n": 400,
+       "wins": 181,
+       "losses": 204,
+       "p": 0.5048818690568174,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.8314595344662666,
+       "mean_b": 0.8330606023967266,
+       "diff": -0.0016010679304599763,
+       "ci95": [
+        -0.007205490171909332,
+        0.003999165147542953
+       ],
+       "dz": -0.028135991477816685,
+       "pending": false,
+       "holm": false
+      },
+      "current": {
+       "n": 400,
+       "wins": 204,
+       "losses": 182,
+       "p": 0.054254740101320476,
+       "test": "wilcoxon signed-rank",
+       "mean_a": 0.8379601080715656,
+       "mean_b": 0.8310619860887527,
+       "diff": 0.0068981219828128815,
+       "ci95": [
+        0.000955464094877243,
+        0.012771647572517395
+       ],
+       "dz": 0.11457741832875375,
+       "pending": false,
+       "holm": false
+      }
+     }
+    }
+   },
+   "verdicts": {
+    "recursive_char": [
+     {
+      "metric": "nli_fact_recall",
+      "verdict": "no established difference",
+      "reason": "significant on only 1 of 3 parsers; pooled effect +0.030 below the 0.05 threshold"
+     }
+    ],
+    "fixed_token": [
+     {
+      "metric": "nli_fact_recall",
+      "verdict": "no established difference",
+      "reason": "significant on only 0 of 3 parsers; pooled effect +0.038 below the 0.05 threshold"
+     }
+    ]
+   }
+  }
+ },
+ "parser": {
+  "retrieval": {
+   "span_hit_near@4000ch": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 400,
+     "wins": 50,
+     "losses": 41,
+     "p": 0.4018127960698799,
+     "test": "exact sign test",
+     "mean_a": 0.555,
+     "mean_b": 0.5325,
+     "diff": 0.0225,
+     "ci95": [
+      -0.025,
+      0.0675
+     ],
+     "dz": 0.04716632297129787,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 400,
+     "wins": 61,
+     "losses": 31,
+     "p": 0.0023146015214254912,
+     "test": "exact sign test",
+     "mean_a": 0.59,
+     "mean_b": 0.515,
+     "diff": 0.075,
+     "ci95": [
+      0.0275,
+      0.1225
+     ],
+     "dz": 0.15813590290728047,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 400,
+     "wins": 57,
+     "losses": 27,
+     "p": 0.001404494631113956,
+     "test": "exact sign test",
+     "mean_a": 0.635,
+     "mean_b": 0.56,
+     "diff": 0.075,
+     "ci95": [
+      0.03,
+      0.12
+     ],
+     "dz": 0.16569287383700898,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 400,
+     "wins": 31,
+     "losses": 53,
+     "p": 0.02138318993714459,
+     "test": "exact sign test",
+     "mean_a": 0.555,
+     "mean_b": 0.61,
+     "diff": -0.055,
+     "ci95": [
+      -0.1,
+      -0.01
+     ],
+     "dz": -0.12074250897112261,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 400,
+     "wins": 21,
+     "losses": 50,
+     "p": 0.0007667649897412907,
+     "test": "exact sign test",
+     "mean_a": 0.59,
+     "mean_b": 0.6625,
+     "diff": -0.0725,
+     "ci95": [
+      -0.1125,
+      -0.0325
+     ],
+     "dz": -0.17447078804233035,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 400,
+     "wins": 17,
+     "losses": 43,
+     "p": 0.0010657657791434353,
+     "test": "exact sign test",
+     "mean_a": 0.635,
+     "mean_b": 0.7,
+     "diff": -0.065,
+     "ci95": [
+      -0.1025,
+      -0.0275
+     ],
+     "dz": -0.17003106841307053,
+     "pending": false,
+     "holm": true
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 400,
+     "wins": 37,
+     "losses": 68,
+     "p": 0.003220989868798528,
+     "test": "exact sign test",
+     "mean_a": 0.5325,
+     "mean_b": 0.61,
+     "diff": -0.0775,
+     "ci95": [
+      -0.1275,
+      -0.03
+     ],
+     "dz": -0.15283392308648305,
+     "pending": false,
+     "holm": true
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 400,
+     "wins": 22,
+     "losses": 81,
+     "p": 4.06692891792894e-09,
+     "test": "exact sign test",
+     "mean_a": 0.515,
+     "mean_b": 0.6625,
+     "diff": -0.1475,
+     "ci95": [
+      -0.195,
+      -0.1
+     ],
+     "dz": -0.30340894382793404,
+     "pending": false,
+     "holm": true
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 400,
+     "wins": 20,
+     "losses": 76,
+     "p": 7.319367989521491e-09,
+     "test": "exact sign test",
+     "mean_a": 0.56,
+     "mean_b": 0.7,
+     "diff": -0.14,
+     "ci95": [
+      -0.185,
+      -0.095
+     ],
+     "dz": -0.29783703018886715,
+     "pending": false,
+     "holm": true
+    }
+   },
+   "span_hit_near@5": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 400,
+     "wins": 47,
+     "losses": 39,
+     "p": 0.45054757600159,
+     "test": "exact sign test",
+     "mean_a": 0.58,
+     "mean_b": 0.56,
+     "diff": 0.02,
+     "ci95": [
+      -0.025,
+      0.065
+     ],
+     "dz": 0.04311928879480294,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 400,
+     "wins": 61,
+     "losses": 33,
+     "p": 0.005078435812829811,
+     "test": "exact sign test",
+     "mean_a": 0.6225,
+     "mean_b": 0.5525,
+     "diff": 0.07,
+     "ci95": [
+      0.025,
+      0.1175
+     ],
+     "dz": 0.1457458451173481,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 400,
+     "wins": 60,
+     "losses": 25,
+     "p": 0.00018679938527835335,
+     "test": "exact sign test",
+     "mean_a": 0.6525,
+     "mean_b": 0.565,
+     "diff": 0.0875,
+     "ci95": [
+      0.0425,
+      0.1325
+     ],
+     "dz": 0.19308704952857966,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 400,
+     "wins": 31,
+     "losses": 49,
+     "p": 0.05666442634512114,
+     "test": "exact sign test",
+     "mean_a": 0.58,
+     "mean_b": 0.625,
+     "diff": -0.045,
+     "ci95": [
+      -0.09,
+      -0.0025
+     ],
+     "dz": -0.10100986487527581,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 400,
+     "wins": 21,
+     "losses": 47,
+     "p": 0.0021862431776861705,
+     "test": "exact sign test",
+     "mean_a": 0.6225,
+     "mean_b": 0.6875,
+     "diff": -0.065,
+     "ci95": [
+      -0.105,
+      -0.0225
+     ],
+     "dz": -0.15944477446172972,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 400,
+     "wins": 18,
+     "losses": 37,
+     "p": 0.014453833533827731,
+     "test": "exact sign test",
+     "mean_a": 0.6525,
+     "mean_b": 0.7,
+     "diff": -0.0475,
+     "ci95": [
+      -0.085,
+      -0.0125
+     ],
+     "dz": -0.12900051962490874,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 400,
+     "wins": 38,
+     "losses": 64,
+     "p": 0.0129204519111262,
+     "test": "exact sign test",
+     "mean_a": 0.56,
+     "mean_b": 0.625,
+     "diff": -0.065,
+     "ci95": [
+      -0.115,
+      -0.0175
+     ],
+     "dz": -0.1296366170390153,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 400,
+     "wins": 29,
+     "losses": 83,
+     "p": 3.290846169775184e-07,
+     "test": "exact sign test",
+     "mean_a": 0.5525,
+     "mean_b": 0.6875,
+     "diff": -0.135,
+     "ci95": [
+      -0.185,
+      -0.085
+     ],
+     "dz": -0.26352761802647273,
+     "pending": false,
+     "holm": true
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 400,
+     "wins": 21,
+     "losses": 75,
+     "p": 2.7069291882474876e-08,
+     "test": "exact sign test",
+     "mean_a": 0.565,
+     "mean_b": 0.7,
+     "diff": -0.135,
+     "ci95": [
+      -0.18,
+      -0.0875
+     ],
+     "dz": -0.28630829237387206,
+     "pending": false,
+     "holm": true
+    }
+   },
+   "precision_near@5": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 400,
+     "wins": 69,
+     "losses": 69,
+     "p": 0.9606603521907049,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.701,
+     "mean_b": 0.6984999999999999,
+     "diff": 0.0025,
+     "ci95": [
+      -0.012999999999999998,
+      0.018500000000000003
+     ],
+     "dz": 0.015457106963743984,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 400,
+     "wins": 86,
+     "losses": 71,
+     "p": 0.6143437655906825,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6785,
+     "mean_b": 0.669,
+     "diff": 0.009499999999999998,
+     "ci95": [
+      -0.0060000000000000045,
+      0.0255
+     ],
+     "dz": 0.05794736272885147,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 400,
+     "wins": 85,
+     "losses": 46,
+     "p": 0.00020292709877145487,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6940000000000001,
+     "mean_b": 0.6629999999999999,
+     "diff": 0.031,
+     "ci95": [
+      0.0155,
+      0.047
+     ],
+     "dz": 0.19113688601689266,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 400,
+     "wins": 68,
+     "losses": 55,
+     "p": 0.4596412744069275,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.701,
+     "mean_b": 0.6940000000000001,
+     "diff": 0.006999999999999999,
+     "ci95": [
+      -0.005500000000000001,
+      0.019500000000000003
+     ],
+     "dz": 0.053697841698301677,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 400,
+     "wins": 63,
+     "losses": 53,
+     "p": 0.6302692092541724,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6785,
+     "mean_b": 0.67,
+     "diff": 0.008499999999999997,
+     "ci95": [
+      -0.004000000000000002,
+      0.021499999999999995
+     ],
+     "dz": 0.06544287228162199,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 400,
+     "wins": 47,
+     "losses": 48,
+     "p": 0.859686373423988,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6940000000000001,
+     "mean_b": 0.6945,
+     "diff": -0.0004999999999999989,
+     "ci95": [
+      -0.0125,
+      0.012000000000000002
+     ],
+     "dz": -0.0039854749894953695,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 400,
+     "wins": 73,
+     "losses": 64,
+     "p": 0.5090394821066997,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6984999999999999,
+     "mean_b": 0.6940000000000001,
+     "diff": 0.0045,
+     "ci95": [
+      -0.012000000000000002,
+      0.020499999999999997
+     ],
+     "dz": 0.026538800229237394,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 400,
+     "wins": 65,
+     "losses": 71,
+     "p": 0.9597596327035,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.669,
+     "mean_b": 0.67,
+     "diff": -0.0009999999999999994,
+     "ci95": [
+      -0.016,
+      0.014000000000000002
+     ],
+     "dz": -0.006474065629756467,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 400,
+     "wins": 40,
+     "losses": 82,
+     "p": 7.411633393461514e-05,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6629999999999999,
+     "mean_b": 0.6945,
+     "diff": -0.0315,
+     "ci95": [
+      -0.046,
+      -0.0175
+     ],
+     "dz": -0.2175771865790817,
+     "pending": false,
+     "holm": true
+    }
+   }
+  },
+  "answers": {
+   "nli_fact_recall": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 375,
+     "wins": 71,
+     "losses": 67,
+     "p": 0.5481061302406376,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.5862222222222222,
+     "mean_b": 0.5724444444444444,
+     "diff": 0.01377777777777778,
+     "ci95": [
+      -0.034666666666666665,
+      0.06133333333333333
+     ],
+     "dz": 0.028983805484244205,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 375,
+     "wins": 61,
+     "losses": 81,
+     "p": 0.3685874174848741,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.568,
+     "mean_b": 0.5986666666666667,
+     "diff": -0.030666666666666665,
+     "ci95": [
+      -0.08088888888888889,
+      0.02
+     ],
+     "dz": -0.061624162121051235,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 375,
+     "wins": 62,
+     "losses": 59,
+     "p": 0.6121201033732566,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6213333333333333,
+     "mean_b": 0.6102222222222222,
+     "diff": 0.01111111111111111,
+     "ci95": [
+      -0.03288888888888889,
+      0.05466666666666667
+     ],
+     "dz": 0.025200840401396567,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 375,
+     "wins": 61,
+     "losses": 56,
+     "p": 0.6613914663210014,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.5862222222222222,
+     "mean_b": 0.576,
+     "diff": 0.010222222222222223,
+     "ci95": [
+      -0.03511111111111111,
+      0.056
+     ],
+     "dz": 0.022786657908183724,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 375,
+     "wins": 55,
+     "losses": 66,
+     "p": 0.2914159211975701,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.568,
+     "mean_b": 0.5924444444444444,
+     "diff": -0.024444444444444442,
+     "ci95": [
+      -0.06977777777777777,
+      0.019111111111111113
+     ],
+     "dz": -0.05490328877110307,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 375,
+     "wins": 49,
+     "losses": 48,
+     "p": 0.8073166740926064,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6213333333333333,
+     "mean_b": 0.6164444444444445,
+     "diff": 0.004888888888888889,
+     "ci95": [
+      -0.034666666666666665,
+      0.04488888888888889
+     ],
+     "dz": 0.012232341286821262,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 375,
+     "wins": 72,
+     "losses": 70,
+     "p": 0.8061095210342533,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.5724444444444444,
+     "mean_b": 0.576,
+     "diff": -0.003555555555555556,
+     "ci95": [
+      -0.052,
+      0.04666666666666667
+     ],
+     "dz": -0.00719296316107323,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 375,
+     "wins": 78,
+     "losses": 75,
+     "p": 0.8123905730061607,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.5986666666666667,
+     "mean_b": 0.5924444444444444,
+     "diff": 0.006222222222222223,
+     "ci95": [
+      -0.04711111111111112,
+      0.059111111111111114
+     ],
+     "dz": 0.011825651151040699,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 375,
+     "wins": 54,
+     "losses": 59,
+     "p": 0.8360753922928227,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.6102222222222222,
+     "mean_b": 0.6164444444444445,
+     "diff": -0.006222222222222221,
+     "ci95": [
+      -0.050666666666666665,
+      0.037333333333333336
+     ],
+     "dz": -0.014593962630437628,
+     "pending": false,
+     "holm": false
+    }
+   },
+   "gemma_correctness": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 400,
+     "wins": 46,
+     "losses": 41,
+     "p": 0.5657884992697946,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7325,
+     "mean_b": 0.72,
+     "diff": 0.0125,
+     "ci95": [
+      -0.03125,
+      0.055
+     ],
+     "dz": 0.028282853596094074,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 400,
+     "wins": 50,
+     "losses": 37,
+     "p": 0.15431687937708893,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7875,
+     "mean_b": 0.755,
+     "diff": 0.0325,
+     "ci95": [
+      -0.0125,
+      0.0775
+     ],
+     "dz": 0.0710109169602837,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 400,
+     "wins": 42,
+     "losses": 23,
+     "p": 0.016848573520262367,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.80625,
+     "mean_b": 0.75875,
+     "diff": 0.0475,
+     "ci95": [
+      0.00875,
+      0.0875
+     ],
+     "dz": 0.11992274561038459,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 400,
+     "wins": 32,
+     "losses": 36,
+     "p": 0.6082466050551312,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7325,
+     "mean_b": 0.7425,
+     "diff": -0.01,
+     "ci95": [
+      -0.04875,
+      0.02875
+     ],
+     "dz": -0.0253764427696957,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 400,
+     "wins": 26,
+     "losses": 32,
+     "p": 0.7394380152636271,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7875,
+     "mean_b": 0.7975,
+     "diff": -0.01,
+     "ci95": [
+      -0.045,
+      0.02625
+     ],
+     "dz": -0.027319451184441453,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 400,
+     "wins": 25,
+     "losses": 20,
+     "p": 0.43878635273075417,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.80625,
+     "mean_b": 0.79375,
+     "diff": 0.0125,
+     "ci95": [
+      -0.02,
+      0.04375
+     ],
+     "dz": 0.03855628591174849,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 400,
+     "wins": 39,
+     "losses": 48,
+     "p": 0.30042519631212217,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.72,
+     "mean_b": 0.7425,
+     "diff": -0.0225,
+     "ci95": [
+      -0.06625,
+      0.02
+     ],
+     "dz": -0.05095492249132165,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 400,
+     "wins": 35,
+     "losses": 53,
+     "p": 0.07499416479984944,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.755,
+     "mean_b": 0.7975,
+     "diff": -0.0425,
+     "ci95": [
+      -0.0875,
+      0.0025
+     ],
+     "dz": -0.09330807395804838,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 400,
+     "wins": 27,
+     "losses": 41,
+     "p": 0.0760850579784852,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.75875,
+     "mean_b": 0.79375,
+     "diff": -0.035,
+     "ci95": [
+      -0.075,
+      0.00375
+     ],
+     "dz": -0.08807441198948808,
+     "pending": false,
+     "holm": false
+    }
+   },
+   "answer_keyword_recall": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 400,
+     "wins": 54,
+     "losses": 59,
+     "p": 0.7981386625487948,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7432500000000001,
+     "mean_b": 0.742875,
+     "diff": 0.0003750000000000005,
+     "ci95": [
+      -0.016625,
+      0.017625000000000002
+     ],
+     "dz": 0.0021520977501498233,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 400,
+     "wins": 64,
+     "losses": 53,
+     "p": 0.25882393667017445,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7646250000000001,
+     "mean_b": 0.7543333333333334,
+     "diff": 0.010291666666666668,
+     "ci95": [
+      -0.007249999999999998,
+      0.028041666666666673
+     ],
+     "dz": 0.05635772952111303,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 400,
+     "wins": 57,
+     "losses": 49,
+     "p": 0.5186740319966157,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7727916666666667,
+     "mean_b": 0.763375,
+     "diff": 0.009416666666666667,
+     "ci95": [
+      -0.006083333333333332,
+      0.025500000000000002
+     ],
+     "dz": 0.05860569144755998,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 400,
+     "wins": 49,
+     "losses": 68,
+     "p": 0.12835992750038294,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7432500000000001,
+     "mean_b": 0.756875,
+     "diff": -0.013625,
+     "ci95": [
+      -0.029875000000000002,
+      0.002708333333333333
+     ],
+     "dz": -0.08030417889585278,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 400,
+     "wins": 31,
+     "losses": 63,
+     "p": 0.0013874745132274047,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7646250000000001,
+     "mean_b": 0.7892916666666666,
+     "diff": -0.024666666666666667,
+     "ci95": [
+      -0.03895833333333334,
+      -0.01075
+     ],
+     "dz": -0.1721694691324483,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 400,
+     "wins": 40,
+     "losses": 40,
+     "p": 0.3720702237958563,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7727916666666667,
+     "mean_b": 0.7770833333333332,
+     "diff": -0.004291666666666667,
+     "ci95": [
+      -0.017625,
+      0.008624999999999999
+     ],
+     "dz": -0.03213689961536164,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 400,
+     "wins": 55,
+     "losses": 66,
+     "p": 0.2670127090774519,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.742875,
+     "mean_b": 0.756875,
+     "diff": -0.013999999999999999,
+     "ci95": [
+      -0.03145833333333334,
+      0.002958333333333334
+     ],
+     "dz": -0.0790251452190803,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 400,
+     "wins": 46,
+     "losses": 83,
+     "p": 0.001994237288058809,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.7543333333333334,
+     "mean_b": 0.7892916666666666,
+     "diff": -0.034958333333333334,
+     "ci95": [
+      -0.05429166666666667,
+      -0.01591666666666667
+     ],
+     "dz": -0.18018618397859054,
+     "pending": false,
+     "holm": true
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 400,
+     "wins": 46,
+     "losses": 55,
+     "p": 0.1880663983777222,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.763375,
+     "mean_b": 0.7770833333333332,
+     "diff": -0.013708333333333333,
+     "ci95": [
+      -0.031375,
+      0.003166666666666667
+     ],
+     "dz": -0.07967904590086151,
+     "pending": false,
+     "holm": false
+    }
+   },
+   "answer_similarity": {
+    "oss_docling vs oss_pymupdf4llm [fixed_token]": {
+     "n": 400,
+     "wins": 195,
+     "losses": 190,
+     "p": 0.46372129732320366,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8336586099863053,
+     "mean_b": 0.8330606023967266,
+     "diff": 0.0005980075895786285,
+     "ci95": [
+      -0.005326397866010666,
+      0.006303243488073349
+     ],
+     "dz": 0.010282597896208267,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [recursive_char]": {
+     "n": 400,
+     "wins": 215,
+     "losses": 172,
+     "p": 0.05963017694388162,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8343731047213078,
+     "mean_b": 0.8306933139264584,
+     "diff": 0.0036797907948493956,
+     "ci95": [
+      -0.0017511610686779021,
+      0.009163344502449036
+     ],
+     "dz": 0.06587463257711151,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs oss_pymupdf4llm [grain_growth]": {
+     "n": 400,
+     "wins": 222,
+     "losses": 152,
+     "p": 0.001559928257295562,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.839917126595974,
+     "mean_b": 0.8314595344662666,
+     "diff": 0.008457592129707337,
+     "ci95": [
+      0.0037518663704395293,
+      0.013363348692655564
+     ],
+     "dz": 0.1730989273958641,
+     "pending": false,
+     "holm": true
+    },
+    "oss_docling vs current [fixed_token]": {
+     "n": 400,
+     "wins": 213,
+     "losses": 164,
+     "p": 0.02617696881290088,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8336586099863053,
+     "mean_b": 0.8310619860887527,
+     "diff": 0.0025966238975524904,
+     "ci95": [
+      -0.0024295446276664735,
+      0.0074316240847110745
+     ],
+     "dz": 0.05085721419221766,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [recursive_char]": {
+     "n": 400,
+     "wins": 192,
+     "losses": 182,
+     "p": 0.5927439072856064,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8343731047213078,
+     "mean_b": 0.835742983520031,
+     "diff": -0.0013698787987232207,
+     "ci95": [
+      -0.005936306864023209,
+      0.0032455797493457796
+     ],
+     "dz": -0.02914491906141455,
+     "pending": false,
+     "holm": false
+    },
+    "oss_docling vs current [grain_growth]": {
+     "n": 400,
+     "wins": 181,
+     "losses": 175,
+     "p": 0.48736630709954165,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.839917126595974,
+     "mean_b": 0.8379601080715656,
+     "diff": 0.0019570185244083406,
+     "ci95": [
+      -0.0019963955879211425,
+      0.006004173755645752
+     ],
+     "dz": 0.04795252826039284,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [fixed_token]": {
+     "n": 400,
+     "wins": 185,
+     "losses": 195,
+     "p": 0.9054489018255888,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8330606023967266,
+     "mean_b": 0.8310619860887527,
+     "diff": 0.0019986163079738616,
+     "ci95": [
+      -0.003581346422433853,
+      0.007526480406522751
+     ],
+     "dz": 0.03529564416762169,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [recursive_char]": {
+     "n": 400,
+     "wins": 176,
+     "losses": 209,
+     "p": 0.16150766549456497,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8306933139264584,
+     "mean_b": 0.835742983520031,
+     "diff": -0.005049669593572617,
+     "ci95": [
+      -0.011067515462636948,
+      0.0007539999485015869
+     ],
+     "dz": -0.08480371161334876,
+     "pending": false,
+     "holm": false
+    },
+    "oss_pymupdf4llm vs current [grain_growth]": {
+     "n": 400,
+     "wins": 167,
+     "losses": 208,
+     "p": 0.019647649969884773,
+     "test": "wilcoxon signed-rank",
+     "mean_a": 0.8314595344662666,
+     "mean_b": 0.8379601080715656,
+     "diff": -0.006500573605298996,
+     "ci95": [
+      -0.011541386097669602,
+      -0.0016030360758304595
+     ],
+     "dz": -0.12966450927248827,
+     "pending": false,
+     "holm": false
+    }
+   }
+  }
+ },
+ "parser_verdicts": {
+  "retrieval": {
+   "span_hit_near@4000ch": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "better",
+     "reason": "significant on 2 of 3 chunkers, pooled +0.057",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.4018127960698799,
+       "holm": false,
+       "diff": 0.0225,
+       "dz": 0.04716632297129787
+      },
+      "recursive_char": {
+       "p": 0.0023146015214254912,
+       "holm": true,
+       "diff": 0.075,
+       "dz": 0.15813590290728047
+      },
+      "grain_growth": {
+       "p": 0.001404494631113956,
+       "holm": true,
+       "diff": 0.075,
+       "dz": 0.16569287383700898
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "worse",
+     "reason": "significant loss on 3 of 3 chunkers, pooled -0.064",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.02138318993714459,
+       "holm": true,
+       "diff": -0.055,
+       "dz": -0.12074250897112261
+      },
+      "recursive_char": {
+       "p": 0.0007667649897412907,
+       "holm": true,
+       "diff": -0.0725,
+       "dz": -0.17447078804233035
+      },
+      "grain_growth": {
+       "p": 0.0010657657791434353,
+       "holm": true,
+       "diff": -0.065,
+       "dz": -0.17003106841307053
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "worse",
+     "reason": "significant loss on 3 of 3 chunkers, pooled -0.122",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.003220989868798528,
+       "holm": true,
+       "diff": -0.0775,
+       "dz": -0.15283392308648305
+      },
+      "recursive_char": {
+       "p": 4.06692891792894e-09,
+       "holm": true,
+       "diff": -0.1475,
+       "dz": -0.30340894382793404
+      },
+      "grain_growth": {
+       "p": 7.319367989521491e-09,
+       "holm": true,
+       "diff": -0.14,
+       "dz": -0.29783703018886715
+      }
+     }
+    }
+   },
+   "span_hit_near@5": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "better",
+     "reason": "significant on 2 of 3 chunkers, pooled +0.059",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.45054757600159,
+       "holm": false,
+       "diff": 0.02,
+       "dz": 0.04311928879480294
+      },
+      "recursive_char": {
+       "p": 0.005078435812829811,
+       "holm": true,
+       "diff": 0.07,
+       "dz": 0.1457458451173481
+      },
+      "grain_growth": {
+       "p": 0.00018679938527835335,
+       "holm": true,
+       "diff": 0.0875,
+       "dz": 0.19308704952857966
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 1 of 3 chunkers",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.05666442634512114,
+       "holm": false,
+       "diff": -0.045,
+       "dz": -0.10100986487527581
+      },
+      "recursive_char": {
+       "p": 0.0021862431776861705,
+       "holm": true,
+       "diff": -0.065,
+       "dz": -0.15944477446172972
+      },
+      "grain_growth": {
+       "p": 0.014453833533827731,
+       "holm": false,
+       "diff": -0.0475,
+       "dz": -0.12900051962490874
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "worse",
+     "reason": "significant loss on 2 of 3 chunkers, pooled -0.112",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.0129204519111262,
+       "holm": false,
+       "diff": -0.065,
+       "dz": -0.1296366170390153
+      },
+      "recursive_char": {
+       "p": 3.290846169775184e-07,
+       "holm": true,
+       "diff": -0.135,
+       "dz": -0.26352761802647273
+      },
+      "grain_growth": {
+       "p": 2.7069291882474876e-08,
+       "holm": true,
+       "diff": -0.135,
+       "dz": -0.28630829237387206
+      }
+     }
+    }
+   },
+   "precision_near@5": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "no established difference",
+     "reason": "significant on only 1 of 3 chunkers; pooled effect +0.014 below the 0.2 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.9606603521907049,
+       "holm": false,
+       "diff": 0.0025,
+       "dz": 0.015457106963743984
+      },
+      "recursive_char": {
+       "p": 0.6143437655906825,
+       "holm": false,
+       "diff": 0.009499999999999998,
+       "dz": 0.05794736272885147
+      },
+      "grain_growth": {
+       "p": 0.00020292709877145487,
+       "holm": true,
+       "diff": 0.031,
+       "dz": 0.19113688601689266
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect +0.005 below the 0.2 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.4596412744069275,
+       "holm": false,
+       "diff": 0.006999999999999999,
+       "dz": 0.053697841698301677
+      },
+      "recursive_char": {
+       "p": 0.6302692092541724,
+       "holm": false,
+       "diff": 0.008499999999999997,
+       "dz": 0.06544287228162199
+      },
+      "grain_growth": {
+       "p": 0.859686373423988,
+       "holm": false,
+       "diff": -0.0004999999999999989,
+       "dz": -0.0039854749894953695
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 1 of 3 chunkers; pooled effect -0.009 below the 0.2 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.5090394821066997,
+       "holm": false,
+       "diff": 0.0045,
+       "dz": 0.026538800229237394
+      },
+      "recursive_char": {
+       "p": 0.9597596327035,
+       "holm": false,
+       "diff": -0.0009999999999999994,
+       "dz": -0.006474065629756467
+      },
+      "grain_growth": {
+       "p": 7.411633393461514e-05,
+       "holm": true,
+       "diff": -0.0315,
+       "dz": -0.2175771865790817
+      }
+     }
+    }
+   }
+  },
+  "answers": {
+   "nli_fact_recall": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect -0.002 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.5481061302406376,
+       "holm": false,
+       "diff": 0.01377777777777778,
+       "dz": 0.028983805484244205
+      },
+      "recursive_char": {
+       "p": 0.3685874174848741,
+       "holm": false,
+       "diff": -0.030666666666666665,
+       "dz": -0.061624162121051235
+      },
+      "grain_growth": {
+       "p": 0.6121201033732566,
+       "holm": false,
+       "diff": 0.01111111111111111,
+       "dz": 0.025200840401396567
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect -0.003 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.6613914663210014,
+       "holm": false,
+       "diff": 0.010222222222222223,
+       "dz": 0.022786657908183724
+      },
+      "recursive_char": {
+       "p": 0.2914159211975701,
+       "holm": false,
+       "diff": -0.024444444444444442,
+       "dz": -0.05490328877110307
+      },
+      "grain_growth": {
+       "p": 0.8073166740926064,
+       "holm": false,
+       "diff": 0.004888888888888889,
+       "dz": 0.012232341286821262
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect -0.001 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.8061095210342533,
+       "holm": false,
+       "diff": -0.003555555555555556,
+       "dz": -0.00719296316107323
+      },
+      "recursive_char": {
+       "p": 0.8123905730061607,
+       "holm": false,
+       "diff": 0.006222222222222223,
+       "dz": 0.011825651151040699
+      },
+      "grain_growth": {
+       "p": 0.8360753922928227,
+       "holm": false,
+       "diff": -0.006222222222222221,
+       "dz": -0.014593962630437628
+      }
+     }
+    }
+   },
+   "gemma_correctness": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect +0.031 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.5657884992697946,
+       "holm": false,
+       "diff": 0.0125,
+       "dz": 0.028282853596094074
+      },
+      "recursive_char": {
+       "p": 0.15431687937708893,
+       "holm": false,
+       "diff": 0.0325,
+       "dz": 0.0710109169602837
+      },
+      "grain_growth": {
+       "p": 0.016848573520262367,
+       "holm": false,
+       "diff": 0.0475,
+       "dz": 0.11992274561038459
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect -0.003 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.6082466050551312,
+       "holm": false,
+       "diff": -0.01,
+       "dz": -0.0253764427696957
+      },
+      "recursive_char": {
+       "p": 0.7394380152636271,
+       "holm": false,
+       "diff": -0.01,
+       "dz": -0.027319451184441453
+      },
+      "grain_growth": {
+       "p": 0.43878635273075417,
+       "holm": false,
+       "diff": 0.0125,
+       "dz": 0.03855628591174849
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect -0.033 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.30042519631212217,
+       "holm": false,
+       "diff": -0.0225,
+       "dz": -0.05095492249132165
+      },
+      "recursive_char": {
+       "p": 0.07499416479984944,
+       "holm": false,
+       "diff": -0.0425,
+       "dz": -0.09330807395804838
+      },
+      "grain_growth": {
+       "p": 0.0760850579784852,
+       "holm": false,
+       "diff": -0.035,
+       "dz": -0.08807441198948808
+      }
+     }
+    }
+   },
+   "answer_keyword_recall": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect +0.007 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.7981386625487948,
+       "holm": false,
+       "diff": 0.0003750000000000005,
+       "dz": 0.0021520977501498233
+      },
+      "recursive_char": {
+       "p": 0.25882393667017445,
+       "holm": false,
+       "diff": 0.010291666666666668,
+       "dz": 0.05635772952111303
+      },
+      "grain_growth": {
+       "p": 0.5186740319966157,
+       "holm": false,
+       "diff": 0.009416666666666667,
+       "dz": 0.05860569144755998
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 1 of 3 chunkers; pooled effect -0.014 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.12835992750038294,
+       "holm": false,
+       "diff": -0.013625,
+       "dz": -0.08030417889585278
+      },
+      "recursive_char": {
+       "p": 0.0013874745132274047,
+       "holm": true,
+       "diff": -0.024666666666666667,
+       "dz": -0.1721694691324483
+      },
+      "grain_growth": {
+       "p": 0.3720702237958563,
+       "holm": false,
+       "diff": -0.004291666666666667,
+       "dz": -0.03213689961536164
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 1 of 3 chunkers; pooled effect -0.021 below the 0.05 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.2670127090774519,
+       "holm": false,
+       "diff": -0.013999999999999999,
+       "dz": -0.0790251452190803
+      },
+      "recursive_char": {
+       "p": 0.001994237288058809,
+       "holm": true,
+       "diff": -0.034958333333333334,
+       "dz": -0.18018618397859054
+      },
+      "grain_growth": {
+       "p": 0.1880663983777222,
+       "holm": false,
+       "diff": -0.013708333333333333,
+       "dz": -0.07967904590086151
+      }
+     }
+    }
+   },
+   "answer_similarity": {
+    "oss_docling vs oss_pymupdf4llm": {
+     "verdict": "no established difference",
+     "reason": "significant on only 1 of 3 chunkers; pooled effect +0.004 below the 0.2 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.46372129732320366,
+       "holm": false,
+       "diff": 0.0005980075895786285,
+       "dz": 0.010282597896208267
+      },
+      "recursive_char": {
+       "p": 0.05963017694388162,
+       "holm": false,
+       "diff": 0.0036797907948493956,
+       "dz": 0.06587463257711151
+      },
+      "grain_growth": {
+       "p": 0.001559928257295562,
+       "holm": true,
+       "diff": 0.008457592129707337,
+       "dz": 0.1730989273958641
+      }
+     }
+    },
+    "oss_docling vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect +0.001 below the 0.2 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.02617696881290088,
+       "holm": false,
+       "diff": 0.0025966238975524904,
+       "dz": 0.05085721419221766
+      },
+      "recursive_char": {
+       "p": 0.5927439072856064,
+       "holm": false,
+       "diff": -0.0013698787987232207,
+       "dz": -0.02914491906141455
+      },
+      "grain_growth": {
+       "p": 0.48736630709954165,
+       "holm": false,
+       "diff": 0.0019570185244083406,
+       "dz": 0.04795252826039284
+      }
+     }
+    },
+    "oss_pymupdf4llm vs current": {
+     "verdict": "no established difference",
+     "reason": "significant on only 0 of 3 chunkers; pooled effect -0.003 below the 0.2 threshold",
+     "per_chunker": {
+      "fixed_token": {
+       "p": 0.9054489018255888,
+       "holm": false,
+       "diff": 0.0019986163079738616,
+       "dz": 0.03529564416762169
+      },
+      "recursive_char": {
+       "p": 0.16150766549456497,
+       "holm": false,
+       "diff": -0.005049669593572617,
+       "dz": -0.08480371161334876
+      },
+      "grain_growth": {
+       "p": 0.019647649969884773,
+       "holm": false,
+       "diff": -0.006500573605298996,
+       "dz": -0.12966450927248827
+      }
+     }
+    }
+   }
+  }
+ },
+ "parse_loss": {
+  "per_parser": {
+   "oss_docling": {
+    "missing_exact": 81,
+    "missing_near": 48,
+    "of": 400
+   },
+   "oss_pymupdf4llm": {
+    "missing_exact": 88,
+    "missing_near": 61,
+    "of": 400
+   },
+   "current": {
+    "missing_exact": 51,
+    "missing_near": 24,
+    "of": 400
+   }
+  },
+  "pairs": {
+   "oss_docling vs oss_pymupdf4llm": {
+    "a_only_missing": 11,
+    "b_only_missing": 24,
+    "p": 0.04095959151163697,
+    "holm": true
+   },
+   "oss_docling vs current": {
+    "a_only_missing": 31,
+    "b_only_missing": 7,
+    "p": 0.00011616700794547796,
+    "holm": true
+   },
+   "oss_pymupdf4llm vs current": {
+    "a_only_missing": 44,
+    "b_only_missing": 7,
+    "p": 1.2115257419509362e-07,
+    "holm": true
+   }
+  },
+  "note": "counted on the near match; exact match penalises a parser whose text engine differs from the one the spans were verified against"
+ },
+ "shape_vs_outcome": {
+  "mid_start_pct vs span_hit_near@4000ch": -0.55,
+  "mid_start_pct vs nli_fact_recall": -0.75,
+  "mid_start_pct vs gemma_correctness": -0.85,
+  "mid_end_pct vs span_hit_near@4000ch": -0.7166666666666667,
+  "mid_end_pct vs nli_fact_recall": -0.7666666666666667,
+  "mid_end_pct vs gemma_correctness": -0.8833333333333333,
+  "median_chars vs span_hit_near@4000ch": -0.2833333333333333,
+  "median_chars vs nli_fact_recall": -0.2,
+  "median_chars vs gemma_correctness": 0.1,
+  "ov_zero_pct vs span_hit_near@4000ch": 0.6666666666666666,
+  "ov_zero_pct vs nli_fact_recall": 0.7333333333333333,
+  "ov_zero_pct vs gemma_correctness": 0.8166666666666667,
+  "n_cells": 9
+ },
+ "judge_validation": {
+  "judged": 3600,
+  "refusal_rate": 0.2011111111111111,
+  "gemma_dimensions_identical": {
+   "count": 3394,
+   "share": 0.9427777777777778,
+   "r_correct_faith": 0.9440377332727169,
+   "r_faith_suff": 0.9731786756458171
+  },
+  "gemma_correctness_vs_numeric_reference": {
+   "n": 2502,
+   "agreement": 0.9292565947242206,
+   "mean_when_number_right": 0.985445205479452,
+   "mean_when_number_wrong": 0.198
+  },
+  "nli_fact_recall_vs_numeric_reference": {
+   "n": 2340,
+   "agreement": 0.8525641025641025,
+   "mean_when_number_right": 0.798581560283688,
+   "mean_when_number_wrong": 0.11127098321342925
+  },
+  "gemma_vs_fact_recall": {
+   "n": 3375,
+   "pearson": 0.6552941275213504,
+   "fact_recall_when_gemma_correct": 0.7547315565855542,
+   "fact_recall_when_gemma_wrong": 0.03896961690885073
+  }
+ }
+}

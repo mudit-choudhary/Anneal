@@ -1,0 +1,1739 @@
+{
+ "q000": [
+  false,
+  true
+ ],
+ "q001": [
+  true,
+  true
+ ],
+ "q002": [
+  true,
+  true
+ ],
+ "q003": [
+  true,
+  true
+ ],
+ "q004": [
+  true,
+  true
+ ],
+ "q005": [
+  true,
+  true,
+  true
+ ],
+ "q006": [
+  true,
+  true,
+  true
+ ],
+ "q007": [
+  true,
+  true
+ ],
+ "q008": [
+  true,
+  true
+ ],
+ "q009": [
+  true,
+  true
+ ],
+ "q010": [
+  true,
+  true,
+  true
+ ],
+ "q011": [
+  true,
+  false,
+  false
+ ],
+ "q012": [
+  true,
+  true,
+  true
+ ],
+ "q013": [
+  true,
+  true,
+  true
+ ],
+ "q014": [
+  true,
+  true,
+  false
+ ],
+ "q015": [
+  false,
+  false,
+  false
+ ],
+ "q016": [
+  true,
+  true
+ ],
+ "q017": [
+  true,
+  false,
+  true
+ ],
+ "q018": [
+  true,
+  false
+ ],
+ "q019": [
+  false,
+  true
+ ],
+ "q020": [
+  true,
+  true
+ ],
+ "q021": [
+  true,
+  true,
+  true
+ ],
+ "q022": [
+  true,
+  true
+ ],
+ "q023": [
+  true,
+  true,
+  true
+ ],
+ "q024": [
+  true,
+  true
+ ],
+ "q025": [
+  false,
+  false
+ ],
+ "q026": [
+  true,
+  true
+ ],
+ "q027": [
+  true,
+  false
+ ],
+ "q028": [
+  false,
+  true,
+  true
+ ],
+ "q029": [
+  true,
+  true
+ ],
+ "q030": [
+  false,
+  true,
+  false
+ ],
+ "q031": [
+  true,
+  false,
+  false
+ ],
+ "q032": [
+  true,
+  true,
+  false
+ ],
+ "q033": [
+  true,
+  true
+ ],
+ "q034": [
+  true,
+  false
+ ],
+ "q035": [
+  true,
+  true
+ ],
+ "q036": [
+  false,
+  true
+ ],
+ "q037": [
+  true,
+  true,
+  true
+ ],
+ "q038": [
+  true,
+  true,
+  true
+ ],
+ "q039": [
+  true,
+  true,
+  true
+ ],
+ "q040": [
+  true,
+  true,
+  true
+ ],
+ "q041": [
+  true,
+  true,
+  true
+ ],
+ "q042": [
+  true,
+  true,
+  true
+ ],
+ "q043": [
+  true,
+  true
+ ],
+ "q044": [
+  false,
+  true
+ ],
+ "q045": [
+  true,
+  true
+ ],
+ "q046": [
+  true,
+  true,
+  false
+ ],
+ "q047": [
+  true,
+  true
+ ],
+ "q048": [
+  true,
+  true,
+  false
+ ],
+ "q049": [
+  true,
+  true
+ ],
+ "q050": [
+  false
+ ],
+ "q051": [
+  false,
+  true
+ ],
+ "q052": [
+  false
+ ],
+ "q053": [
+  false,
+  false,
+  true
+ ],
+ "q054": [
+  true
+ ],
+ "q055": [
+  true,
+  true,
+  false
+ ],
+ "q056": [
+  false,
+  false
+ ],
+ "q057": [
+  true,
+  false,
+  false
+ ],
+ "q058": [
+  false,
+  true
+ ],
+ "q059": [
+  true,
+  true,
+  true
+ ],
+ "q060": [
+  false,
+  true
+ ],
+ "q061": [
+  false,
+  false
+ ],
+ "q062": [
+  true,
+  true
+ ],
+ "q063": [
+  true,
+  true,
+  true
+ ],
+ "q064": [
+  true,
+  true
+ ],
+ "q065": [
+  true,
+  true
+ ],
+ "q066": [
+  true,
+  true
+ ],
+ "q067": [
+  true,
+  true
+ ],
+ "q068": [
+  true,
+  true
+ ],
+ "q069": [
+  true,
+  true
+ ],
+ "q070": [
+  true,
+  false
+ ],
+ "q071": [
+  true,
+  true,
+  true
+ ],
+ "q072": [
+  true,
+  true,
+  false
+ ],
+ "q073": [
+  false,
+  true
+ ],
+ "q074": [
+  false,
+  true,
+  true
+ ],
+ "q075": [
+  false,
+  true
+ ],
+ "q076": [
+  true,
+  true,
+  true
+ ],
+ "q077": [
+  true,
+  false
+ ],
+ "q078": [
+  true,
+  true
+ ],
+ "q079": [
+  true,
+  true
+ ],
+ "q080": [
+  true,
+  true,
+  true
+ ],
+ "q081": [
+  true,
+  true
+ ],
+ "q082": [
+  true,
+  true,
+  false
+ ],
+ "q083": [
+  true,
+  true,
+  true
+ ],
+ "q084": [
+  true,
+  true
+ ],
+ "q085": [
+  false,
+  true,
+  true
+ ],
+ "q086": [
+  true,
+  true
+ ],
+ "q087": [
+  true,
+  false
+ ],
+ "q088": [
+  false,
+  true
+ ],
+ "q089": [
+  true,
+  true
+ ],
+ "q090": [
+  true,
+  false
+ ],
+ "q091": [
+  false,
+  true
+ ],
+ "q092": [
+  true,
+  true,
+  false
+ ],
+ "q093": [
+  true,
+  true
+ ],
+ "q094": [
+  true,
+  true,
+  true
+ ],
+ "q095": [
+  false,
+  true
+ ],
+ "q096": [
+  true,
+  true,
+  true
+ ],
+ "q097": [
+  true,
+  true
+ ],
+ "q098": [
+  true,
+  true,
+  false
+ ],
+ "q099": [
+  false,
+  false,
+  false
+ ],
+ "q100": [
+  false,
+  true
+ ],
+ "q101": [
+  true,
+  false
+ ],
+ "q102": [
+  false,
+  true
+ ],
+ "q103": [
+  false,
+  true,
+  true
+ ],
+ "q104": [
+  true,
+  true
+ ],
+ "q105": [
+  true,
+  true
+ ],
+ "q106": [
+  false,
+  true
+ ],
+ "q107": [
+  true,
+  false
+ ],
+ "q108": [
+  true,
+  true
+ ],
+ "q109": [
+  true,
+  true,
+  true
+ ],
+ "q110": [
+  false,
+  true
+ ],
+ "q111": [
+  true,
+  true
+ ],
+ "q112": [
+  true,
+  false
+ ],
+ "q113": [
+  true,
+  true
+ ],
+ "q114": [
+  true,
+  true,
+  true
+ ],
+ "q115": [
+  true,
+  true
+ ],
+ "q116": [
+  true,
+  true
+ ],
+ "q117": [
+  false,
+  false
+ ],
+ "q118": [
+  false,
+  false
+ ],
+ "q119": [
+  true,
+  true
+ ],
+ "q120": [
+  false,
+  true,
+  true
+ ],
+ "q121": [
+  true,
+  false
+ ],
+ "q122": [
+  true,
+  true
+ ],
+ "q123": [
+  true,
+  true
+ ],
+ "q124": [
+  true,
+  false,
+  true
+ ],
+ "q125": [
+  true,
+  true
+ ],
+ "q126": [
+  true,
+  true
+ ],
+ "q127": [
+  true,
+  true,
+  false
+ ],
+ "q128": [
+  true,
+  true,
+  true
+ ],
+ "q129": [
+  false,
+  true
+ ],
+ "q130": [
+  true,
+  true,
+  true
+ ],
+ "q131": [
+  true,
+  true,
+  false
+ ],
+ "q132": [
+  true,
+  true,
+  true
+ ],
+ "q133": [
+  true,
+  false
+ ],
+ "q134": [
+  true,
+  true,
+  true
+ ],
+ "q135": [
+  true,
+  true
+ ],
+ "q136": [
+  true,
+  false
+ ],
+ "q137": [
+  false,
+  true
+ ],
+ "q138": [
+  true,
+  true
+ ],
+ "q139": [
+  true,
+  true
+ ],
+ "q140": [
+  true,
+  true
+ ],
+ "q141": [
+  true,
+  true,
+  true
+ ],
+ "q142": [
+  true,
+  false
+ ],
+ "q143": [
+  true,
+  true,
+  true
+ ],
+ "q144": [
+  true,
+  true
+ ],
+ "q145": [
+  true,
+  true
+ ],
+ "q146": [
+  true,
+  true
+ ],
+ "q147": [
+  true,
+  true
+ ],
+ "q148": [
+  true,
+  true
+ ],
+ "q149": [
+  true,
+  true
+ ],
+ "q150": [
+  true
+ ],
+ "q151": [
+  true,
+  true,
+  false
+ ],
+ "q152": [
+  false,
+  false
+ ],
+ "q153": [
+  false,
+  true
+ ],
+ "q154": [
+  false,
+  true
+ ],
+ "q155": [
+  false,
+  true
+ ],
+ "q156": [
+  true,
+  true
+ ],
+ "q157": [
+  true,
+  true,
+  false
+ ],
+ "q158": [
+  false,
+  true
+ ],
+ "q159": [
+  false,
+  true,
+  true
+ ],
+ "q160": [
+  false
+ ],
+ "q161": [
+  true,
+  true
+ ],
+ "q162": [
+  true,
+  true,
+  true
+ ],
+ "q163": [
+  false,
+  true,
+  true
+ ],
+ "q164": [
+  true,
+  true,
+  true
+ ],
+ "q165": [
+  true,
+  true
+ ],
+ "q166": [
+  true,
+  true
+ ],
+ "q167": [
+  true,
+  true
+ ],
+ "q168": [
+  true,
+  false,
+  true
+ ],
+ "q169": [
+  true,
+  true,
+  true
+ ],
+ "q170": [
+  true,
+  true
+ ],
+ "q171": [
+  true,
+  true
+ ],
+ "q172": [
+  true,
+  true,
+  true
+ ],
+ "q173": [
+  true,
+  true
+ ],
+ "q174": [
+  false,
+  true,
+  false
+ ],
+ "q175": [
+  true,
+  true
+ ],
+ "q176": [
+  false,
+  true
+ ],
+ "q177": [
+  true,
+  true,
+  true
+ ],
+ "q178": [
+  true,
+  true
+ ],
+ "q179": [
+  true,
+  true,
+  false
+ ],
+ "q180": [
+  true,
+  false
+ ],
+ "q181": [
+  true,
+  false
+ ],
+ "q182": [
+  true,
+  false,
+  false
+ ],
+ "q183": [
+  false,
+  true,
+  true
+ ],
+ "q184": [
+  true,
+  true,
+  false
+ ],
+ "q185": [
+  true,
+  true,
+  true
+ ],
+ "q186": [
+  true,
+  true,
+  false
+ ],
+ "q187": [
+  true,
+  true,
+  true
+ ],
+ "q188": [
+  true,
+  true
+ ],
+ "q189": [
+  true,
+  true
+ ],
+ "q190": [
+  false,
+  true
+ ],
+ "q191": [
+  true,
+  true
+ ],
+ "q192": [
+  true,
+  true,
+  false
+ ],
+ "q193": [
+  false,
+  true
+ ],
+ "q194": [
+  false,
+  false,
+  true
+ ],
+ "q195": [
+  true,
+  true,
+  true
+ ],
+ "q196": [
+  true,
+  true
+ ],
+ "q197": [
+  true,
+  true,
+  true
+ ],
+ "q198": [
+  true,
+  true
+ ],
+ "q199": [
+  true,
+  true
+ ],
+ "q200": [
+  false,
+  false
+ ],
+ "q201": [
+  true,
+  false
+ ],
+ "q202": [
+  true,
+  true
+ ],
+ "q203": [
+  true
+ ],
+ "q204": [
+  true,
+  false
+ ],
+ "q205": [
+  false
+ ],
+ "q206": [
+  true,
+  true
+ ],
+ "q207": [
+  true,
+  false
+ ],
+ "q208": [
+  false,
+  true,
+  true
+ ],
+ "q209": [
+  true,
+  true
+ ],
+ "q210": [
+  true,
+  true
+ ],
+ "q211": [
+  true,
+  true
+ ],
+ "q212": [
+  true,
+  false
+ ],
+ "q213": [
+  true,
+  true
+ ],
+ "q214": [
+  false
+ ],
+ "q215": [
+  false,
+  false,
+  true
+ ],
+ "q216": [
+  false,
+  false
+ ],
+ "q217": [
+  true,
+  true,
+  false
+ ],
+ "q218": [
+  true,
+  false
+ ],
+ "q219": [
+  true,
+  true,
+  false
+ ],
+ "q220": [
+  true,
+  true
+ ],
+ "q221": [
+  true,
+  true
+ ],
+ "q222": [
+  false,
+  true
+ ],
+ "q223": [
+  true
+ ],
+ "q224": [
+  true,
+  true
+ ],
+ "q225": [
+  true,
+  true
+ ],
+ "q226": [
+  true,
+  false,
+  true
+ ],
+ "q227": [
+  false,
+  true,
+  true
+ ],
+ "q228": [
+  false,
+  true
+ ],
+ "q229": [
+  false,
+  false
+ ],
+ "q230": [
+  true,
+  true,
+  true
+ ],
+ "q231": [
+  true,
+  true
+ ],
+ "q232": [
+  false
+ ],
+ "q233": [
+  true,
+  true,
+  false
+ ],
+ "q234": [
+  true,
+  true,
+  true
+ ],
+ "q235": [
+  true,
+  true,
+  true
+ ],
+ "q236": [
+  true,
+  true,
+  true
+ ],
+ "q237": [
+  false,
+  true
+ ],
+ "q238": [
+  true,
+  true
+ ],
+ "q239": [
+  false,
+  true
+ ],
+ "q240": [
+  true,
+  true
+ ],
+ "q241": [
+  false,
+  true,
+  true
+ ],
+ "q242": [
+  true,
+  true,
+  true
+ ],
+ "q243": [
+  true,
+  false
+ ],
+ "q244": [
+  true,
+  true
+ ],
+ "q245": [
+  true
+ ],
+ "q246": [
+  true
+ ],
+ "q247": [
+  true,
+  true
+ ],
+ "q248": [
+  true,
+  false
+ ],
+ "q249": [
+  false,
+  true
+ ],
+ "q250": [
+  true,
+  false,
+  true
+ ],
+ "q251": [
+  false,
+  true
+ ],
+ "q252": [
+  true,
+  true
+ ],
+ "q253": [
+  true,
+  true,
+  true
+ ],
+ "q254": [
+  true,
+  false,
+  true
+ ],
+ "q255": [
+  true
+ ],
+ "q256": [
+  true,
+  true
+ ],
+ "q257": [
+  true,
+  true
+ ],
+ "q258": [
+  true,
+  true
+ ],
+ "q259": [
+  true,
+  true,
+  true
+ ],
+ "q260": [
+  true,
+  false
+ ],
+ "q261": [
+  true,
+  false,
+  false
+ ],
+ "q262": [
+  false,
+  true
+ ],
+ "q263": [
+  true,
+  false
+ ],
+ "q264": [
+  false,
+  true
+ ],
+ "q265": [
+  true,
+  true,
+  true
+ ],
+ "q266": [
+  true,
+  false
+ ],
+ "q267": [
+  true,
+  false
+ ],
+ "q268": [
+  true,
+  true
+ ],
+ "q269": [
+  true,
+  true
+ ],
+ "q270": [
+  true,
+  true
+ ],
+ "q271": [
+  true,
+  true
+ ],
+ "q272": [
+  false,
+  true
+ ],
+ "q273": [
+  false,
+  true
+ ],
+ "q274": [
+  true,
+  false
+ ],
+ "q275": [
+  true,
+  false,
+  true
+ ],
+ "q276": [
+  true,
+  true,
+  false
+ ],
+ "q277": [
+  true,
+  true,
+  true
+ ],
+ "q278": [
+  true,
+  true
+ ],
+ "q279": [
+  false,
+  false,
+  false
+ ],
+ "q280": [
+  false
+ ],
+ "q281": [
+  true,
+  true,
+  false
+ ],
+ "q282": [
+  true,
+  true,
+  true
+ ],
+ "q283": [
+  true,
+  true,
+  true
+ ],
+ "q284": [
+  true,
+  true,
+  true
+ ],
+ "q285": [
+  true,
+  true
+ ],
+ "q286": [
+  false,
+  true
+ ],
+ "q287": [
+  true,
+  true,
+  true
+ ],
+ "q288": [
+  true,
+  false
+ ],
+ "q289": [
+  true
+ ],
+ "q290": [
+  true,
+  true
+ ],
+ "q291": [
+  true,
+  false,
+  false
+ ],
+ "q292": [
+  true,
+  true,
+  true
+ ],
+ "q293": [
+  true,
+  true,
+  true
+ ],
+ "q294": [
+  false
+ ],
+ "q295": [
+  true,
+  true,
+  false
+ ],
+ "q296": [
+  true,
+  true,
+  true
+ ],
+ "q297": [
+  true,
+  true
+ ],
+ "q298": [
+  false,
+  false,
+  true
+ ],
+ "q299": [
+  true,
+  true,
+  true
+ ],
+ "q300": [
+  true,
+  true
+ ],
+ "q301": [
+  true,
+  true
+ ],
+ "q302": [
+  true,
+  true
+ ],
+ "q303": [
+  false,
+  true
+ ],
+ "q304": [
+  true,
+  true
+ ],
+ "q305": [
+  false,
+  true
+ ],
+ "q306": [
+  true,
+  true
+ ],
+ "q307": [
+  true,
+  true
+ ],
+ "q308": [
+  false,
+  true
+ ],
+ "q309": [
+  true,
+  true,
+  true
+ ],
+ "q310": [
+  true,
+  true,
+  true
+ ],
+ "q311": [
+  true,
+  true
+ ],
+ "q312": [
+  false,
+  true
+ ],
+ "q313": [
+  true,
+  true
+ ],
+ "q314": [
+  true
+ ],
+ "q315": [
+  true
+ ],
+ "q316": [
+  true,
+  true
+ ],
+ "q317": [
+  true,
+  true
+ ],
+ "q318": [
+  true,
+  true
+ ],
+ "q319": [
+  false,
+  true
+ ],
+ "q320": [
+  false,
+  true
+ ],
+ "q321": [
+  true,
+  true
+ ],
+ "q322": [
+  false,
+  true
+ ],
+ "q323": [
+  true,
+  false
+ ],
+ "q324": [
+  false,
+  true
+ ],
+ "q325": [
+  false,
+  true,
+  true
+ ],
+ "q326": [
+  true,
+  true,
+  true
+ ],
+ "q327": [
+  true,
+  true
+ ],
+ "q328": [
+  true,
+  true
+ ],
+ "q329": [
+  true,
+  true
+ ],
+ "q330": [
+  true,
+  true,
+  true
+ ],
+ "q331": [
+  true,
+  true,
+  true
+ ],
+ "q332": [
+  false,
+  true
+ ],
+ "q333": [
+  true,
+  true
+ ],
+ "q334": [
+  true,
+  true
+ ],
+ "q335": [
+  true,
+  true
+ ],
+ "q336": [
+  true,
+  true
+ ],
+ "q337": [
+  false,
+  true
+ ],
+ "q338": [
+  true,
+  true
+ ],
+ "q339": [
+  true
+ ],
+ "q340": [
+  true,
+  true,
+  false
+ ],
+ "q341": [
+  false,
+  false,
+  false
+ ],
+ "q342": [
+  true,
+  true,
+  true
+ ],
+ "q343": [
+  true,
+  true,
+  true
+ ],
+ "q344": [
+  true,
+  true,
+  true
+ ],
+ "q345": [
+  true,
+  true,
+  true
+ ],
+ "q346": [
+  true,
+  true,
+  false
+ ],
+ "q347": [
+  false,
+  false,
+  false
+ ],
+ "q348": [
+  true,
+  true
+ ],
+ "q349": [
+  true,
+  true,
+  true
+ ],
+ "q350": [
+  true,
+  true
+ ],
+ "q351": [
+  true,
+  true
+ ],
+ "q352": [
+  true,
+  false,
+  false
+ ],
+ "q353": [
+  false,
+  true,
+  true
+ ],
+ "q354": [
+  true,
+  true
+ ],
+ "q355": [
+  true,
+  true,
+  true
+ ],
+ "q356": [
+  true,
+  true,
+  true
+ ],
+ "q357": [
+  true,
+  true
+ ],
+ "q358": [
+  true,
+  true,
+  true
+ ],
+ "q359": [
+  false,
+  true
+ ],
+ "q360": [
+  false,
+  true,
+  false
+ ],
+ "q361": [
+  false,
+  false
+ ],
+ "q362": [
+  true,
+  true
+ ],
+ "q363": [
+  true,
+  true
+ ],
+ "q364": [
+  true,
+  false
+ ],
+ "q365": [
+  true,
+  true,
+  true
+ ],
+ "q366": [
+  true,
+  true,
+  false
+ ],
+ "q367": [
+  false,
+  false,
+  true
+ ],
+ "q368": [
+  true,
+  true
+ ],
+ "q369": [
+  true,
+  true,
+  false
+ ],
+ "q370": [
+  true,
+  false,
+  true
+ ],
+ "q371": [
+  true,
+  true,
+  true
+ ],
+ "q372": [
+  false,
+  false
+ ],
+ "q373": [
+  false,
+  false
+ ],
+ "q374": [
+  true,
+  true,
+  true
+ ],
+ "q375": [
+  true,
+  false,
+  true
+ ],
+ "q376": [
+  true,
+  false,
+  true
+ ],
+ "q377": [
+  true,
+  false,
+  true
+ ],
+ "q378": [
+  true,
+  true,
+  true
+ ],
+ "q379": [
+  true,
+  true,
+  true
+ ],
+ "q380": [
+  true,
+  false,
+  false
+ ],
+ "q381": [
+  true,
+  true,
+  true
+ ],
+ "q382": [
+  true,
+  true
+ ],
+ "q383": [
+  true,
+  false,
+  true
+ ],
+ "q384": [
+  true,
+  true
+ ],
+ "q385": [
+  true,
+  true,
+  true
+ ],
+ "q386": [
+  true,
+  true,
+  false
+ ],
+ "q387": [
+  true,
+  true,
+  true
+ ],
+ "q388": [
+  true,
+  false,
+  false
+ ],
+ "q389": [
+  true,
+  false
+ ],
+ "q390": [
+  true,
+  true
+ ],
+ "q391": [
+  false,
+  true,
+  true
+ ],
+ "q392": [
+  false,
+  true
+ ],
+ "q393": [
+  true
+ ],
+ "q394": [
+  true,
+  false
+ ],
+ "q395": [
+  true,
+  true,
+  false
+ ],
+ "q396": [
+  true,
+  false,
+  false
+ ],
+ "q397": [
+  true,
+  true,
+  true
+ ],
+ "q398": [
+  true,
+  true,
+  false
+ ],
+ "q399": [
+  true,
+  false,
+  true
+ ]
+}
