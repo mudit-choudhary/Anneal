@@ -378,3 +378,53 @@ class TestServiceControl:
         body = self._stub_embedding_start(client, ui, monkeypatch, "cpu")
         assert body["device"] == "cpu"
         assert "not CUDA" in body["note"] and "24 MB free" in body["note"]
+
+
+def test_service_modules_keep_their_own_config(ui):
+    # Pruner then downloader in one process: both import a bare `config`.
+    saved = {k: sys.modules.pop(k) for k in ("config", "pruning", "downloader") if k in sys.modules}
+    try:
+        assert hasattr(ui._service_module("prune_manager", "pruning"), "sweep")
+        assert hasattr(ui._service_module("download_manager", "downloader"), "sanitize_filename")
+    finally:
+        for k in ("config", "pruning", "downloader"):
+            sys.modules.pop(k, None)
+        sys.modules.update(saved)
+
+
+def test_prune_preview_uses_unsaved_settings(client, ui, monkeypatch):
+    seen = {}
+    fake = type("P", (), {"sweep": staticmethod(lambda reg, cfg, dry_run: seen.update(cfg, dry=dry_run) or {})})
+    monkeypatch.setattr(ui, "_service_module", lambda *a: fake)
+    r = client.post("/v1/prune/run?dry_run=true", json={"raw_pdf_policy": "archive", "archive_dir": "/x"})
+    assert r.status_code == 200
+    assert seen["raw_pdf_policy"] == "archive" and seen["archive_dir"] == "/x" and seen["dry"] is True
+    assert ui.settings_store.load()["prune"].get("archive_dir") != "/x"   # not stored
+
+
+def test_query_stream_pings_while_quiet(ui):
+    import time as _t
+
+    def slow():
+        yield "a"
+        _t.sleep(0.35)
+        yield "b"
+    out = list(ui._with_heartbeat(slow(), "PING", every=0.1))
+    assert out[0] == "a" and out[-1] == "b" and "PING" in out
+
+
+def test_query_stream_stops_worker_when_client_leaves(ui):
+    import threading, time as _t
+    closed = threading.Event()
+
+    def endless():
+        try:
+            while True:
+                _t.sleep(0.01)
+                yield "x"
+        finally:
+            closed.set()
+    stream = ui._with_heartbeat(endless(), "PING", every=0.1)
+    next(stream)
+    stream.close()                     # what Starlette does on disconnect
+    assert closed.wait(1)

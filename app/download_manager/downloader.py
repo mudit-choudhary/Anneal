@@ -21,7 +21,6 @@ import re
 import subprocess
 import sys
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -38,7 +37,7 @@ from config import BACKFILL_DAYS, CHECK_INTERVAL, DOMAINS, MAX_PAPERS_PER_DOMAIN
 
 log = get_logger("download")
 
-START_JITTER = (5, 60)      # so domain threads don't hit arXiv in lockstep
+START_JITTER = (5, 60)      # pause before each domain's first API call
 DOWNLOAD_SLEEP = (3, 10)
 BREAK_AFTER = (5, 12)
 BREAK_DURATION = (30, 90)
@@ -116,24 +115,47 @@ def process_domain(domain: str, max_papers, jitter: bool = True) -> str:
     return f"{domain}: {downloads} new"
 
 
+def _get(url):
+    r = requests.get(url, timeout=60, headers={"User-Agent": "Anneal/1.0"}, stream=True)
+    r.raise_for_status()
+    return r
+
+
+def _save_pdf(resp, pdf_path, url):
+    """Stream into a .part file and rename only once it is a complete PDF, so
+    a cut-off download never leaves a file that looks already fetched."""
+    part = pdf_path.with_suffix(".pdf.part")
+    try:
+        with open(part, "wb") as f:
+            for chunk in resp.iter_content(1 << 16):
+                f.write(chunk)
+        with open(part, "rb") as f:
+            if f.read(5) != b"%PDF-":
+                raise ValueError(f"{url} did not return a PDF")
+        part.replace(pdf_path)
+    finally:
+        part.unlink(missing_ok=True)
+
+
 def _download_and_register(registry, result, stem, domain):
     pdf_path = PDF_DIR / f"{stem}.pdf"
     if not pdf_path.exists():
         log.info("[%s] downloading %s…", domain, result.title[:50])
-        result.download_pdf(dirpath=str(PDF_DIR), filename=f"{stem}.pdf")
+        # Not result.download_pdf(): arxiv>=2.4 fetches from export.arxiv.org,
+        # which answers PDF requests with 406s and truncated bodies.
+        _save_pdf(_get(result.pdf_url), pdf_path, result.pdf_url)
     if not registry.set_status(stem, "downloaded", domain=domain,
                                published_at=result.published.isoformat()):
         raise RuntimeError("registry rejected registration")
 
 
 def run_cycle(domains, max_papers, jitter=True):
-    with ThreadPoolExecutor(max_workers=len(domains)) as pool:
-        futures = {pool.submit(process_domain, d, max_papers, jitter): d for d in domains}
-        for f in as_completed(futures):
-            try:
-                log.info(f.result())
-            except Exception as e:
-                log.error("thread error [%s]: %s", futures[f], e)
+    # One domain at a time: arXiv's terms allow a single connection.
+    for d in domains:
+        try:
+            log.info(process_domain(d, max_papers, jitter))
+        except Exception as e:
+            log.error("domain error [%s]: %s", d, e)
 
 
 # --------------------------------------------------------------- direct URLs
@@ -147,19 +169,12 @@ def download_url(registry: RegistryClient, url: str) -> str:
         _download_and_register(registry, result, stem, "manual")
         return stem
 
-    r = requests.get(url, timeout=60, headers={"User-Agent": "RAGSetup/1.0"}, stream=True)
-    r.raise_for_status()
+    r = _get(url)
     cd = r.headers.get("content-disposition", "")
     name = re.search(r'filename="?([^";]+)"?', cd)
     raw_name = name.group(1) if name else unquote(Path(urlparse(url).path).name) or "download"
     stem = sanitize_filename(Path(raw_name).stem) or f"paper_{int(time.time())}"
-    pdf_path = PDF_DIR / f"{stem}.pdf"
-    with open(pdf_path, "wb") as f:
-        for chunk in r.iter_content(1 << 16):
-            f.write(chunk)
-    if pdf_path.read_bytes()[:5] != b"%PDF-":
-        pdf_path.unlink()
-        raise ValueError(f"{url} did not return a PDF")
+    _save_pdf(r, PDF_DIR / f"{stem}.pdf", url)
     if not registry.set_status(stem, "downloaded", domain="manual"):
         raise RuntimeError("registry rejected registration")
     log.info("downloaded %s -> %s.pdf", url, stem)

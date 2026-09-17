@@ -13,7 +13,9 @@ web pages fetched live (optional; given to the model as-is, never embedded).
 """
 
 import json
+import re
 import sys
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple
 
@@ -33,7 +35,8 @@ SYSTEM_PROMPT = (
     "- Cite the source after each claim using its bracketed number, e.g. [2].\n"
     "- Prefer paper excerpts over web pages and previous conversations when they disagree.\n"
     "- If the excerpts do not contain the answer, say so explicitly.\n"
-    "- Be concise and technical."
+    "- Be concise and technical.\n"
+    "- In Mermaid diagrams, put every node label in double quotes, e.g. A[\"Query rewriting (optional)\"]."
 )
 
 
@@ -75,7 +78,10 @@ def build_context(results: List[dict], web_pages: Sequence[dict] = ()) -> Tuple[
                                                      f"{str(meta.get('created_at', ''))[:10]}",
                             "chat_id": meta.get("chat_id"), "title": meta.get("title")})
         else:
-            sources.append({"kind": "paper", "label": f"from: {source_label(meta)}",
+            arrived = meta.get("arrived")
+            sources.append({"kind": "paper",
+                            "label": f"from: {source_label(meta)}"
+                                     + (f", added {arrived}" if arrived else ""),
                             "filename": meta.get("filename"), "title": meta.get("title"),
                             "section": meta.get("section"), "page_start": meta.get("page_start"),
                             "page_end": meta.get("page_end")})
@@ -103,6 +109,132 @@ def search_text(query: str, history: Optional[List[dict]] = None) -> str:
     return f"{previous[-1]} {query}" if previous else query
 
 
+# --------------------------------------------------------------- what's new
+# "what came in overnight?" is a question about arrival dates, not about the
+# text of any paper — a meaning-based search for these words finds nothing.
+RECENCY = re.compile(r"\b(latest|newest|recent(?:ly)?|new(?:est)? (?:papers?|research|work)|"
+                     r"what'?s new|anything new|today|yesterday|this week|past week|last week|"
+                     r"last (\d+) days?|since yesterday|overnight)\b", re.I)
+WINDOW_DAYS = {"today": 1, "yesterday": 2, "overnight": 1, "since yesterday": 2,
+               "this week": 7, "past week": 7, "last week": 7}
+RECENCY_FALLBACK = 5           # papers to show when the window itself is empty
+DEFAULT_ARRIVALS = 5           # papers summarised when the question names no number
+MAX_ARRIVALS = 12              # a 6144-token window will not hold more
+# "the 10 new updates", "top 3 papers" — but never the 3 in "last 3 days".
+HOW_MANY = re.compile(r"\b(?:top\s+)?(\d{1,2})\s+(?:new\s+|latest\s+|recent\s+)*"
+                      r"(?:papers?|updates?|articles?|results?|additions?|arrivals?)\b", re.I)
+
+
+def how_many(query: str) -> Optional[int]:
+    """The count the question asks for, if any: "the 10 new updates" -> 10."""
+    m = HOW_MANY.search(query)
+    return min(MAX_ARRIVALS, max(1, int(m.group(1)))) if m else None
+
+
+def day_label(stamp: str, today: Optional[datetime] = None) -> str:
+    """'today' / 'yesterday' / a date. Models are unreliable at working out
+    which dates fall inside "since yesterday"; hand them the answer."""
+    today = (today or datetime.now()).date()
+    try:
+        day = datetime.strptime(stamp[:10], "%Y-%m-%d").date()
+    except ValueError:
+        return "an unknown date"
+    delta = (today - day).days
+    return {0: "today", 1: "yesterday"}.get(delta, f"{day:%Y-%m-%d}")
+
+
+def recency_window(query: str) -> Optional[int]:
+    """Days of history the question asks for, or None if it is not one.
+
+    The narrowest phrase wins: "the latest updates today" means today, not the
+    week that a bare "latest" would imply."""
+    windows = []
+    for m in RECENCY.finditer(query):
+        if m.group(2):                               # "last 3 days"
+            windows.append(max(1, int(m.group(2))))
+        else:
+            windows.append(WINDOW_DAYS.get(m.group(0).lower(), 7))
+    return min(windows) if windows else None
+
+
+def recent_papers(days: int, limit: int = DEFAULT_ARRIVALS) -> Tuple[List[dict], bool]:
+    """Embedded papers that arrived within `days`, newest first.
+
+    Returns (papers, within_window). When nothing arrived in the window the
+    newest few are returned anyway with within_window False, so the answer can
+    say "nothing new today, here is the most recent work" instead of nothing."""
+    from common.registry_client import RegistryClient
+
+    papers = [p for p in RegistryClient().list_papers() if p.get("status") == "embedded"]
+    stamp = lambda p: (p.get("embedded_at") or p.get("downloaded_at") or "")   # noqa: E731
+    papers.sort(key=stamp, reverse=True)
+    cutoff = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d %H:%M:%S")
+    fresh = [p for p in papers if stamp(p) >= cutoff]
+    return (fresh[:limit], True) if fresh else (papers[:RECENCY_FALLBACK], False)
+
+
+# What a "what is this paper about" excerpt should be: the abstract, or failing
+# that the introduction — never the reference list or a page of index terms.
+OPENING_GOOD = re.compile(r"abstract", re.I)
+OPENING_OK = re.compile(r"introduction|overview|background", re.I)
+OPENING_BAD = re.compile(r"reference|bibliograph|acknowledg|appendix|index terms|"
+                         r"table of contents|continued on next page", re.I)
+
+
+def opening_rank(hit: dict):
+    """Sort key picking the most descriptive chunk of a paper (lowest wins)."""
+    meta = hit.get("metadata") or {}
+    section = str(meta.get("section") or "")
+    text = hit.get("text", "")
+    if OPENING_GOOD.search(section):
+        kind = 0
+    elif OPENING_OK.search(section):
+        kind = 1
+    elif OPENING_BAD.search(section) or OPENING_BAD.search(text[:200]):
+        kind = 9
+    else:
+        kind = 3
+    return (kind, 0 if len(text) >= 400 else 1, meta.get("page_start") or 0, -len(text))
+
+
+def arrivals_context(query: str, days: int, n_per_paper: int = 1) -> Tuple[List[dict], List[str]]:
+    """Excerpts from each recently arrived paper, newest first."""
+    wanted = how_many(query) or DEFAULT_ARRIVALS
+    papers, within = recent_papers(days, wanted)
+    warnings: List[str] = []
+    if not papers:
+        return [], ["no embedded papers yet, so there is nothing recent to report"]
+    if not within:
+        warnings.append(f"nothing new in the last {days} day(s); showing the {len(papers)} most recent papers")
+    elif len(papers) < wanted and how_many(query):
+        warnings.append(f"only {len(papers)} paper(s) arrived in that period, not {wanted}")
+    results: List[dict] = []
+    for p in papers:
+        stem = p["filename"]
+        # Probe the paper with its own title, then keep its most descriptive
+        # chunk: the raw nearest hit is often index terms or the references.
+        hits = sorted(fetch_chunks(stem.replace("_", " "), [stem], 6, ("papers",), 0),
+                      key=opening_rank)[:n_per_paper]
+        for h in hits:
+            meta = dict(h.get("metadata") or {})
+            meta["arrived"] = day_label(p.get("embedded_at") or p.get("downloaded_at") or "")
+            h["metadata"] = meta
+        results += hits
+    return results, warnings
+
+
+def question_for(query: str) -> str:
+    """What the model is actually asked. A recency question is answered from
+    the arrival list itself: left with the user's wording a small model argues
+    about which dates count as "since yesterday" and replies "nothing is new"."""
+    if recency_window(query) is None:
+        return query
+    return (f"{query}\n\n(The excerpts above are already the papers that arrived in that period."
+            f" List and summarise every one of them in the order given, [1] first (that is"
+            f" newest first), with citations. Do not check"
+            f" or discuss their dates, and do not reply that nothing is new.)")
+
+
 def retrieve(query: str, filenames: Optional[List[str]] = None, web: bool = False,
              cfg: Optional[dict] = None,
              history: Optional[List[dict]] = None) -> Tuple[str, List[dict], List[str]]:
@@ -115,9 +247,13 @@ def retrieve(query: str, filenames: Optional[List[str]] = None, web: bool = Fals
     rt = cfg["retrieval"]
     kinds = ["papers"] + (["chats"] if rt.get("use_chats", True) else [])
     n = int(rt.get("n_results_with_web", 4) if web else rt.get("n_results", 6))
-    results = fetch_chunks(search_text(query, history), filenames, n, kinds,
-                           int(rt.get("n_chat_results", 2)))
     warnings: List[str] = []
+    days = None if filenames else recency_window(query)
+    if days:
+        results, warnings = arrivals_context(query, days)
+    else:
+        results = fetch_chunks(search_text(query, history), filenames, n, kinds,
+                               int(rt.get("n_chat_results", 2)))
     pages: List[dict] = []
     if web:
         try:
@@ -127,6 +263,18 @@ def retrieve(query: str, filenames: Optional[List[str]] = None, web: bool = Fals
         except Exception as e:
             warnings.append(f"web search unavailable: {e}")
     context, sources = build_context(results, pages)
+    if days and results:
+        # Without this the model reads "latest updates" as news and refuses.
+        # The dates are already decided here: left to itself the model
+        # miscounts which ones fall inside "since yesterday" and answers "none".
+        since = "today" if days <= 1 else f"in the last {days} days"
+        papers_n = len({s.get("filename") for s in sources if s.get("kind") == "paper"})
+        context = (f"The excerpts below ARE the {papers_n} paper(s) added to the library"
+                   f" {since} — they have already been filtered by arrival date, so treat every"
+                   f" one of them as new and do not re-judge the dates. Summarise each in one or"
+                   f" two sentences (what it is about, why it matters), keeping the order below"
+                   f" ([1] is the newest), citing each."
+                   f" Do not say there is nothing new.\n\n{context}")
     return context, sources, warnings
 
 
@@ -142,7 +290,8 @@ def _messages(context: str, query: str, history: Optional[List[dict]] = None) ->
     Old assistant answers are truncated: they are there for reference, and a
     6144-token window is not big enough to carry them whole.
     """
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    messages = [{"role": "system",
+                 "content": f"{SYSTEM_PROMPT}\nToday is {datetime.now():%A, %-d %B %Y}."}]
     for turn in (history or [])[-MAX_HISTORY_TURNS:]:
         content = turn.get("content", "")
         if turn.get("role") == "assistant" and len(content) > MAX_HISTORY_CHARS:

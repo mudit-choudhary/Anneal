@@ -39,7 +39,7 @@ export default function Ingestion() {
         {!reg ? (
           <p className="hint">
             Registry not reachable — start the pipeline with
-            <code> scripts/start_query.sh --with-ingest</code>.
+            <code> anneal --with-ingest</code>.
           </p>
         ) : (
           <>

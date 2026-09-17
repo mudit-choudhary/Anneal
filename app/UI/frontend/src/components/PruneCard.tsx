@@ -44,7 +44,7 @@ export default function PruneCard() {
   // Which PDFs survive, worked out exactly the way prune_manager does it.
   const verdict = useMemo(() => {
     if (!s) return { spared: new Set<string>(), acted: [] as PruneCandidate[] };
-    if (s.raw_pdf_policy === "keep") {
+    if (s.raw_pdf_policy === "keep" || (s.raw_pdf_policy === "archive" && !s.archive_dir.trim())) {
       return { spared: new Set(papers.map((p) => p.filename)), acted: [] };
     }
     const n = Math.max(0, Math.min(s.keep_count, papers.length));
@@ -62,21 +62,26 @@ export default function PruneCard() {
       const saved = await api.saveSettings({ prune: s! } as Partial<Settings>);
       setS(saved.prune);
       setMsg("Saved. The prune service picks this up on its next sweep.");
+      return true;
     } catch (e) {
       setMsg(`Save failed: ${(e as Error).message}`);
+      return false;
     }
   }
 
+  // A preview uses what is on screen; a real run saves it first, so the
+  // background service and this button never disagree.
   async function run(dryRun: boolean) {
     setBusy(true);
     setMsg("");
     try {
-      const r = await api.prune(dryRun);
+      if (!dryRun && !(await save())) return;
+      const r = await api.prune(dryRun, s!);
       setPreview(r.counts);
       const total = Object.values(r.counts).reduce((a, b) => a + b, 0);
       setMsg(dryRun
-        ? (total ? `Would remove ${total} file(s). Nothing changed.` : "Nothing to remove.")
-        : `Removed ${total} file(s).`);
+        ? (total ? `Would act on ${total} file(s). Nothing changed.` : "Nothing to do.")
+        : `Done: ${total} file(s).`);
       if (!dryRun) {
         const fresh = await api.pruneCandidates();
         setPapers(fresh.papers);
@@ -93,6 +98,7 @@ export default function PruneCard() {
   const freed = verdict.acted.reduce((a, p) => a + p.bytes, 0);
   const held = papers.reduce((a, p) => a + p.bytes, 0) - freed;
   const verb = policy === "delete" ? "deleted" : "archived";
+  const noFolder = policy === "archive" && !s.archive_dir.trim();   // pruning.py keeps PDFs then
 
   return (
     <div className="card prune">
@@ -104,7 +110,9 @@ export default function PruneCard() {
 
       {/* the decision, as one sentence that changes as you set it */}
       <p className={`verdict ${policy === "delete" && verdict.acted.length ? "bad" : ""}`}>
-        {!acting ? (
+        {noFolder ? (
+          <>No archive folder set, so all <b>{papers.length}</b> PDFs stay on disk until you enter one.</>
+        ) : !acting ? (
           <>All <b>{papers.length}</b> PDFs stay on disk.</>
         ) : verdict.acted.length === 0 ? (
           <>Nothing to {policy}. All <b>{papers.length}</b> are within the spared range.</>
@@ -174,7 +182,7 @@ export default function PruneCard() {
           {policy === "archive" && (
             <div className="grid narrow">
               <label>Archive folder</label>
-              <input value={s.archive_dir} placeholder="/media/mudit/Drive/paper_archive"
+              <input value={s.archive_dir} placeholder="required, e.g. /media/you/Drive/paper_archive"
                      onChange={(e) => set("archive_dir", e.target.value)} />
             </div>
           )}

@@ -193,7 +193,7 @@ def main():
     # ---------------------------------------------------------- stage 4
     def retrieval_stage():
         if not service_up(f"{EMBEDDING_URL}/v1/health"):
-            raise SkipStage("embedding service not running (scripts/start_query.sh)")
+            raise SkipStage("embedding service not running (run: anneal)")
         import requests
         body = requests.post(f"{EMBEDDING_URL}/v1/search",
                              json={"query": "what method does this paper propose?",
@@ -241,7 +241,7 @@ def main():
     # ---------------------------------------------------------- stage 6
     def ui_stage():
         if not service_up(f"{UI_URL}/v1/status"):
-            raise SkipStage("UI service not running (scripts/start_query.sh)")
+            raise SkipStage("UI service not running (run: anneal)")
         import requests
         status = requests.get(f"{UI_URL}/v1/status", timeout=5).json()
         checks = []
@@ -312,7 +312,7 @@ def main():
         code = r.summary()
 
         if any(s is SKIP for _, s, _ in r.results):
-            print(f"\n{DIM}to run the skipped stages:  scripts/start_query.sh{RESET}")
+            print(f"\n{DIM}to run the skipped stages:  anneal{RESET}")
         return code
     finally:
         shutil.rmtree(work, ignore_errors=True)

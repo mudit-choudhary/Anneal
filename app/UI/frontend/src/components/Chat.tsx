@@ -4,16 +4,19 @@ import { duration, timeLabel } from "../format";
 import type { Message, Source } from "../types";
 import Markdown from "./Markdown";
 import Sources from "./Sources";
+import Welcome from "./Welcome";
 
 type Props = {
   chatId: string | null;
   filenames: string[] | null;
   backend: string;
+  model: string;
+  paperCount: number;
   onChatStarted: (id: string) => void;
   onChatsChanged: () => void;
 };
 
-export default function Chat({ chatId, filenames, backend, onChatStarted, onChatsChanged }: Props) {
+export default function Chat({ chatId, filenames, backend, model, paperCount, onChatStarted, onChatsChanged }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [web, setWeb] = useState(false);
@@ -22,10 +25,19 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
   const [embedded, setEmbedded] = useState(false);
   const [notice, setNotice] = useState("");
   const bottom = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLTextAreaElement>(null);
   const abort = useRef<AbortController | null>(null);
+  // The id the server just assigned to *this* stream: selecting it must not
+  // reload the chat from the database, which would wipe the answer arriving.
+  const started = useRef<string | null>(null);
+  const [elapsed, setElapsed] = useState(0);
 
   // load a saved chat when selected
   useEffect(() => {
+    if (chatId && started.current === chatId) {
+      started.current = null;
+      return;
+    }
     if (!chatId) {
       setMessages([]);
       setEmbedded(false);
@@ -41,7 +53,25 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
       .catch(() => setMessages([]));
   }, [chatId]);
 
-  useEffect(() => bottom.current?.scrollIntoView({ behavior: "smooth" }), [messages]);
+  // Follow the answer only while the reader is at the bottom. Scrolling up
+  // must stay put: "smooth" is deliberately avoided, since an in-flight
+  // animation keeps dragging the view down after the reader scrolls away.
+  useEffect(() => {
+    const pane = bottom.current?.parentElement;
+    if (!pane) return;
+    // "Smooth" is deliberately avoided: an in-flight animation keeps dragging
+    // the view down after the reader has scrolled away from the bottom.
+    const room = Math.min(120, pane.clientHeight / 4);
+    if (pane.scrollHeight - pane.scrollTop - pane.clientHeight <= room) pane.scrollTop = pane.scrollHeight;
+  }, [messages]);
+
+  // a ticking second counter, so a slow answer still looks alive
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const t = setInterval(() => setElapsed((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, [busy]);
 
   async function ask() {
     const q = input.trim();
@@ -61,7 +91,10 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
       await streamQuery(
         { query: q, filenames, web, chat_id: chatId },
         (ev) => {
-          if (ev.type === "chat" && ev.chat_id !== chatId) onChatStarted(ev.chat_id);
+          if (ev.type === "chat" && ev.chat_id !== chatId) {
+            started.current = ev.chat_id;
+            onChatStarted(ev.chat_id);
+          }
           else if (ev.type === "sources") update((a) => ({ ...a, sources: ev.sources }));
           else if (ev.type === "warning") update((a) => ({ ...a, warnings: [...(a.warnings ?? []), ev.message] }));
           else if (ev.type === "delta") update((a) => ({ ...a, content: a.content + ev.text }));
@@ -95,24 +128,28 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
     <div className="chat">
       <div className="messages">
         {messages.length === 0 && (
-          <div className="msg bot">
-            <div className="meta">assistant</div>
-            <div className="bubble">
-              Ask a question about your embedded research papers. Answers cite their sources — click a citation like{" "}
-              <a className="cite">[1]</a> to see the excerpt it came from. Toggle <b>Web</b> to also fetch web pages for the
-              question; Mermaid diagrams in answers render inline.
-            </div>
-          </div>
+          <Welcome paperCount={paperCount} scoped={filenames?.length ?? null}
+                   onPick={(q) => { setInput(q); box.current?.focus(); }} />
         )}
         {messages.map((m, i) =>
           m.role === "user" ? (
             <div key={i} className="msg user">
-              <div className="meta">you</div>
+              <div className="meta">You</div>
               <div className="bubble">{m.content}</div>
             </div>
           ) : (
             <div key={i} className="msg bot">
-              <div className="meta">assistant · {backend}</div>
+              <div className="meta">
+                <span className="who">Anneal</span>
+                <span className="chip" title={backend === "openai" ? "answered by a remote API" : "answered on this machine"}>
+                  {model || backend}{backend === "openai" ? " · cloud" : " · on your machine"}
+                </span>
+                {m.streaming && (
+                  <span className="thinking" title="the model is working; the page is still receiving data">
+                    annealing {elapsed}s
+                  </span>
+                )}
+              </div>
               <div className="bubble">
                 {m.warnings?.map((w, j) => (
                   <div key={j} className="warning">⚠ {w}</div>
@@ -138,6 +175,7 @@ export default function Chat({ chatId, filenames, backend, onChatStarted, onChat
       <div className="composer">
         <div className="box">
           <textarea
+            ref={box}
             rows={1}
             value={input}
             placeholder="Ask about your papers…  (Enter to send, Shift+Enter for newline)"

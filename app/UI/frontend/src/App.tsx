@@ -37,7 +37,7 @@ export default function App() {
     <div className="app">
       <header className="topbar">
         <h1>
-          Research Paper <span>RAG</span>
+          Ann<span>eal</span>
         </h1>
         <nav>
           {(["chat", "ingestion", "gpu", "logs", "settings"] as View[]).map((v) => (
@@ -63,6 +63,8 @@ export default function App() {
               chatId={chatId}
               filenames={selected.size ? [...selected] : null}
               backend={status?.backend ?? "local"}
+              model={(status?.backend === "openai" ? status?.openai_model : status?.model) ?? ""}
+              paperCount={papers.length}
               onChatStarted={(id) => {
                 setChatId(id);
                 refreshChats();

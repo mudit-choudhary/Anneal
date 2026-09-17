@@ -64,8 +64,9 @@ export const api = {
     json<{ started: string[]; already_running: string[]; note: string | null }>(
       `/v1/services/preset/${preset}`, { method: "POST" }),
   pruneCandidates: () => json<{ papers: PruneCandidate[]; registry: boolean }>("/v1/prune/candidates"),
-  prune: (dryRun: boolean) =>
-    json<{ dry_run: boolean; counts: PruneCounts }>(`/v1/prune/run?dry_run=${dryRun}`, { method: "POST" }),
+  prune: (dryRun: boolean, settings?: Settings["prune"]) =>
+    json<{ dry_run: boolean; counts: PruneCounts }>(`/v1/prune/run?dry_run=${dryRun}`,
+      { method: "POST", body: settings ? JSON.stringify(settings) : undefined }),
 };
 
 /** POST /v1/query and deliver each newline-delimited JSON event as it arrives. */

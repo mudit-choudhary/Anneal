@@ -106,7 +106,8 @@ export type QueryEvent =
   | { type: "warning"; message: string }
   | { type: "delta"; text: string }
   | { type: "done"; duration_ms?: number }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | { type: "ping" };                       // keep-alive while the server is quiet
 
 export type Service = {
   name: string;

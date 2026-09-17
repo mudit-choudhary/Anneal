@@ -60,6 +60,19 @@ class TestDownloader:
             dl.download_url(Reg(), "https://example.org/notes.pdf")
         assert not list(tmp_path.glob("*.pdf"))
 
+    def test_cut_off_download_leaves_no_file(self, dl, tmp_path, monkeypatch):
+        monkeypatch.setattr(dl, "PDF_DIR", tmp_path)
+
+        class R:
+            def iter_content(self, n):
+                yield b"%PDF-1.7 partial"
+                raise ConnectionError("retrieval incomplete")
+        monkeypatch.setattr(dl, "_get", lambda url: R())
+        result = type("Res", (), {"title": "T", "pdf_url": "https://arxiv.org/pdf/1"})()
+        with pytest.raises(ConnectionError):
+            dl._download_and_register(None, result, "T", "d")
+        assert not list(tmp_path.iterdir())   # no .pdf, no .part
+
 
 # --------------------------------------------------------------- prune
 @pytest.fixture(scope="module")

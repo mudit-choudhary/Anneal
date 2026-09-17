@@ -146,7 +146,7 @@ Anneal/
 | Component | Kind | Port | Trigger | Reads | Writes | Next |
 |---|---|---|---|---|---|---|
 | `registry_manager` | FastAPI + SQLite | 4000 | HTTP calls from all others | `rag_registry.db` | `rag_registry.db` | — (everyone polls it) |
-| `download_manager` | loop, 10 threads | — | manual start; every 3600 s | arXiv, registry checkpoint | `data/raw_pdfs/`, status `downloaded` | parse stage 1 |
+| `download_manager` | loop, one domain at a time | — | manual start; every 3600 s | arXiv, registry checkpoint | `data/raw_pdfs/`, status `downloaded` | parse stage 1 |
 | `scripts/register_pdfs.py` | one-shot | — | manual / `anneal fresh-start` | `data/raw_pdfs/` | status `downloaded` | parse stage 1 |
 | `parse_manager` stage 1 (`pdf_parser.py`) | loop | — | every 5 s: status `downloaded` | PDF, YOLO weights | `data/parsed/*.json`, status `parsed` | stage 2 |
 | `parse_manager` stage 2 (`txt_processor.py`) | loop (same process) | — | every 5 s: status `parsed` | `data/parsed/*.json` | `data/processed/*.{txt,json}`, status `processed` | embedder |
@@ -279,17 +279,18 @@ Take `A_Plan_Reuse_Mechanism_for_LLM-Driven_Agent.pdf`.
 ### 5.0 Arrival — status `downloaded`
 
 **Via the downloader** (`download_manager/downloader.py`, run by hand):
-`main_loop()` fans out one `process_domain()` thread per entry in
-`DOMAINS`. Each thread: sleeps a random 5–60 s (so ten threads don't hit
-arXiv in lockstep), probes the registry (aborts the cycle if it's down —
+`run_cycle()` calls `process_domain()` for each entry in `DOMAINS`, one
+after another (*why*: arXiv's terms allow a single connection). Each one
+sleeps a random 5–60 s, probes the registry (aborts the cycle if it's down —
 *why*: a downloaded-but-unregistered PDF would sit invisible forever),
 asks `GET /v1/domains/{d}/checkpoint` for the newest `published_at` it already
 holds for this domain (falls back to `BACKFILL_DAYS` = 32 days), then
 walks arXiv results newest-first. For each result it stops at the
 checkpoint, stops at `MAX_PAPERS_PER_DOMAIN` (20 — *why*: one 4 GB machine
 can't absorb thousands of papers overnight), derives the stem with
-`sanitize_filename(title)`, skips it if the registry says it already
-already knows it, downloads to `data/raw_pdfs/<stem>.pdf`, and
+`sanitize_filename(title)`, skips it if the registry already knows it, streams the PDF from
+`arxiv.org` into `data/raw_pdfs/<stem>.pdf.part` and renames it only when
+complete (*why*: a cut-off download must not look fetched), and
 `PUT /v1/papers/{stem}/status {downloaded, domain, published_at}`. Sleeps 3–10 s
 between papers and takes 30–90 s breaks every 5–12 downloads (politeness
 to arXiv).

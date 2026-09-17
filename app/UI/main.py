@@ -29,9 +29,22 @@ APP_ROOT = UI_DIR.parent
 sys.path.insert(0, str(APP_ROOT))
 sys.path.insert(0, str(APP_ROOT / "rag_setup"))
 
+
+def _service_module(service: str, name: str):
+    """Import `name` from a service folder. Each service has its own bare
+    `config.py`; drop any cached one so the module binds to its own."""
+    import importlib
+    folder = str(APP_ROOT / service)
+    if folder in sys.path:
+        sys.path.remove(folder)
+    sys.path.insert(0, folder)
+    if name not in sys.modules:
+        sys.modules.pop("config", None)
+    return importlib.import_module(name)
+
 import requests
 import uvicorn
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Body, FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -169,7 +182,7 @@ def query(req: QueryRequest):
         text = ""
         started = time.perf_counter()
         try:
-            for delta in rag.answer_stream(context, question, cfg, history=history):
+            for delta in rag.answer_stream(context, rag.question_for(question), cfg, history=history):
                 text += delta
                 yield event(type="delta", text=delta)
         except Exception as e:
@@ -181,7 +194,49 @@ def query(req: QueryRequest):
                           sources=[{k: v for k, v in s.items() if k != "text"} for s in sources])
         yield event(type="done", duration_ms=duration_ms)
 
-    return StreamingResponse(generate(), media_type="application/x-ndjson")
+    return StreamingResponse(_with_heartbeat(generate(), event(type="ping")),
+                             media_type="application/x-ndjson")
+
+
+def _with_heartbeat(gen, ping: str, every: float = 2.0):
+    """Relay `gen` from a worker thread, sending `ping` whenever it is quiet.
+
+    Retrieval, web fetches and a model still reading its prompt can go silent
+    for a minute. Firefox drops a silent connection within seconds of any
+    network change (a container starting is enough), so keep bytes flowing.
+    If the client leaves, the worker stops at the next item."""
+    import queue
+    import threading
+
+    items: "queue.Queue" = queue.Queue()
+    stop = threading.Event()
+    end = object()
+
+    def work():
+        try:
+            for item in gen:
+                if stop.is_set():
+                    break
+                items.put(item)
+        except Exception:                                        # noqa: BLE001
+            log.exception("query stream failed")
+        finally:
+            gen.close()
+            items.put(end)
+
+    threading.Thread(target=work, daemon=True).start()
+    try:
+        while True:
+            try:
+                item = items.get(timeout=every)
+            except queue.Empty:
+                yield ping
+                continue
+            if item is end:
+                return
+            yield item
+    finally:
+        stop.set()
 
 
 # --------------------------------------------------------------- chats
@@ -415,8 +470,7 @@ def ingest_arxiv_preview(topic: str = Query(...), max_papers: int = Query(10, ge
     except Exception:                                            # noqa: BLE001
         known = set()
 
-    sys.path.insert(0, str(APP_ROOT / "download_manager"))
-    from downloader import sanitize_filename
+    sanitize_filename = _service_module("download_manager", "downloader").sanitize_filename
 
     try:
         client = arxiv.Client(page_size=max_papers, delay_seconds=3.0, num_retries=3)
@@ -622,14 +676,14 @@ def prune_candidates():
 
 
 @app.post("/v1/prune/run")
-def prune_run(dry_run: bool = Query(True)):
-    """Sweep now using the saved prune settings. Defaults to a dry run so the
-    UI can show what *would* be removed before anything is deleted."""
-    sys.path.insert(0, str(APP_ROOT / "prune_manager"))
-    import importlib
-    pruning = importlib.import_module("pruning")
+def prune_run(dry_run: bool = Query(True), prune: Optional[Dict[str, Any]] = Body(None)):
+    """Sweep now. Defaults to a dry run so the UI can show what *would* be
+    removed before anything is deleted. A preview may pass the unsaved
+    settings on screen; they are merged over the saved ones, never stored."""
+    pruning = _service_module("prune_manager", "pruning")
+    cfg = {**settings_store.load()["prune"], **(prune or {})}
     try:
-        counts = pruning.sweep(RegistryClient(), settings_store.load()["prune"], dry_run=dry_run)
+        counts = pruning.sweep(RegistryClient(), cfg, dry_run=dry_run)
     except RegistryUnavailable as e:
         raise HTTPException(503, str(e))
     return {"dry_run": dry_run, "counts": counts}
@@ -976,7 +1030,7 @@ def ingestion():
     if idle:
         out["eta_note"] = (f"not progressing — {' and '.join(idle)} "
                            f"{'is' if len(idle) == 1 else 'are'} not running "
-                           f"(start with scripts/start_query.sh --with-ingest)")
+                           f"(start with anneal --with-ingest)")
         return out
 
     # Measured throughput beats modelled per-stage times, which include queue
