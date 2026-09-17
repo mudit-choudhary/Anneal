@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
+sys.path.insert(0, str(APP_ROOT))
 
 from common import settings as settings_store  # noqa: E402
 from common.chatstore import ChatStore  # noqa: E402
@@ -116,7 +116,7 @@ class TestRegistryClient:
 # --------------------------------------------------------------- registry sqlite
 @pytest.fixture
 def registry(tmp_path):
-    spec = importlib.util.spec_from_file_location("registry_sqlite", REPO_ROOT / "registry_manager" / "registry.py")
+    spec = importlib.util.spec_from_file_location("registry_sqlite", APP_ROOT / "registry_manager" / "registry.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.FileRegistry(str(tmp_path / "r.db"))

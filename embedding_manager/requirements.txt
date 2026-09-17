@@ -1,6 +1,0 @@
-sentence-transformers
-chromadb
-numpy
-fastapi
-uvicorn
-requests

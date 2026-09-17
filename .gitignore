@@ -2,12 +2,12 @@
 /virtual_environments
 
 # Data & generated artifacts
-/data
-/vector_db
-/runs
+/app/data
+/app/vector_db
+/app/runs
 
 # Model weights & caches (too large for git)
-/models
+/app/models
 *.pt
 *.onnx
 
@@ -26,12 +26,12 @@ env_setup.sh
 /.claude
 .pytest_cache
 
-# Service logs and PID files (scripts/ops.py)
-/run
+# Service logs and PID files (app/scripts/ops.py)
+/app/run
 
-# Web UI: dependencies and build output (rebuild with: cd UI/frontend && npm install && npm run build)
-/UI/frontend/node_modules
-/UI/static
+# Web UI: dependencies and build output (rebuild with: cd app/UI/frontend && npm install && npm run build)
+/app/UI/frontend/node_modules
+/app/UI/static
 
 # Eval scratch: large or regenerable. Kept in git: scripts, manifests, question
 # sets, parser timing stats, pre-registration, results and per-question rows.

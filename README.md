@@ -46,7 +46,10 @@ paired and corrected for multiplicity.
 ## Quick start
 
 ```bash
-ln -s "$PWD/bin/anneal" ~/.local/bin/anneal   # once
+python3.12 -m venv virtual_environments/annealenv                      # once
+virtual_environments/annealenv/bin/pip install -r app/requirements.txt
+virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
+ln -s "$PWD/app/bin/anneal" ~/.local/bin/anneal                        # once
 anneal                                        # start everything, open the app
 anneal status                                 # what is running, what is indexed
 anneal stop                                   # stop everything
@@ -54,29 +57,37 @@ anneal stop                                   # stop everything
 
 The first run builds the React app if needed and opens
 <http://127.0.0.1:4002>. `anneal fresh-start --yes` purges and re-ingests every
-PDF in `data/raw_pdfs/`. Full detail in [docs/OPERATIONS.md](docs/OPERATIONS.md).
+PDF in `app/data/raw_pdfs/`. Full detail in [app/docs/OPERATIONS.md](app/docs/OPERATIONS.md).
+
+The last install line matters: see the note at the top of `app/requirements.txt`.
 
 > `npm run dev` serves the frontend **only**, with no backend behind it. Use
 > `anneal`.
 
 ## Documentation
 
-- [docs/OPERATIONS.md](docs/OPERATIONS.md) — install, run, ingest, rebuild, troubleshoot
-- [docs/PARSING.md](docs/PARSING.md) — layout detection, the assembler, fine-tuning the model
-- [docs/SYSTEM_WALKTHROUGH.md](docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
-- [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — testing and tuning each RAG stage
-- [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
-- [docs/PENDING_IMPROVEMENTS.md](docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
+- [app/docs/OPERATIONS.md](app/docs/OPERATIONS.md) — install, run, ingest, rebuild, troubleshoot
+- [app/docs/PARSING.md](app/docs/PARSING.md) — layout detection, the assembler, fine-tuning the model
+- [app/docs/SYSTEM_WALKTHROUGH.md](app/docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
+- [app/docs/USER_GUIDE.md](app/docs/USER_GUIDE.md) — testing and tuning each RAG stage
+- [app/docs/BUILD_LOG.md](app/docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
+- [app/docs/PENDING_IMPROVEMENTS.md](app/docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
 - [evals/README.md](evals/README.md) — how the evaluation was run and how to reproduce it
-- [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
+- [app/diagrams/system_architecture_detailed.drawio](app/diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
 
 ## Layout
 
 ```
-common/  docs/  diagrams/  tests/  UI/  ops/  scripts/  bin/
-download_manager/  parse_manager/  prune_manager/
-embedding_manager/  registry_manager/  rag_setup/  evals/
-models/*  data/*  vector_db/*  run/*              (* git-ignored)
+app/          the application: services, UI, scripts, docs, diagrams, bin/anneal,
+              plus data/* models/* vector_db/* run/*          (* git-ignored)
+evals/        the evaluation harness and its report
+tests/        the test suite
+virtual_environments/annealenv/                               (git-ignored)
 ```
 
-Tests: `python -m pytest tests/ -q`
+Tests, from the repository root:
+
+```bash
+virtual_environments/annealenv/bin/pip install -r tests/requirements.txt
+virtual_environments/annealenv/bin/python -m pytest tests/ -q
+```

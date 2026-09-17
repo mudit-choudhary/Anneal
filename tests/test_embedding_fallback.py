@@ -15,7 +15,7 @@ import pytest
 
 # Deliberately *not* on sys.path: each manager has its own flat `config`
 # module, and adding one here would shadow another test module's.
-REPO_ROOT = Path(__file__).resolve().parent.parent
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
 
 
 def _is_oom(exc):
@@ -42,7 +42,7 @@ class TestOomDetection:
 
     def test_matches_source(self):
         """Guard against the source drifting away from this copy."""
-        source = (REPO_ROOT / "embedding_manager" / "embeddings.py").read_text()
+        source = (APP_ROOT / "embedding_manager" / "embeddings.py").read_text()
         for needle in ('"out of memory" in text', '"cuda error" in text', '"cublas" in text'):
             assert needle in source, f"embeddings._is_oom no longer checks {needle}"
 
@@ -90,7 +90,7 @@ class TestFallbackBehaviour:
 
     def test_source_wires_both_paths(self):
         """The import-time guard and the per-call retry must both exist."""
-        source = (REPO_ROOT / "embedding_manager" / "embeddings.py").read_text()
+        source = (APP_ROOT / "embedding_manager" / "embeddings.py").read_text()
         assert "could not load the embedding model" in source, "no import-time CPU fallback"
         assert "fall_back_to_cpu" in source, "no runtime CPU fallback"
         assert source.count("fall_back_to_cpu(") >= 3, "fallback not wired into add and query"

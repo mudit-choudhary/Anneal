@@ -42,8 +42,8 @@ for _var in ("PYTORCH_ALLOC_CONF", "PYTORCH_CUDA_ALLOC_CONF"):   # new name, the
     os.environ.setdefault(_var, "expandable_segments:True")
 
 REPO = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(REPO))
-sys.path.insert(0, str(REPO / "rag_setup"))
+sys.path.insert(0, str(REPO / "app"))
+sys.path.insert(0, str(REPO / "app" / "rag_setup"))
 sys.path.insert(0, str(REPO / "evals" / "scripts"))
 
 from build_questions import _CITATION, text_key, write_json      # noqa: E402

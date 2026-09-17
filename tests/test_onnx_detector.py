@@ -11,8 +11,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "parse_manager"))
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
+sys.path.insert(0, str(APP_ROOT / "parse_manager"))
 
 from onnx_detector import OnnxYolo, letterbox, nms  # noqa: E402
 
@@ -239,7 +239,7 @@ class TestProviderReporting:
 
 
 ONNX_MODELS = [p.with_suffix(".onnx") for p in
-               [REPO_ROOT / "models" / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt"]]
+               [APP_ROOT / "models" / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt"]]
 
 
 @pytest.mark.skipif(not any(p.exists() for p in ONNX_MODELS), reason="no ONNX export present")

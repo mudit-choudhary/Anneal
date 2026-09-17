@@ -11,7 +11,7 @@ import pytest
 pytest.importorskip("httpx")  # required by fastapi.testclient
 from fastapi.testclient import TestClient
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
 
 
 @pytest.fixture(scope="module")
@@ -26,7 +26,7 @@ def ui(tmp_path_factory):
     settings_store.SETTINGS_FILE = tmp / "settings.json"
 
     saved = {k: sys.modules.pop(k) for k in ("config", "rag", "websearch") if k in sys.modules}
-    spec = importlib.util.spec_from_file_location("ui_main", REPO_ROOT / "UI" / "main.py")
+    spec = importlib.util.spec_from_file_location("ui_main", APP_ROOT / "UI" / "main.py")
     module = importlib.util.module_from_spec(spec)
     try:
         spec.loader.exec_module(module)
@@ -38,7 +38,7 @@ def ui(tmp_path_factory):
     # Refuse to run against the real chat database. These tests create and
     # delete chats in bulk; if the redirection above ever stops working, the
     # damage is silent and permanent. Fail loudly instead.
-    live = str((REPO_ROOT / "data" / "app.db").resolve())
+    live = str((APP_ROOT / "data" / "app.db").resolve())
     assert module.chats.db_path != live, (
         f"the UI service opened the real chat database at {live} — "
         "aborting before the tests destroy it")

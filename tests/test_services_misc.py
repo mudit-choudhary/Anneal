@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT))
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
+sys.path.insert(0, str(APP_ROOT))
 
 
 def load(path, name):
@@ -31,7 +31,7 @@ def load(path, name):
 # --------------------------------------------------------------- downloader
 @pytest.fixture(scope="module")
 def dl():
-    return load(REPO_ROOT / "download_manager" / "downloader.py", "downloader_mod")
+    return load(APP_ROOT / "download_manager" / "downloader.py", "downloader_mod")
 
 
 class TestDownloader:
@@ -64,7 +64,7 @@ class TestDownloader:
 # --------------------------------------------------------------- prune
 @pytest.fixture(scope="module")
 def prune():
-    return load(REPO_ROOT / "prune_manager" / "pruning.py", "pruning_mod")
+    return load(APP_ROOT / "prune_manager" / "pruning.py", "pruning_mod")
 
 
 class TestPrune:
@@ -148,7 +148,7 @@ class TestPrune:
 # --------------------------------------------------------------- web search
 class TestWebSearch:
     def test_search_web_extracts_and_truncates(self, monkeypatch):
-        sys.path.insert(0, str(REPO_ROOT / "rag_setup"))
+        sys.path.insert(0, str(APP_ROOT / "rag_setup"))
         import websearch
         sys.path.pop(0)
 

@@ -7,7 +7,9 @@
 # Needs Ollama running (qwen3:4b-instruct for answers, gemma3:4b for judging).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
-source virtual_environments/globalragsetup_env/bin/activate
+# annealenv holds the app; the harness needs its extras too:
+#   virtual_environments/annealenv/bin/pip install -r evals/requirements.txt
+source virtual_environments/annealenv/bin/activate
 
 echo "== $(date '+%F %T') parse: cached papers are skipped"
 python -u evals/scripts/parse_cache.py

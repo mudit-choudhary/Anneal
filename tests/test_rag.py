@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
 
 
 @pytest.fixture(scope="module")
 def rag():
     saved = {k: sys.modules.pop(k) for k in ("config", "rag", "websearch") if k in sys.modules}
-    sys.path.insert(0, str(REPO_ROOT))
-    sys.path.insert(0, str(REPO_ROOT / "rag_setup"))
+    sys.path.insert(0, str(APP_ROOT))
+    sys.path.insert(0, str(APP_ROOT / "rag_setup"))
     try:
         module = importlib.import_module("rag")
     finally:

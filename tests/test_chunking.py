@@ -9,13 +9,13 @@ from pathlib import Path
 
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
 
 
 @pytest.fixture(scope="module")
 def ch():
     spec = importlib.util.spec_from_file_location(
-        "chunking", REPO_ROOT / "embedding_manager" / "chunking.py")
+        "chunking", APP_ROOT / "embedding_manager" / "chunking.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module

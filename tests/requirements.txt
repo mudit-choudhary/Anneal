@@ -1,0 +1,4 @@
+# Test suite: the app's dependencies plus pytest.
+#   virtual_environments/annealenv/bin/pip install -r tests/requirements.txt
+-r ../app/requirements.txt
+pytest==9.1.1

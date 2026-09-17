@@ -1,0 +1,59 @@
+# Anneal application: runtime dependencies only.
+#
+# From the repository root:
+#   python3.12 -m venv virtual_environments/annealenv
+#   virtual_environments/annealenv/bin/pip install -r app/requirements.txt
+#   virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
+#
+# The last line matters. chromadb hard-requires the CPU build of onnxruntime,
+# and both builds install into the same `onnxruntime` package, so whichever
+# lands last wins. Reinstalling the GPU build last keeps layout detection on the
+# GPU; without it, it silently runs on the CPU (about 6x slower).
+#
+# Every package below is imported directly by code that `anneal` runs; nothing
+# is listed only because another package needs it. Versions are the ones the
+# round-2 evaluation ran on, with one exception: that environment paired
+# arxiv 2.1.0 (which hard-pins requests==2.31.0) with requests 2.34.2, a
+# combination pip will not install. arxiv 2.4.1 keeps the same API and allows a
+# requests release with the 2024 security fixes. Neither affects the evaluation,
+# which builds its corpus with requests and feedparser directly.
+
+# services and web app
+fastapi==0.128.0
+uvicorn==0.40.0
+pydantic==2.12.5
+sse-starlette==3.4.11
+requests==2.32.5                  # 2.32.4+ carries the 2024 security fixes
+psutil==7.2.1
+
+# papers in
+arxiv==2.4.1
+
+# parsing: layout inference runs on onnxruntime, never on ultralytics
+onnxruntime-gpu==1.23.2           # plain `onnxruntime` on a CPU-only machine
+onnxruntime==1.23.2               # chromadb requires the CPU build; pinning it to the GPU
+                                  # build's version keeps the shared package directory from
+                                  # mixing two releases
+opencv-python-headless==4.13.0.90
+numpy==2.4.1
+pymupdf==1.28.2                   # AGPL-3.0, or a paid Artifex licence
+
+# embedding and retrieval; torch also supplies the CUDA 12 libraries
+# (nvidia-*-cu12 wheels) that onnxruntime-gpu loads
+torch==2.9.1
+sentence-transformers==5.2.0
+chromadb==1.4.1
+
+# answering
+openai==3.9.0                     # the OpenAI-compatible backend
+ddgs==9.16.0                      # web search
+trafilatura==2.2.0                # main-text extraction from web pages
+
+# Deliberately not installed; needed only by optional features or one-off tools:
+#   docling-slim==2.126.0         PARSER_BACKEND=docling, scripts/docling_compare.py
+#   ultralytics                   scripts/export_onnx.py (build time only, AGPL-3.0)
+#   langchain-text-splitters      scripts/chunking_bench.py
+#   pypdfium2                     scripts/pdf_backend_compare.py
+#   pdf2image, tqdm               scripts/pdf_image_conv.py (training data; needs poppler)
+# Already present through sentence-transformers:
+#   huggingface-hub               scripts/download_layout_model.py

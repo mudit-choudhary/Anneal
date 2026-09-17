@@ -35,8 +35,8 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(REPO))
-sys.path.insert(0, str(REPO / "embedding_manager"))
+sys.path.insert(0, str(REPO / "app"))
+sys.path.insert(0, str(REPO / "app" / "embedding_manager"))
 
 CORPUS = REPO / "evals" / "corpus"
 REPORTS = REPO / "evals" / "Reports"
@@ -188,7 +188,7 @@ def parse_oss_docling(pdf):
     difference in layout detection rather than in block assembly.
     """
     import tempfile
-    sys.path.insert(0, str(REPO / "parse_manager"))
+    sys.path.insert(0, str(REPO / "app" / "parse_manager"))
     import docling_backend
     import txt_processor
     import pymupdf
@@ -260,7 +260,7 @@ _DETECTOR = {}
 
 def parse_current(pdf):
     import tempfile
-    sys.path.insert(0, str(REPO / "parse_manager"))
+    sys.path.insert(0, str(REPO / "app" / "parse_manager"))
     import pdf_parser
     import txt_processor
     import layout_detector

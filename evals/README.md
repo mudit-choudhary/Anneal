@@ -70,6 +70,14 @@ evals/
 
 ## Running it
 
+The harness runs in the app's venv plus its own extras (Docling, PyMuPDF4LLM,
+LangChain splitters, feedparser), which the app does not need:
+
+```bash
+virtual_environments/annealenv/bin/pip install -r evals/requirements.txt
+virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
+```
+
 ```bash
 bash evals/scripts/round2_resume.sh     # parse, questions, 9 retrieval cells (~30 h)
 python evals/scripts/score_answers.py --stage string
@@ -150,7 +158,7 @@ byte-for-byte, and that file is what opens `Report.md`.
 
 ## Related
 
-- `scripts/chunking_bench.py` — the earlier, narrower chunking benchmark this
-  directory supersedes. Still referenced from `docs/USER_GUIDE.md`.
-- `scripts/retrieval_eval.py` — the earlier single-configuration retrieval check
+- `app/scripts/chunking_bench.py` — the earlier, narrower chunking benchmark this
+  directory supersedes. Still referenced from `app/docs/USER_GUIDE.md`.
+- `app/scripts/retrieval_eval.py` — the earlier single-configuration retrieval check
   against the live store; `evals/scripts/run_rag_eval.py` supersedes it.

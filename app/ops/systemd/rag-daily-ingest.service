@@ -1,0 +1,13 @@
+[Unit]
+Description=Anneal: daily ingest — download up to N new arXiv papers per domain and process them
+
+[Service]
+Type=oneshot
+WorkingDirectory=__ROOT__
+Environment=PYTHONUNBUFFERED=1
+# Starts a registry if none is running, downloads one cycle, then runs
+# parse + embedding until every registered paper is embedded (or errored),
+# and stops whatever it started. Safe to run while the query services are up.
+ExecStart=__PY__ scripts/ops.py daily-ingest --max __MAX__
+StandardOutput=append:__ROOT__/run/logs/daily-ingest.log
+StandardError=inherit

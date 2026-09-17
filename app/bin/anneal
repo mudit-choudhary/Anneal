@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Anneal: one command for the whole system. Works without activating the venv.
+#   anneal            start everything and open the UI
+#   anneal status     what is running, what is indexed
+#   anneal stop       stop everything
+APP="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+PY="$(cd "$APP/.." && pwd)/virtual_environments/annealenv/bin/python"
+if [ ! -x "$PY" ]; then
+  echo "annealenv not found at $PY" >&2
+  echo "create it from the repository root:" >&2
+  echo "  python3.12 -m venv virtual_environments/annealenv" >&2
+  echo "  virtual_environments/annealenv/bin/pip install -r app/requirements.txt" >&2
+  echo "  virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2" >&2
+  exit 1
+fi
+exec "$PY" "$APP/scripts/ops.py" "$@"

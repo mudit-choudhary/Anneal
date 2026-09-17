@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+APP_ROOT = Path(__file__).resolve().parent.parent / "app"
 # parse_manager modules use flat intra-package imports (from config import ...)
-sys.path.insert(0, str(REPO_ROOT / "parse_manager"))
+sys.path.insert(0, str(APP_ROOT / "parse_manager"))

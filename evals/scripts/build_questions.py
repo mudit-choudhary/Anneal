@@ -39,7 +39,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(REPO))
+sys.path.insert(0, str(REPO / "app"))
 
 CORPUS = REPO / "evals" / "corpus"
 TEXT = REPO / "evals" / "text"

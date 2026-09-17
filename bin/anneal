@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Anneal: one command for the whole system. Works without activating the venv.
-#   anneal            start everything and open the UI
-#   anneal status     what is running, what is indexed
-#   anneal stop       stop everything
-ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
-exec "$ROOT/virtual_environments/globalragsetup_env/bin/python" "$ROOT/scripts/ops.py" "$@"

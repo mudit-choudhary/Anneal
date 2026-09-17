@@ -1,0 +1,10 @@
+# Evaluation harness: the app's dependencies plus what only the harness imports.
+#   virtual_environments/annealenv/bin/pip install -r evals/requirements.txt
+#   virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
+-r ../app/requirements.txt
+docling-slim==2.126.0             # the oss_docling parser arm
+pymupdf4llm==1.28.2               # the oss_pymupdf4llm parser arm
+langchain-text-splitters==1.1.2   # the recursive_char chunker arm
+transformers==4.57.6              # tokenizer for the fixed_token chunker arm
+feedparser==6.0.10                # arXiv API responses (build_corpus.py)
+# optional: scipy lets round2_stats.py cross-check its Wilcoxon in the self-test

@@ -52,9 +52,9 @@ REPO = Path(__file__).resolve().parent.parent.parent
 EVAL_DB = REPO / "evals" / "vector_db_eval"
 os.environ["VECTOR_DB_PATH"] = str(EVAL_DB)      # before embedding_manager loads
 
-sys.path.insert(0, str(REPO))
-sys.path.insert(0, str(REPO / "embedding_manager"))
-sys.path.insert(0, str(REPO / "rag_setup"))
+sys.path.insert(0, str(REPO / "app"))
+sys.path.insert(0, str(REPO / "app" / "embedding_manager"))
+sys.path.insert(0, str(REPO / "app" / "rag_setup"))
 sys.path.insert(0, str(REPO / "evals" / "scripts"))
 
 PARSED = REPO / "evals" / "parsed"

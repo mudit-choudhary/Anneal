@@ -20,8 +20,8 @@ import time
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
-sys.path.insert(0, str(REPO))
-sys.path.insert(0, str(REPO / "embedding_manager"))
+sys.path.insert(0, str(REPO / "app"))
+sys.path.insert(0, str(REPO / "app" / "embedding_manager"))
 sys.path.insert(0, str(REPO / "evals" / "scripts"))
 
 from build_questions import write_json                                    # noqa: E402
