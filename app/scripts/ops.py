@@ -10,6 +10,12 @@ launchers; the .sh files are thin wrappers around this).
     python scripts/ops.py daily-ingest [--max N]                      download one cycle, process until done, stop
     python scripts/ops.py start <service>... / restart <service>...
 
+Ports (any command): --port N for the web UI, --registry-port N,
+--embedding-port N; or ANNEAL_UI_PORT / ANNEAL_REGISTRY_PORT /
+ANNEAL_EMBEDDING_PORT in the environment. Defaults: 4002, 4000, 4001. Pass the
+same values to every later command, since that is how each one finds the
+services already running.
+
 Services run detached; logs in run/logs/<name>.log, pids in run/pids/. A
 registry that is already healthy (e.g. started elsewhere) is reused rather
 than duplicated.
@@ -27,8 +33,37 @@ import psutil
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+# --port/--registry-port/--embedding-port become environment variables *before*
+# common.paths is imported (it reads them at import time) and are inherited by
+# every service started below, so all three processes agree on the ports.
+PORT_FLAGS = {"--port": "ANNEAL_UI_PORT",
+              "--registry-port": "ANNEAL_REGISTRY_PORT",
+              "--embedding-port": "ANNEAL_EMBEDDING_PORT"}
+
+
+def take_port_flags(argv):
+    """Pull the port flags out of argv into the environment. Returns the rest."""
+    rest, i = [], 0
+    while i < len(argv):
+        arg = argv[i]
+        flag, _, inline = arg.partition("=")
+        if flag in PORT_FLAGS:
+            value = inline if inline else (argv[i + 1] if i + 1 < len(argv) else "")
+            i += 1 if inline else 2
+            if not value.isdigit() or not 1 <= int(value) <= 65535:
+                sys.exit(f"{flag}: {value!r} is not a port number between 1 and 65535")
+            os.environ[PORT_FLAGS[flag]] = value
+            continue
+        rest.append(arg)
+        i += 1
+    return rest
+
+
+sys.argv[1:] = take_port_flags(sys.argv[1:])
+
 from common.paths import (  # noqa: E402
-    EMBEDDING_URL, LOG_DIR, PID_DIR, REGISTRY_URL, APP_ROOT, SERVICE_PORTS, UI_URL, VENV_PYTHON,
+    EMBEDDING_URL, LOG_DIR, PDF_DIR, PID_DIR, REGISTRY_URL, APP_ROOT, SERVICE_PORTS, UI_URL,
+    VENV_PYTHON,
 )
 from common.registry_client import RegistryClient  # noqa: E402
 
@@ -43,12 +78,13 @@ SERVICES = {
 
 # Shown in the UI's control pane so each switch explains itself.
 SERVICE_INFO = {
-    "registry": ("Registry", "Tracks every paper's stage. Everything else needs it.", 4000),
+    "registry": ("Registry", "Tracks every paper's stage. Everything else needs it.",
+                 SERVICE_PORTS["registry"]),
     "parse": ("Parser", "PDF -> layout -> structured text. Needed to process new papers.", None),
-    "embedding": ("Embedder", "Chunks and embeds; also answers searches.", 4001),
+    "embedding": ("Embedder", "Chunks and embeds; also answers searches.", SERVICE_PORTS["embedding"]),
     "prune": ("Pruner", "Clears intermediates once a paper is embedded.", None),
     "download": ("Downloader", "Crawls arXiv on a schedule for new papers.", None),
-    "ui": ("Web UI", "This page. Stop it from the terminal, not from itself.", 4002),
+    "ui": ("Web UI", "This page. Stop it from the terminal, not from itself.", SERVICE_PORTS["ui"]),
 }
 SERVICE_SCRIPTS = ("main.py", "pruning.py", "downloader.py")
 IS_WINDOWS = os.name == "nt"
@@ -328,7 +364,7 @@ def cmd_start_query(a):
     say(f"\nReady — {n} papers in the vector store.\n  UI   : {UI_URL}   (first question loads the model: ~10-20s)\n"
         f"  CLI  : cd app/rag_setup && python rag.py\n  stop : anneal stop")
     if a.with_ingest:
-        say("  add papers: copy PDFs to app/data/raw_pdfs/ then: python app/scripts/register_pdfs.py")
+        say(f"  add papers: copy PDFs to {PDF_DIR}/ then: python app/scripts/register_pdfs.py")
 
 
 def cmd_daily_ingest(a):
@@ -407,6 +443,10 @@ def main():
                     help="also run parse/prune, embedder on GPU (with the default command)")
     ap.add_argument("--no-open", action="store_true",
                     help="do not open a browser (with the default command)")
+    # Read before argparse sees them (see take_port_flags); listed for --help.
+    ap.add_argument("--port", metavar="N", help="web UI port (default 4002)")
+    ap.add_argument("--registry-port", metavar="N", help="registry port (default 4000)")
+    ap.add_argument("--embedding-port", metavar="N", help="embedding port (default 4001)")
     sub = ap.add_subparsers(dest="cmd")
     u = sub.add_parser("up", help="start everything and open the UI (the default)")
     u.add_argument("--with-ingest", action="store_true")

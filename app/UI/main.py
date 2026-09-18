@@ -54,7 +54,8 @@ import rag
 from common import settings as settings_store
 from common.chatstore import ChatStore
 from common.logsetup import get_logger
-from common.paths import EMBEDDING_URL, LOG_DIR, PARSED_DIR, PDF_DIR, PID_DIR, PROCESSED_DIR, REGISTRY_URL
+from common.paths import (EMBEDDING_URL, LOG_DIR, PARSED_DIR, PDF_DIR, PID_DIR, PROCESSED_DIR,
+                          REGISTRY_URL, UI_PORT)
 from common.registry_client import RegistryClient, RegistryUnavailable
 
 log = get_logger("ui")
@@ -657,7 +658,7 @@ def prune_candidates():
     works out the boundary itself, so dragging the "spare" control redraws
     instantly instead of asking the server on every step.
     """
-    pdf_dir = APP_ROOT / "data" / "raw_pdfs"
+    pdf_dir = PDF_DIR
     try:
         papers = RegistryClient().list_papers(status="embedded")
     except Exception:                                        # noqa: BLE001
@@ -1095,4 +1096,4 @@ else:
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="127.0.0.1", port=4002, reload=False, log_level="warning")
+    uvicorn.run("main:app", host="127.0.0.1", port=UI_PORT, reload=False, log_level="warning")

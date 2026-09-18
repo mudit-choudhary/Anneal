@@ -1,6 +1,10 @@
-# Operations — install, run, ingest, rebuild
+# Anneal — Operations: install, run, ingest, rebuild
 
-> Paths here are relative to `app/`. The virtualenv and `tests/` sit at the repository root.
+> **Paths.** Code paths are relative to `app/`; the virtualenv and `tests/` sit
+> at the repository root. Everything the app *writes* lives outside the
+> repository, in the data home — `~/.local/share/anneal/`, or `$ANNEAL_HOME` if
+> set — so `data/raw_pdfs/`, `vector_db/`, `models/`, `registry/` and `run/`
+> below all mean `<data home>/…`.
 
 Everything needed to run Anneal day to day. Replaces the former
 `setup.md`, `DAILY_USE.md` and `FRESH_START.md`.
@@ -87,6 +91,79 @@ store, chat store).
 
 Logs go to `run/logs/<name>.log`, PIDs to `run/pids/`. The `.sh` files in
 `scripts/` are thin wrappers kept for compatibility; `anneal` is the same code.
+
+### Changing the ports
+
+Any command takes `--port` (web UI), `--registry-port` and `--embedding-port`;
+the equivalent environment variables are `ANNEAL_UI_PORT`,
+`ANNEAL_REGISTRY_PORT` and `ANNEAL_EMBEDDING_PORT`.
+
+```bash
+anneal --port 8080                                  # web UI on 8080
+anneal --port 4102 --registry-port 4100 --embedding-port 4101
+anneal --port 4102 status                           # later commands need the same values
+export ANNEAL_UI_PORT=8080                          # or set them once per shell
+```
+
+The flags are turned into environment variables before anything else loads, and
+every service inherits them, so all three processes agree. A value that is not a
+port fails immediately rather than leaving a service listening where nothing
+calls it.
+
+`anneal stop` works without the flags — it stops by recorded pid. They matter
+for `status`, which asks the services over HTTP, and for `stop --all`, which
+also sweeps those ports.
+
+A second instance needs its own data as well as its own ports:
+
+```bash
+ANNEAL_HOME=~/anneal-work anneal --port 4102 --registry-port 4100 --embedding-port 4101
+```
+
+## Where your data lives
+
+Nothing the app writes is kept in the repository. The **data home** holds it
+all, so the code can be moved, replaced or made read-only without risking the
+corpus:
+
+```
+~/.local/share/anneal/
+├── data/       raw_pdfs/ · parsed/ · processed/ · debug/ · settings.json · app.db (chats)
+├── registry/   rag_registry.db — one row per paper and its stage
+├── vector_db/  the Chroma store
+├── models/     YOLO layout weights (.pt and .onnx)
+├── run/        logs/ and pids/
+└── runs/       YOLO fine-tuning output
+```
+
+`app/common/paths.py` resolves this and nothing else does. To use a different
+one — a second corpus, a drive with more room, a throwaway for testing — set
+`ANNEAL_HOME`:
+
+```bash
+ANNEAL_HOME=/media/drive/anneal anneal          # a corpus on an external drive
+ANNEAL_HOME=/tmp/anneal-scratch anneal status   # an empty one, nothing shared
+```
+
+Set it for the background timer too, or it will use the default: add
+`Environment=ANNEAL_HOME=…` to `ops/systemd/rag-daily-ingest.service`.
+
+`XDG_DATA_HOME` is deliberately ignored. Snap-confined terminals (VS Code, the
+snap Firefox) set it to a private per-snap directory, which would give the app a
+different corpus depending on which terminal started it.
+
+**Moving an existing install** (the data used to sit under `app/`):
+
+```bash
+anneal stop --all
+mkdir -p ~/.local/share/anneal/registry
+mv app/data app/models app/vector_db app/run app/runs ~/.local/share/anneal/
+mv app/registry_manager/rag_registry.db* ~/.local/share/anneal/registry/
+anneal status                                   # should report your paper count
+```
+
+Moving the whole data home later is just `mv`, plus `ANNEAL_HOME` pointing at
+the new place: nothing inside it stores an absolute path.
 
 ## Models
 

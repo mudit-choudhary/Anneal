@@ -157,3 +157,99 @@ class TestFileRegistry:
         assert st["errors"][0]["filename"] == "b"
         assert st["stage_seconds"]["total"] is not None
         assert registry.list_papers(status="error")[0]["filename"] == "b"
+
+
+def test_data_home_is_outside_the_repo(monkeypatch, tmp_path):
+    """The code folder must stay writable-free: nothing the app writes may
+    resolve inside the repository."""
+    import importlib
+    import common.paths as paths
+
+    for p in (paths.DATA_DIR, paths.VECTOR_DB, paths.MODELS_DIR, paths.RUN_DIR, paths.REGISTRY_DB):
+        assert paths.PROJECT_ROOT not in p.parents, f"{p} is inside the repository"
+        assert paths.DATA_HOME in p.parents or p == paths.DATA_HOME
+
+    monkeypatch.setenv("ANNEAL_HOME", str(tmp_path / "elsewhere"))
+    reloaded = importlib.reload(paths)
+    try:
+        assert reloaded.DATA_HOME == tmp_path / "elsewhere"
+        assert reloaded.PDF_DIR == tmp_path / "elsewhere" / "data" / "raw_pdfs"
+    finally:
+        monkeypatch.delenv("ANNEAL_HOME")
+        importlib.reload(paths)
+
+
+def test_xdg_data_home_is_ignored(monkeypatch, tmp_path):
+    """Snap terminals set XDG_DATA_HOME to a private dir; honouring it would
+    silently switch corpora depending on which terminal started the app."""
+    import importlib
+    import common.paths as paths
+
+    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path / "snap-private"))
+    monkeypatch.delenv("ANNEAL_HOME", raising=False)
+    try:
+        assert importlib.reload(paths).DATA_HOME == Path.home() / ".local" / "share" / "anneal"
+    finally:
+        monkeypatch.delenv("XDG_DATA_HOME")
+        importlib.reload(paths)
+
+
+class TestPorts:
+    def test_defaults(self, monkeypatch):
+        import importlib
+        import common.paths as paths
+        for var in ("ANNEAL_UI_PORT", "ANNEAL_REGISTRY_PORT", "ANNEAL_EMBEDDING_PORT"):
+            monkeypatch.delenv(var, raising=False)
+        p = importlib.reload(paths)
+        assert (p.REGISTRY_PORT, p.EMBEDDING_PORT, p.UI_PORT) == (4000, 4001, 4002)
+        assert p.UI_URL == "http://127.0.0.1:4002"
+
+    def test_environment_moves_every_url(self, monkeypatch):
+        import importlib
+        import common.paths as paths
+        monkeypatch.setenv("ANNEAL_UI_PORT", "4102")
+        monkeypatch.setenv("ANNEAL_REGISTRY_PORT", "4100")
+        monkeypatch.setenv("ANNEAL_EMBEDDING_PORT", "4101")
+        try:
+            p = importlib.reload(paths)
+            assert p.UI_URL == "http://127.0.0.1:4102"
+            assert p.REGISTRY_URL == "http://127.0.0.1:4100"
+            assert p.EMBEDDING_URL == "http://127.0.0.1:4101"
+            assert p.SERVICE_PORTS == {"registry": 4100, "embedding": 4101, "ui": 4102}
+        finally:
+            for var in ("ANNEAL_UI_PORT", "ANNEAL_REGISTRY_PORT", "ANNEAL_EMBEDDING_PORT"):
+                monkeypatch.delenv(var)
+            importlib.reload(paths)
+
+    @pytest.mark.parametrize("value", ["abc", "0", "70000", "-1"])
+    def test_a_bad_port_fails_loudly(self, monkeypatch, value):
+        """Silently falling back would leave a service listening where nothing calls it."""
+        import importlib
+        import common.paths as paths
+        monkeypatch.setenv("ANNEAL_UI_PORT", value)
+        try:
+            with pytest.raises(ValueError):
+                importlib.reload(paths)
+        finally:
+            monkeypatch.delenv("ANNEAL_UI_PORT")
+            importlib.reload(paths)
+
+    def test_cli_flags_become_environment_before_paths_loads(self):
+        """ops.py strips them in argv order; everything else must survive."""
+        import importlib.util
+        import os
+        spec = importlib.util.spec_from_file_location("ops_flags", APP_ROOT / "scripts" / "ops.py")
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        saved = {k: os.environ.get(k) for k in mod.PORT_FLAGS.values()}
+        try:
+            rest = mod.take_port_flags(["--port", "4102", "status", "--registry-port=4100", "--all"])
+            assert rest == ["status", "--all"]
+            assert os.environ["ANNEAL_UI_PORT"] == "4102"
+            assert os.environ["ANNEAL_REGISTRY_PORT"] == "4100"
+        finally:
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v

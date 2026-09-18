@@ -1,6 +1,10 @@
-# User Guide — Testing & Tuning the RAG Cycle
+# Anneal — User Guide: testing and tuning the RAG cycle
 
-> Paths here are relative to `app/`. The virtualenv and `tests/` sit at the repository root.
+> **Paths.** Code paths are relative to `app/`; the virtualenv and `tests/` sit
+> at the repository root. Everything the app *writes* lives outside the
+> repository, in the data home — `~/.local/share/anneal/`, or `$ANNEAL_HOME` if
+> set — so `data/raw_pdfs/`, `vector_db/`, `models/`, `registry/` and `run/`
+> below all mean `<data home>/…`.
 
 This guide walks the RAG cycle stage by stage so you can inspect the output
 quality at each point, tune it, and only then move to the next stage. The

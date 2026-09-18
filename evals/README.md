@@ -1,4 +1,6 @@
-# evals/ — the parser and chunking evaluation
+# Anneal — RAG Evaluation Harness
+
+The parser and chunking evaluation: how it was run, and how to reproduce it.
 
 Everything here produces one artefact: **[Reports/Report.md](Reports/Report.md)**, which
 covers both rounds. Nothing is kept unless that report reads it or a script that

@@ -46,8 +46,10 @@ from pathlib import Path
 APP_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(APP_ROOT))
 sys.path.insert(0, str(APP_ROOT / "embedding_manager"))
+from common.paths import DATA_DIR, PDF_DIR  # noqa: E402
+from common.paths import PROCESSED_DIR as LIVE_PROCESSED_DIR  # noqa: E402
 
-EVAL_DIR = APP_ROOT / "data" / "eval"
+EVAL_DIR = DATA_DIR / "eval"
 EVAL_VECTOR_DB = EVAL_DIR / "vector_db"
 BASELINE_TEXT_DIR = EVAL_DIR / "baseline_text"
 QUESTIONS_FILE = EVAL_DIR / "questions.json"
@@ -57,8 +59,8 @@ RESULTS_FILE = EVAL_DIR / "results.json"
 # import time, so it has to be set before embedding_manager is imported.
 os.environ.setdefault("VECTOR_DB_PATH", str(EVAL_VECTOR_DB))
 
-RAW_PDF_DIR = APP_ROOT / "data" / "raw_pdfs"
-PROCESSED_DIR = APP_ROOT / "data" / "processed"
+RAW_PDF_DIR = PDF_DIR
+PROCESSED_DIR = LIVE_PROCESSED_DIR
 
 # --- the three arms ---------------------------------------------------------
 ARMS = {

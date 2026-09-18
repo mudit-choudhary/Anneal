@@ -5,8 +5,13 @@ Timestamps are stamped per stage so throughput/ETA can be derived.
 """
 
 import sqlite3
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from common.paths import REGISTRY_DB  # noqa: E402
 
 STATUSES = ("downloaded", "parsed", "processed", "embedded", "error")
 STAGE_AT = {"parsed": "parsed_at", "processed": "processed_at", "embedded": "embedded_at"}
@@ -25,8 +30,9 @@ def _ts(value: Optional[str]) -> Optional[datetime]:
 
 
 class FileRegistry:
-    def __init__(self, db_path: str = "rag_registry.db"):
-        self.db_path = db_path
+    def __init__(self, db_path=None):
+        self.db_path = str(db_path or REGISTRY_DB)
+        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
     def _conn(self) -> sqlite3.Connection:

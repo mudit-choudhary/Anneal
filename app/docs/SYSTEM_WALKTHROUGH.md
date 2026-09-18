@@ -1,6 +1,10 @@
-# System Walkthrough — how every piece fits together
+# Anneal — System Walkthrough: how every piece fits together
 
-> Paths here are relative to `app/`. The virtualenv and `tests/` sit at the repository root.
+> **Paths.** Code paths are relative to `app/`; the virtualenv and `tests/` sit
+> at the repository root. Everything the app *writes* lives outside the
+> repository, in the data home — `~/.local/share/anneal/`, or `$ANNEAL_HOME` if
+> set — so `data/raw_pdfs/`, `vector_db/`, `models/`, `registry/` and `run/`
+> below all mean `<data home>/…`.
 
 This is the full account of the system, and the companion to the multi-page
 diagram
@@ -134,18 +138,30 @@ Anneal/
 │   ├── UI/                # main.py (API) · frontend/ (React source) · static/ (build) · index.html (legacy)
 │   ├── ops/systemd/       # daily-ingest timer units + install.sh
 │   ├── scripts/           # ops.py, rag_inspect.py, register_pdfs.py, docling_compare.py, …
-│   ├── docs/  diagrams/
-│   └── data/*  models/*  vector_db/*  run/*                   (* git-ignored)
+│   └── docs/  diagrams/
 ├── evals/                 # the evaluation harness and its report
 ├── tests/                 # the test suite
 └── virtual_environments/annealenv/                            (git-ignored)
+
+~/.local/share/anneal/     # the data home ($ANNEAL_HOME overrides it)
+├── data/                  # raw_pdfs/ parsed/ processed/ debug/, settings.json, app.db
+├── registry/              # rag_registry.db
+├── vector_db/             # ChromaDB: papers + chats
+├── models/                # YOLO layout weights (.pt, .onnx)
+└── run/                   # logs/ and pids/
 ```
+
+Nothing written at runtime lives in the repository, so the code folder can be
+moved or replaced without touching the corpus. `app/common/paths.py` is the
+only place that resolves any of this — it also resolves the ports
+(`ANNEAL_UI_PORT`, `ANNEAL_REGISTRY_PORT`, `ANNEAL_EMBEDDING_PORT`, or the
+`anneal --port …` flags that set them), so the table below shows defaults.
 
 ## 2. Every component at a glance
 
 | Component | Kind | Port | Trigger | Reads | Writes | Next |
 |---|---|---|---|---|---|---|
-| `registry_manager` | FastAPI + SQLite | 4000 | HTTP calls from all others | `rag_registry.db` | `rag_registry.db` | — (everyone polls it) |
+| `registry_manager` | FastAPI + SQLite | 4000 | HTTP calls from all others | `registry/rag_registry.db` | `rag_registry.db` | — (everyone polls it) |
 | `download_manager` | loop, one domain at a time | — | manual start; every 3600 s | arXiv, registry checkpoint | `data/raw_pdfs/`, status `downloaded` | parse stage 1 |
 | `scripts/register_pdfs.py` | one-shot | — | manual / `anneal fresh-start` | `data/raw_pdfs/` | status `downloaded` | parse stage 1 |
 | `parse_manager` stage 1 (`pdf_parser.py`) | loop | — | every 5 s: status `downloaded` | PDF, YOLO weights | `data/parsed/*.json`, status `parsed` | stage 2 |
@@ -164,7 +180,7 @@ There are three databases/stores that hold *derived* state, one directory
 that holds the *source of truth* (the PDFs), and two intermediate
 directories.
 
-### 3.1 Registry — `registry_manager/rag_registry.db` (SQLite)
+### 3.1 Registry — `registry/rag_registry.db` (SQLite)
 
 One table, `file_status_table`, one row per paper, created by
 `FileRegistry._init_db()` on every registry start (`CREATE TABLE IF NOT

@@ -1,11 +1,11 @@
+import sys
 from pathlib import Path
 
 APP_ROOT = Path(__file__).resolve().parent.parent
-
-DATA_DIR = APP_ROOT / "data"
-PDF_DIR = DATA_DIR / "raw_pdfs"
-PARSED_DIR = DATA_DIR / "parsed"          # layout JSONs (one per PDF)
-PROCESSED_DIR = DATA_DIR / "processed"    # assembled text + structure JSON
+sys.path.insert(0, str(APP_ROOT))
+from common.paths import (  # noqa: E402
+    DATA_DIR, MODELS_DIR, PARSED_DIR, PDF_DIR, PROCESSED_DIR,   # noqa: F401
+)
 
 REGISTRY_URL = "http://127.0.0.1:4000"
 
@@ -13,9 +13,9 @@ REGISTRY_URL = "http://127.0.0.1:4000"
 # Tried in order; first existing wins. All fine-tuned at imgsz=1024 on
 # research-paper layouts (12 classes incl. Authors).
 MODEL_CANDIDATES = [
-    APP_ROOT / "models" / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt",       # primary
-    APP_ROOT / "models" / "yolo11_doc_layout_v2224_imgsz_1024" / "weights" / "best.pt",  # 1st fallback
-    APP_ROOT / "models" / "yolo11n_doc_layout_imgsz_1024" / "weights" / "best.pt",       # last fallback
+    MODELS_DIR / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt",       # primary
+    MODELS_DIR / "yolo11_doc_layout_v2224_imgsz_1024" / "weights" / "best.pt",  # 1st fallback
+    MODELS_DIR / "yolo11n_doc_layout_imgsz_1024" / "weights" / "best.pt",       # last fallback
 ]
 
 # Parser backend: "yolo" (this pipeline) or "docling" (IBM Docling trial,

@@ -1,6 +1,10 @@
-# Parsing — layout detection, the assembler, and the model
+# Anneal — Parsing: layout detection, the assembler, and the model
 
-> Paths here are relative to `app/`. The virtualenv and `tests/` sit at the repository root.
+> **Paths.** Code paths are relative to `app/`; the virtualenv and `tests/` sit
+> at the repository root. Everything the app *writes* lives outside the
+> repository, in the data home — `~/.local/share/anneal/`, or `$ANNEAL_HOME` if
+> set — so `data/raw_pdfs/`, `vector_db/`, `models/`, `registry/` and `run/`
+> below all mean `<data home>/…`.
 
 How a PDF becomes structured text, in two stages: **stage 1** decides *where*
 things are on a page; **stage 2**, the assembler, decides *what order they are

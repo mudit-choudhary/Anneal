@@ -1,4 +1,4 @@
-# Pending Improvements
+# Anneal — Pending Improvements
 
 Ideas identified during testing that are worth doing but deliberately not
 started yet — either because they need more design thought, a dependency

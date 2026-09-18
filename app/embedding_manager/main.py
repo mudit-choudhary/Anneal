@@ -25,6 +25,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel, field_validator
 
 from common.logsetup import get_logger
+from common.paths import EMBEDDING_PORT
 from common.registry_client import RegistryClient, RegistryUnavailable
 from config import MODEL_NAME, PROCESSED_DIR
 from embeddings import chunk_and_embed, delete_chat, embed_chat, list_embedded_files, search
@@ -120,4 +121,4 @@ def delete_chat_endpoint(chat_id: str):
 if __name__ == "__main__":
     os.makedirs(PROCESSED_DIR, exist_ok=True)
     threading.Thread(target=chunks_and_embed_loop, daemon=True).start()
-    uvicorn.run("main:embedding", host="127.0.0.1", port=4001, reload=False, log_level="warning")
+    uvicorn.run("main:embedding", host="127.0.0.1", port=EMBEDDING_PORT, reload=False, log_level="warning")

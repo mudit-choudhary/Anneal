@@ -28,7 +28,7 @@ from pathlib import Path
 APP_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(APP_ROOT))
 
-from common.paths import EMBEDDING_URL, PDF_DIR, REGISTRY_URL, UI_URL  # noqa: E402
+from common.paths import DEBUG_DIR, EMBEDDING_URL, PDF_DIR, REGISTRY_URL, UI_URL  # noqa: E402
 
 GREEN, RED, YELLOW, DIM, RESET = "\033[32m", "\033[31m", "\033[33m", "\033[2m", "\033[0m"
 OK, FAIL, SKIP = f"{GREEN}PASS{RESET}", f"{RED}FAIL{RESET}", f"{YELLOW}SKIP{RESET}"
@@ -115,7 +115,7 @@ def main():
         sys.exit(f"{pdf} not found")
 
     work = Path(tempfile.mkdtemp(prefix="rag_smoke_"))
-    debug_dir = APP_ROOT / "data" / "debug" / "smoke"
+    debug_dir = DEBUG_DIR / "smoke"
     debug_dir.mkdir(parents=True, exist_ok=True)
     # Point the embedder at a throwaway store *before* it is imported.
     os.environ["VECTOR_DB_PATH"] = str(work / "vector_db")

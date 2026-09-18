@@ -1,13 +1,15 @@
 # Virtual environments
 /virtual_environments
 
-# Data & generated artifacts
+# Papers, models, vector store, databases, logs and pids now live outside the
+# repo, under ~/.local/share/anneal (or $ANNEAL_HOME) — see app/common/paths.py.
+# These entries remain so a pre-move checkout, or a stray local run, cannot
+# commit them.
 /app/data
 /app/vector_db
 /app/runs
-
-# Model weights & caches (too large for git)
 /app/models
+/app/run
 *.pt
 *.onnx
 
@@ -25,9 +27,6 @@ env_setup.sh
 # Local tool settings
 /.claude
 .pytest_cache
-
-# Service logs and PID files (app/scripts/ops.py)
-/app/run
 
 # Web UI: dependencies and build output (rebuild with: cd app/UI/frontend && npm install && npm run build)
 /app/UI/frontend/node_modules

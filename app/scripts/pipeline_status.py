@@ -8,18 +8,17 @@ embedding service reports as embedded.
 
 import os
 import sqlite3
+import sys
 from pathlib import Path
 
 import requests
 
 APP_ROOT = Path(__file__).resolve().parent.parent
-REGISTRY_DB = APP_ROOT / "registry_manager" / "rag_registry.db"
-PIDS = APP_ROOT / "run" / "pids"
-DIRS = {
-    "raw_pdfs": APP_ROOT / "data" / "raw_pdfs",
-    "parsed": APP_ROOT / "data" / "parsed",
-    "processed": APP_ROOT / "data" / "processed",
-}
+sys.path.insert(0, str(APP_ROOT))
+from common.paths import PARSED_DIR, PDF_DIR, PID_DIR, PROCESSED_DIR, REGISTRY_DB  # noqa: E402
+
+PIDS = PID_DIR
+DIRS = {"raw_pdfs": PDF_DIR, "parsed": PARSED_DIR, "processed": PROCESSED_DIR}
 STATUSES = ["downloaded", "parsed", "processed", "embedded", "error"]
 
 

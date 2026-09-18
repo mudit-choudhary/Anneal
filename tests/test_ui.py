@@ -21,6 +21,7 @@ def ui(tmp_path_factory):
     import common.paths as paths
     import common.settings as settings_store
     import common.chatstore as chatstore
+    live = str(paths.APP_DB.resolve())          # captured before redirection
     paths.APP_DB = tmp / "app.db"
     chatstore.APP_DB = tmp / "app.db"
     settings_store.SETTINGS_FILE = tmp / "settings.json"
@@ -38,7 +39,6 @@ def ui(tmp_path_factory):
     # Refuse to run against the real chat database. These tests create and
     # delete chats in bulk; if the redirection above ever stops working, the
     # damage is silent and permanent. Fail loudly instead.
-    live = str((APP_ROOT / "data" / "app.db").resolve())
     assert module.chats.db_path != live, (
         f"the UI service opened the real chat database at {live} — "
         "aborting before the tests destroy it")

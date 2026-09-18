@@ -1,4 +1,4 @@
-# Build Log — start to finish
+# Anneal — Build Log: start to finish
 
 A chronological account of how this repository went from a working-but-poor
 RAG pipeline to the current system: what was built, what was measured, what
@@ -224,7 +224,7 @@ minutes either way. Docling stays available for a table-heavy corpus.
 Figures contribute only their captions. A VLM pass over `Picture` and `Table`
 regions would fix that, and was shelved deliberately: on 4 GB it competes for
 the exact memory the rest of the pipeline needs. Written up with the concrete
-failure case in [PENDING_IMPROVEMENTS.md](PENDING_IMPROVEMENTS.md#1).
+failure case in [PENDING_IMPROVEMENTS.md](PENDING_IMPROVEMENTS.md#1-tables-and-figures-lose-structuremeaning-in-the-parsed-output).
 
 ## 8. What the testing actually caught
 

@@ -21,6 +21,7 @@ from fastapi import FastAPI, HTTPException, Query
 from pydantic import BaseModel, field_validator
 
 from common.logsetup import get_logger
+from common.paths import REGISTRY_PORT
 from config import STATUS_TYPE as StatusType
 from registry import FileRegistry
 
@@ -82,4 +83,4 @@ def stats():
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:registry", host="127.0.0.1", port=4000, reload=False, log_level="warning")
+    uvicorn.run("main:registry", host="127.0.0.1", port=REGISTRY_PORT, reload=False, log_level="warning")

@@ -56,16 +56,22 @@ anneal stop                                   # stop everything
 ```
 
 The first run builds the React app if needed and opens
-<http://127.0.0.1:4002>. `anneal fresh-start --yes` purges and re-ingests every
-PDF in `app/data/raw_pdfs/`. Full detail in [app/docs/OPERATIONS.md](app/docs/OPERATIONS.md).
+<http://127.0.0.1:4002>. Ports, ingestion, a fresh start and everything else the
+app does: **[app/README.md](app/README.md)**, in detail in
+[app/docs/OPERATIONS.md](app/docs/OPERATIONS.md).
 
 The last install line matters: see the note at the top of `app/requirements.txt`.
 
-> `npm run dev` serves the frontend **only**, with no backend behind it. Use
-> `anneal`.
+## The two halves
+
+| | |
+|---|---|
+| **[app/](app/README.md)** — Local-First RAG & Layout-Aware Chunking Pipeline | the six services, the web app, the `anneal` command |
+| **[evals/](evals/README.md)** — RAG Evaluation Harness | the pre-registered comparison behind every claim above, and how to reproduce it |
 
 ## Documentation
 
+- [app/README.md](app/README.md) — the application: commands, services, layout
 - [app/docs/OPERATIONS.md](app/docs/OPERATIONS.md) — install, run, ingest, rebuild, troubleshoot
 - [app/docs/PARSING.md](app/docs/PARSING.md) — layout detection, the assembler, fine-tuning the model
 - [app/docs/SYSTEM_WALKTHROUGH.md](app/docs/SYSTEM_WALKTHROUGH.md) — every module and store: what, why, when, what follows
@@ -78,12 +84,27 @@ The last install line matters: see the note at the top of `app/requirements.txt`
 ## Layout
 
 ```
-app/          the application: services, UI, scripts, docs, diagrams, bin/anneal,
-              plus data/* models/* vector_db/* run/*          (* git-ignored)
+app/          the application: services, UI, scripts, docs, diagrams, bin/anneal
 evals/        the evaluation harness and its report
 tests/        the test suite
 virtual_environments/annealenv/                               (git-ignored)
 ```
+
+Nothing the app writes lives in the repository. Papers, models, the vector
+store, databases, logs and pids go to a **data home** outside it:
+
+```
+~/.local/share/anneal/        or $ANNEAL_HOME, if set
+  data/       raw_pdfs/ parsed/ processed/ debug/, settings.json, app.db (chats)
+  registry/   rag_registry.db — one row per paper and its stage
+  vector_db/  the Chroma store
+  models/     YOLO layout weights (.pt and .onnx)
+  run/        logs/ and pids/
+  runs/       YOLO fine-tuning output
+```
+
+So the repository can be moved, reinstalled or made read-only without touching
+your corpus, and `ANNEAL_HOME=/somewhere/else anneal` runs against a second one.
 
 Tests, from the repository root:
 

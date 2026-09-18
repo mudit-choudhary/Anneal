@@ -19,8 +19,10 @@ import time
 from pathlib import Path
 
 APP_ROOT = Path(__file__).resolve().parent.parent
-REGISTRY_DB = APP_ROOT / "registry_manager" / "rag_registry.db"
-PIDS = APP_ROOT / "run" / "pids"
+sys.path.insert(0, str(APP_ROOT))
+from common.paths import PID_DIR, REGISTRY_DB  # noqa: E402
+
+PIDS = PID_DIR
 REQUIRED = ("registry", "parse", "embedding")
 TERMINAL = ("embedded", "error")
 

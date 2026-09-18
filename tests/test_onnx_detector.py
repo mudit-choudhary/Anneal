@@ -238,8 +238,10 @@ class TestProviderReporting:
         assert not [r for r in caplog.records if r.levelname == "WARNING"]
 
 
+from common.paths import MODELS_DIR  # noqa: E402
+
 ONNX_MODELS = [p.with_suffix(".onnx") for p in
-               [APP_ROOT / "models" / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt"]]
+               [MODELS_DIR / "yolo11s_doc_layout_imgsz_1024" / "weights" / "best.pt"]]
 
 
 @pytest.mark.skipif(not any(p.exists() for p in ONNX_MODELS), reason="no ONNX export present")

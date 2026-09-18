@@ -582,7 +582,7 @@ def main():
     ap.add_argument("--final", action="store_true", help="write Report.md instead of the draft")
     args = ap.parse_args()
     out = R / ("Report.md" if args.final else "Report_round2_draft.md")
-    out.write_text(build(args.final), encoding="utf-8")
+    out.write_text(build(args.final).lstrip("\n"), encoding="utf-8")
     print(f"wrote {out} ({len(out.read_text().splitlines())} lines)")
 
 
