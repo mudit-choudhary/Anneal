@@ -17,12 +17,14 @@ const STARTERS = [
   { icon: "🧪", text: "Which results would be hardest to reproduce, and why?" },
 ];
 
+const USER = "Mudit";        // single-user app; change the name here
+
 function greeting(hour: number) {
-  if (hour < 5) return "Burning the midnight oil";
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  if (hour < 22) return "Good evening";
-  return "Late-night reading";
+  if (hour < 5) return `Burning the midnight oil, ${USER}`;
+  if (hour < 12) return `Good morning, ${USER}`;
+  if (hour < 17) return `Good afternoon, ${USER}`;
+  if (hour < 22) return `Good evening, ${USER}`;
+  return `Late-night reading, ${USER}`;
 }
 
 type Props = { paperCount: number; scoped: number | null; onPick: (q: string) => void };
@@ -37,7 +39,7 @@ export default function Welcome({ paperCount, scoped, onPick }: Props) {
   return (
     <div className="welcome">
       <div className="glow" aria-hidden="true" />
-      <p className="hello">{hello}.</p>
+      <p className="hello">{hello}!</p>
       <h2>{line}</h2>
       <p className="shelf-line">
         {scoped != null

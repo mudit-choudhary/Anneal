@@ -2,13 +2,13 @@
   --bg: #0f1117; --panel: #161a23; --panel2: #1d2230; --border: #2a3040;
   --text: #e6e9f0; --muted: #8b93a7; --accent: #6ea8fe;
   --user: #24304a; --ok: #3fb96b; --bad: #e05555; --warn: #d9a13b;
-  --code: #10131a; --chip: #2b3a5c;
+  --code: #10131a; --chip: #2b3a5c; --hot: #f5c542;
 }
 :root[data-theme="light"] {
   --bg: #f6f7f9; --panel: #ffffff; --panel2: #eef1f5; --border: #d7dce3;
   --text: #1b1f27; --muted: #5f6672; --accent: #1e63c8;
   --user: #dce8fb; --ok: #1a7f43; --bad: #c0392b; --warn: #9a6a12;
-  --code: #f1f3f6; --chip: #dbe6f8;
+  --code: #f1f3f6; --chip: #dbe6f8; --hot: #b8860b;
 }
 :root { color-scheme: dark; }
 :root[data-theme="light"] { color-scheme: light; }
@@ -351,13 +351,13 @@ select.mini { font-size: 11.5px; padding: 3px 6px; }
 /* empty-chat welcome */
 .welcome { position: relative; isolation: isolate; margin: auto; max-width: 720px; width: 100%; text-align: center; padding: 24px 0; }
 .welcome .glow { position: absolute; inset: -40px 10% auto; height: 220px; z-index: -1; filter: blur(60px); opacity: .35;
-  background: radial-gradient(closest-side, #f08a3c, transparent), radial-gradient(closest-side at 70% 60%, var(--accent), transparent);
+  background: radial-gradient(closest-side, var(--hot), transparent), radial-gradient(closest-side at 70% 60%, var(--accent), transparent);
   animation: anneal 9s ease-in-out infinite alternate; }
 @keyframes anneal { from { transform: scale(1); opacity: .42; } to { transform: scale(.85); opacity: .2; } }
 @media (prefers-reduced-motion: reduce) { .welcome .glow { animation: none; } }
 .welcome .hello { margin: 0; color: var(--muted); font-size: 14px; letter-spacing: .04em; }
 .welcome h2 { margin: 6px 0 10px; font-size: 26px; line-height: 1.25; font-weight: 600;
-  background: linear-gradient(90deg, #f08a3c, var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  background: linear-gradient(90deg, var(--hot), var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .welcome .shelf-line { margin: 0 0 22px; color: var(--muted); }
 .welcome .shelf-line b { color: var(--text); }
 .welcome .starters { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; text-align: left; }
