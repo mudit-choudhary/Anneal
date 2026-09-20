@@ -346,7 +346,8 @@ def chunk_semantic(doc):
     bar lands in the next chunk.
     """
     import numpy as np
-    from chunking import _FENCE_RUN, split_sentences
+    from grain_growth import split_sentences
+    from grain_growth.chunker import _FENCE_RUN  # private: fence run regex
 
     text = doc["text"]
     units, last = [], 0
@@ -391,7 +392,7 @@ _GG_META = {"titles": [], "stems": []}
 
 
 def chunk_grain_growth(doc):
-    from chunking import chunk_document
+    from grain_growth import chunk_document
     chunks, _ = chunk_document(doc["blocks"], doc["stem"],
                                target_chars=TARGET_CHARS, max_chars=MAX_CHARS)
     for c in chunks:
@@ -466,7 +467,7 @@ def measure(chunks, tables_by_paper, caption_pairs):
 
     # the pipeline's own definition, so the evaluation cannot disagree with the
     # chunker about what a clean edge is: a fence bar is a real boundary
-    from chunking import ends_cleanly, starts_cleanly
+    from grain_growth import ends_cleanly, starts_cleanly
     starts = sum(1 for c in chunks if not starts_cleanly(c))
     ends = sum(1 for c in chunks if not ends_cleanly(c))
 
@@ -583,7 +584,7 @@ def main():
             dt = time.time() - t0
             secs += dt
             pages += npages or 0
-            from chunking import FENCED_TYPES, fence
+            from grain_growth import FENCED_TYPES, fence
             text = "\n\n".join(
                 fence(b["type"], b["text"]) if b["type"] in FENCED_TYPES else b["text"]
                 for b in blocks if b.get("text"))

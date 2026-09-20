@@ -38,6 +38,13 @@ opencv-python-headless==4.13.0.90
 numpy==2.4.1
 pymupdf==1.28.2                   # AGPL-3.0, or a paid Artifex licence
 
+# chunking: developed here, published separately so others can use it without
+# the pipeline (Apache-2.0, no dependencies of its own).
+# Pinned to the major version the corpus was embedded with: a later major would
+# move chunk boundaries, and a store built under one is not comparable with the
+# other. https://doi.org/10.5281/zenodo.22862100
+grain-growth-chunking==1.0.0
+
 # embedding and retrieval; torch also supplies the CUDA 12 libraries
 # (nvidia-*-cu12 wheels) that onnxruntime-gpu loads
 torch==2.9.1

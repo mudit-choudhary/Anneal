@@ -80,6 +80,14 @@ virtual_environments/annealenv/bin/pip install -r evals/requirements.txt
 virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
 ```
 
+The `grain_growth` arm under test is the published library
+([grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking),
+pinned to `1.0.0` through `app/requirements.txt`) — the same code the
+application runs, and the same code the report's numbers came from. It is
+version 1.0.0 *because* of this evaluation: anything that would move a chunk
+boundary takes a new major, so these results stay attached to an installable
+artefact ([10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)).
+
 ```bash
 bash evals/scripts/round2_resume.sh     # parse, questions, 9 retrieval cells (~30 h)
 python evals/scripts/score_answers.py --stage string

@@ -124,7 +124,8 @@ python scripts/rag_inspect.py chunks Some_Paper --target 1000 # experiment witho
 python scripts/rag_inspect.py chunks Some_Paper --max 2400 --show 30
 ```
 
-Chunking is **structure-aware** (`embedding_manager/chunking.py`): it reads
+Chunking is **structure-aware** (the [`grain_growth`](https://github.com/mudit-choudhary/grain-growth-chunking) library, installed
+from PyPI rather than living in this repository): it reads
 the typed blocks from `data/processed/<name>.json`, not the flat text.
 Headings never form a chunk — the heading path (`Paper › 1. Introduction`)
 is prefixed to every chunk and stored as metadata. Whole paragraphs are

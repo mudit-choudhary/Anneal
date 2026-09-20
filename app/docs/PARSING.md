@@ -552,7 +552,7 @@ each region's own font size (see stage 1, step 5).
 | `parse_manager/onnx_detector.py` | ONNX Runtime inference: letterboxing, DFL decode, per-class NMS |
 | `parse_manager/docling_backend.py` | the adapter that lets Docling feed this assembler (section 5) |
 | `parse_manager/main.py` | the service loop that calls stage 1 then stage 2 |
-| `embedding_manager/chunking.py` | the consumer — Grain-Growth chunking over these blocks |
+| [`grain_growth`](https://github.com/mudit-choudhary/grain-growth-chunking) (library) | the consumer — Grain-Growth chunking over these blocks |
 | `common/coverage.py` | uses `num_pages` vs `pdf_pages` to detect a truncated parse |
 | `tests/test_txt_processor.py` | unit tests for ordering, de-hyphenation and paragraph merging |
 | `scripts/rag_inspect.py` | `parse` stage renders the `.txt` for inspection |

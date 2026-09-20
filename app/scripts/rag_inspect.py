@@ -126,7 +126,7 @@ TOKEN_WINDOW = 512
 
 def cmd_chunks(args):
     use_package("embedding_manager")
-    from chunking import chunk_file
+    from grain_growth import chunk_file
     from config import PROCESSED_DIR, CHUNK_TARGET_CHARS, CHUNK_MAX_CHARS
 
     p = Path(args.file)

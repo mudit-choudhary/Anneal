@@ -22,8 +22,11 @@ it and Docling's own mid-sentence paragraph rate falls from **17.4% to 2.9%**
 assembler, not to any one detector. Chunking then grows along the document's own
 grain instead of a character count: `grain_growth` nucleates at section headings
 and expands until it meets a structural barrier, keeping tables and equations
-whole. All of it runs on a 4 GB consumer GPU with no cloud dependency in the
-parse or embed path.
+whole. That chunker is published on its own as
+[grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking) (`pip install grain-growth-chunking`,
+Apache-2.0, [10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)), so it can be used
+without any of this pipeline. All of it runs on a 4 GB consumer GPU with no
+cloud dependency in the parse or embed path.
 
 Whether any of that helps is measured, not claimed.
 

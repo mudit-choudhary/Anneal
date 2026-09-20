@@ -11,6 +11,7 @@ Writes evals/corpus/unused_training_pdfs.json.
 """
 
 import json
+import sys
 import re
 from pathlib import Path
 
@@ -54,6 +55,9 @@ def main():
 
 
 if __name__ == "__main__":
+    if {"-h", "--help"} & set(sys.argv[1:]):
+        print(__doc__)
+        raise SystemExit(0)
     assert stem_of("A_B_page_01.txt") == "A_B"
     assert stem_of("X_page_1_page_135.txt") == "X_page_1"
     assert stem_of("notes.txt") is None

@@ -428,3 +428,23 @@ def test_query_stream_stops_worker_when_client_leaves(ui):
     next(stream)
     stream.close()                     # what Starlette does on disconnect
     assert closed.wait(1)
+
+
+def test_answer_survives_its_chat_being_deleted_midway(client, ui, monkeypatch):
+    """Deleting a chat while it is answering must not crash the stream."""
+    import sqlite3
+    monkeypatch.setattr(ui.rag, "retrieve", lambda *a, **k: ("ctx", [], []))
+    monkeypatch.setattr(ui.rag, "answer_stream", lambda *a, **k: iter(["done."]))
+
+    real = ui.chats.add_message
+
+    def gone(chat_id, role, *a, **k):
+        # The user turn is stored before streaming starts; only the answer can
+        # land after a delete.
+        if role == "assistant":
+            raise sqlite3.IntegrityError("FOREIGN KEY constraint failed")
+        return real(chat_id, role, *a, **k)
+    monkeypatch.setattr(ui.chats, "add_message", gone)
+    r = client.post("/v1/query", json={"query": "anything"})
+    assert r.status_code == 200
+    assert '"type": "done"' in r.text and '"type": "error"' not in r.text

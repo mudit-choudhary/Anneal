@@ -18,6 +18,9 @@ SIZES = {"n": "yolo11n_doc_layout.pt", "s": "yolo11s_doc_layout.pt", "m": "yolo1
 
 if __name__ == "__main__":
     size = sys.argv[1] if len(sys.argv) > 1 else "n"
+    if size not in SIZES:
+        print(__doc__)
+        raise SystemExit(0 if size in ("-h", "--help") else f"unknown size {size!r}; pick one of {sorted(SIZES)}")
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
     path = hf_hub_download(
         repo_id="Armaggheddon/yolo11-document-layout",

@@ -156,7 +156,7 @@ def main():
     # ---------------------------------------------------------- stage 2
     def chunk_stage():
         use_package("embedding_manager")
-        from chunking import chunk_file
+        from grain_growth import chunk_file
 
         chunks, skipped = chunk_file(state["blocks_json"])
         if not chunks:

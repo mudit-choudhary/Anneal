@@ -16,6 +16,7 @@ UI/index.html if no build exists) and the JSON API it uses:
 """
 
 import asyncio
+import sqlite3
 import json
 import os
 import sys
@@ -191,8 +192,13 @@ def query(req: QueryRequest):
             yield event(type="error", message=str(e))
             return
         duration_ms = int((time.perf_counter() - started) * 1000)
-        chats.add_message(chat_id, "assistant", text, duration_ms=duration_ms,
-                          sources=[{k: v for k, v in s.items() if k != "text"} for s in sources])
+        try:
+            chats.add_message(chat_id, "assistant", text, duration_ms=duration_ms,
+                              sources=[{k: v for k, v in s.items() if k != "text"} for s in sources])
+        except sqlite3.IntegrityError:
+            # The chat was deleted while its answer was still being written.
+            # The answer is already on screen; only saving it is impossible.
+            log.info("chat %s deleted mid-answer; not saved", chat_id)
         yield event(type="done", duration_ms=duration_ms)
 
     return StreamingResponse(_with_heartbeat(generate(), event(type="ping")),

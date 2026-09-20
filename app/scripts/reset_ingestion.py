@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from common.paths import PARSED_DIR, PROCESSED_DIR, REGISTRY_DB, APP_ROOT, VECTOR_DB  # noqa: E402
+from common.paths import DATA_HOME, PARSED_DIR, PROCESSED_DIR, REGISTRY_DB, VECTOR_DB  # noqa: E402
 
 
 def reset(apply: bool, quiet: bool = False):
@@ -25,7 +25,7 @@ def reset(apply: bool, quiet: bool = False):
 
     for d in (PARSED_DIR, PROCESSED_DIR):
         files = [p for p in d.glob("*") if p.is_file()] if d.exists() else []
-        out(f"{d.relative_to(APP_ROOT)}: delete {len(files)} files")
+        out(f"{d.relative_to(DATA_HOME)}: delete {len(files)} files")
         if apply:
             for p in files:
                 p.unlink()
@@ -61,4 +61,7 @@ def reset(apply: bool, quiet: bool = False):
 
 
 if __name__ == "__main__":
+    if {"-h", "--help"} & set(sys.argv[1:]):
+        print(__doc__)
+        raise SystemExit(0)
     reset(apply="--yes" in sys.argv)

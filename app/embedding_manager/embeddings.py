@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import chromadb
 from chromadb.utils import embedding_functions
 
-from chunking import chunk_file
+from grain_growth import chunk_file
 from common.logsetup import get_logger
 from config import (
     CHATS_COLLECTION_NAME,

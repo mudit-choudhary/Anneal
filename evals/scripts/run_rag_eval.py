@@ -104,7 +104,7 @@ def build_index(parser, chunker, stems, device):
     """Chunk the cached parse and embed it into a throwaway collection."""
     import chromadb
     from run_matrix import CHUNKERS as CHUNK_IMPL
-    from chunking import FENCED_TYPES, fence
+    from grain_growth import FENCED_TYPES, fence
     from embeddings import BGEEmbeddingFunction
 
     client = chromadb.PersistentClient(path=str(EVAL_DB))

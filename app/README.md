@@ -9,10 +9,16 @@ A paper moves through four stages, each one recorded in the registry so any
 stage can be resumed or re-run:
 
 ```
-download ──▶ parse ──▶ embed ──▶ answer
-  arXiv      YOLOv11 layout    bge-base    retrieval + local LLM
-  or a URL   + assembler       in Chroma   with citations
+download ──▶ parse ──▶ chunk ──▶ embed ──▶ answer
+  arXiv      YOLOv11      grain_growth   bge-base   retrieval + local LLM
+  or a URL   + assembler  (library)      in Chroma  with citations
 ```
+
+The chunking stage is [grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking), developed here and
+published separately (Apache-2.0, no dependencies,
+[10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)). Anneal installs it like any other
+dependency and pins the major version: a later major would move chunk
+boundaries, and a vector store built under one is not comparable with the other.
 
 ## Quick start
 

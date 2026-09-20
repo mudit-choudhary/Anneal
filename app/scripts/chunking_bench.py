@@ -220,7 +220,7 @@ class CurrentParser:
         blocks = parsed.get("blocks", [])
         # The flat text carries the same fences the structure chunker emits, so
         # a fixed-size splitter run over it can be caught cutting through one.
-        from chunking import FENCED_TYPES, fence
+        from grain_growth import FENCED_TYPES, fence
         parts = []
         for b in blocks:
             t = b.get("text", "")
@@ -233,7 +233,7 @@ class CurrentParser:
 
 # ============================================================ chunkers
 def split_sentences(text):
-    from chunking import split_sentences as _s
+    from grain_growth import split_sentences as _s
     return _s(text)
 
 
@@ -289,7 +289,7 @@ class SemanticChunker:
         in its lookahead — and the closing bar ends up in the next chunk. Any
         production semantic chunker has to mask fenced regions first.
         """
-        from chunking import FENCE_CHAR
+        from grain_growth import FENCE_CHAR
         block = re.compile(rf"^({re.escape(FENCE_CHAR)}{{3,}})\S*\n.*?\n\1$", re.M | re.S)
         out, last = [], 0
         for m in block.finditer(text):
@@ -306,7 +306,8 @@ class SemanticChunker:
         A plain " ".join puts an opening bar mid-line, where it no longer
         matches "^~~~", so an intact block reads as severed.
         """
-        from chunking import FENCE_CHAR, _FENCE_RUN
+        from grain_growth import FENCE_CHAR
+        from grain_growth.chunker import _FENCE_RUN  # private: fence run regex
         out = ""
         for u in units:
             if not out:
@@ -371,7 +372,7 @@ class StructureChunker:
         self.label = f"target {target} chars" + ("" if headings else ", no heading prefix")
 
     def chunk(self, parsed):
-        from chunking import chunk_document
+        from grain_growth import chunk_document
         blocks = parsed["blocks"]
         if not blocks:
             return []
@@ -396,7 +397,7 @@ class ProductionChunker:
     label = "chunk_document defaults, heading prefix on"
 
     def chunk(self, parsed):
-        from chunking import DEFAULT_MAX_CHARS, DEFAULT_TARGET_CHARS, chunk_document
+        from grain_growth import DEFAULT_MAX_CHARS, DEFAULT_TARGET_CHARS, chunk_document
         blocks = parsed["blocks"]
         if not blocks:
             return []
@@ -450,7 +451,7 @@ def measure(chunks, pages, corpus_bytes, elapsed):
 
     # one definition of a clean boundary, shared with the chunker, so the
     # evaluation cannot drift from what the pipeline considers correct
-    from chunking import (ends_cleanly, fences_balanced, has_fence,
+    from grain_growth import (ends_cleanly, fences_balanced, has_fence,
                           starts_cleanly, strip_fences)
 
     starts_mid = ends_mid = 0

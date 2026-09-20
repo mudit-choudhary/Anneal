@@ -136,7 +136,7 @@ def recursive_chunks(text):
 
 
 def structure_chunks(processed_json):
-    from chunking import chunk_file
+    from grain_growth import chunk_file
 
     chunks, _skipped = chunk_file(processed_json)
     return [c["text"] for c in chunks]

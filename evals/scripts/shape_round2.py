@@ -36,7 +36,7 @@ CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
 
 def main():
     from run_matrix import CHUNKERS as IMPL, _CAPTION, _GG_META, measure, table_signatures
-    from chunking import FENCED_TYPES, fence
+    from grain_growth import FENCED_TYPES, fence
 
     stems = sorted(p["arxiv_id"] for p in json.loads((CORPUS / "manifest.json").read_text())["papers"])
 

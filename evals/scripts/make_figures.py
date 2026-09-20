@@ -13,6 +13,7 @@ and a near-black page alike.
 """
 
 import json
+import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent.parent
@@ -619,4 +620,7 @@ def main():
 
 
 if __name__ == "__main__":
+    if {"-h", "--help"} & set(sys.argv[1:]):
+        print(__doc__)
+        raise SystemExit(0)
     main()

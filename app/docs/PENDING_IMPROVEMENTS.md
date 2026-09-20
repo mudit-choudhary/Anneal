@@ -16,7 +16,7 @@ matters, and a candidate direction — not a committed design.
 
 > **Update 2026-09-11 — partially addressed.** Tables and formulas are now
 > **labelled** in the embedded text with a typed fence (`~~~table` / `~~~formula`,
-> `FENCED_INLINE` / `FENCED_STANDALONE` in `embedding_manager/chunking.py`), so a
+> `FENCED_INLINE` / `FENCED_STANDALONE` in the `grain_growth` library), so a
 > retrieved chunk tells the answering model and a human reader that the content is
 > data rather than prose. The caption stays outside the fence as prose. This does
 > **not** recover table *structure* — the TableFormer/VLM work below is still

@@ -420,7 +420,8 @@ The JSON keeps block *types*, which is what lets the chunker never split
 inside a paragraph, never orphan a heading, and never embed an email
 address from a footnote.
 
-**Inside** (`chunking.py`, `embeddings.py`):
+**Inside** (the [`grain_growth`](https://github.com/mudit-choudhary/grain-growth-chunking) library — installed from PyPI, pinned in
+`app/requirements.txt` — and `embeddings.py`):
 
 1. `chunk_document(blocks, stem)` walks the blocks. The title (first
    `title` block, else the filename) and the latest `section` heading are
