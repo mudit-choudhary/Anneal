@@ -115,3 +115,19 @@ Tests, from the repository root:
 virtual_environments/annealenv/bin/pip install -r tests/requirements.txt
 virtual_environments/annealenv/bin/python -m pytest tests/ -q
 ```
+
+## Licence
+
+Anneal is free software under the **GNU Affero General Public License v3 or
+later** ([LICENSE](LICENSE)). Use it, study it, change it, share it. If you
+distribute it — or run a modified version as a network service — those who use
+it are entitled to the source of your version.
+
+AGPL rather than something permissive because Anneal links **PyMuPDF**, which is
+AGPL: the licence is inherited, not chosen. The pieces that do not link it are
+freer — the chunking algorithm is published separately as
+[grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking) under **Apache-2.0**, with no dependencies, so it
+can be used in closed-source work.
+
+The papers you ingest are yours and are never uploaded anywhere; the
+[data home](#layout) sits outside this repository.

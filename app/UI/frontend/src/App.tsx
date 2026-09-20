@@ -47,6 +47,9 @@ export default function App() {
           ))}
         </nav>
         <StatusBar status={status} />
+        {/* AGPL-3.0 section 13: a networked app must offer its source to users. */}
+        <a className="source" href="https://github.com/mudit-choudhary/Anneal" target="_blank" rel="noreferrer"
+           title="Anneal is free software (AGPL-3.0) — source code">source</a>
         <ThemeToggle />
       </header>
       <main className="layout">

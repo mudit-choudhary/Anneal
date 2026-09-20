@@ -1,3 +1,11 @@
+# Anneal — local-first RAG over research papers.
+# Copyright (C) 2026 Mudit Choudhary
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# This program is free software: you may redistribute and/or modify it under
+# the terms of the GNU Affero General Public License, version 3 or later. It
+# is distributed WITHOUT ANY WARRANTY. See the LICENSE file, or
+# <https://www.gnu.org/licenses/>.
 """Registry service (port 4000): the single source of truth for each paper's
 pipeline status. Every other stage polls it for work and reports back.
 

@@ -97,3 +97,8 @@ docs/  diagrams/
 - [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
 - [docs/PENDING_IMPROVEMENTS.md](docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
 - [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
+
+## Licence
+
+AGPL-3.0-or-later — see [LICENSE](../LICENSE) at the repository root, and the
+licence section of the [main README](../README.md#licence) for why.
