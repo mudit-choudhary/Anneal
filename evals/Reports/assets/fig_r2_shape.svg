@@ -31,11 +31,11 @@
 <circle cx="196.8" cy="231.5" r="7" fill="#2a78d6" opacity="0.9"/>
 <text x="207.8" y="235.5" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">pymupdf4llm</text>
 <circle cx="595.5" cy="186.4" r="7" fill="#9aa3ab" opacity="0.9"/>
-<text x="606.5" y="190.4" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">current</text>
+<text x="606.5" y="190.4" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">recrystal</text>
 <circle cx="281.4" cy="139.1" r="7" fill="#1baf7a" opacity="0.9"/>
-<text x="292.4" y="143.1" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">current</text>
+<text x="292.4" y="143.1" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">recrystal</text>
 <circle cx="133.2" cy="105.3" r="7" fill="#2a78d6" opacity="0.9"/>
-<text x="144.2" y="109.3" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">current</text>
+<text x="144.2" y="109.3" font-size="9" fill="#8b949e" text-anchor="start" font-weight="normal">recrystal</text>
 <circle cx="680" cy="90" r="6" fill="#9aa3ab"/>
 <text x="692.0" y="94.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">fixed_token</text>
 <circle cx="680" cy="110" r="6" fill="#1baf7a"/>

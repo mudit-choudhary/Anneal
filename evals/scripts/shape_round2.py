@@ -30,7 +30,7 @@ CORPUS = REPO / "evals" / "corpus"
 PARSED = REPO / "evals" / "parsed"
 TABLES = PARSED / "geometry" / "table_signatures.json"
 OUT = REPO / "evals" / "Reports" / "shape_round2.json"
-PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
 
 

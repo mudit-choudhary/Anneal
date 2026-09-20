@@ -79,7 +79,7 @@
    "paper": "2609.11465",
    "arxiv_id": "2609.11465",
    "filename": "2609.11465.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In CIELO simulations, what fraction of the central stellar knots' mass is in-situ, and how does this compare to the gas fraction originating from a primordial central spheroid?",
@@ -95,7 +95,7 @@
    "paper": "2609.11465",
    "arxiv_id": "2609.11465",
    "filename": "2609.11465.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the critical radius range beyond which the shock must expand for \u03b1-particle recombination to occur, and how does this relate to the postshock temperature?",
@@ -177,7 +177,7 @@
    "paper": "2609.10825",
    "arxiv_id": "2609.10825",
    "filename": "2609.10825.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How does the small-lesion-aware sampling strategy weight positive patches based on lesion volume in the BraTS-METS dataset?",
@@ -194,7 +194,7 @@
    "paper": "2609.10825",
    "arxiv_id": "2609.10825",
    "filename": "2609.10825.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What specific estimator does the paper propose to accurately estimate X shift in high-dimensional settings, and how does it address the curse of dimensionality?",
@@ -275,7 +275,7 @@
    "paper": "2609.11860",
    "arxiv_id": "2609.11860",
    "filename": "2609.11860.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How does the Explainability Assistant improve usability over traditional XAI dashboards for energy domain specialists?",
@@ -291,7 +291,7 @@
    "paper": "2609.11860",
    "arxiv_id": "2609.11860",
    "filename": "2609.11860.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the upper constraint on the fuzzy dark matter parameter m22 for globular clusters in the Fornax cluster, and how does it compare to the value in the Perseus cluster?",
@@ -368,7 +368,7 @@
    "paper": "2609.11457",
    "arxiv_id": "2609.11457",
    "filename": "2609.11457.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which fault-tolerant quantum computing architecture is the first to use only local operations and a constant density of classical resources in three spatial dimensions and below?",
@@ -385,7 +385,7 @@
    "paper": "2609.11457",
    "arxiv_id": "2609.11457",
    "filename": "2609.11457.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the specific value of the boson mass m_\u03c8 in the \u03c8 DM model that explains the Diffuse Galaxy sequence, and how does it relate to heating in massive galaxies?",
@@ -468,7 +468,7 @@
    "paper": "2609.11602",
    "arxiv_id": "2609.11602",
    "filename": "2609.11602.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which specific machine learning method and DFT functional are used to model water dissociation at a graphene single vacancy under solvation conditions, and what is the purpose of combining them?",
@@ -485,7 +485,7 @@
    "paper": "2609.11602",
    "arxiv_id": "2609.11602",
    "filename": "2609.11602.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the specific relationship between the coefficient f\u00b2 in quadratic gravity and the dark matter mass m_dm that ensures the correct dark matter abundance?",
@@ -564,7 +564,7 @@
    "paper": "2609.10858",
    "arxiv_id": "2609.10858",
    "filename": "2609.10858.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which dataset and method were used to produce pixel-level lesion segmentations in the NLST collection according to this paper?",
@@ -580,7 +580,7 @@
    "paper": "2609.10858",
    "arxiv_id": "2609.10858",
    "filename": "2609.10858.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the accuracy of a fine-tuned ConvNeXt-Tiny on the four hardest fabric categories in the 14-class benchmark, and how does it compare to the recognition accuracy of plain weave?",
@@ -661,7 +661,7 @@
    "paper": "0812.4582",
    "arxiv_id": "0812.4582",
    "filename": "0812.4582.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the observed optical magnitude of 3C 454.3 during a 2005 optical flare, and what instrument was used to detect this event?",
@@ -677,7 +677,7 @@
    "paper": "0812.4582",
    "arxiv_id": "0812.4582",
    "filename": "0812.4582.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the distance to the globular cluster M22 derived from the Fourier decomposition of RR Lyrae light curves, and how does it compare to the distance derived from the P-L relations for SX Phe stars?",
@@ -758,7 +758,7 @@
    "paper": "2609.11680",
    "arxiv_id": "2609.11680",
    "filename": "2609.11680.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the graph convolutional network proposed in this paper that is robust to variable-length sequences and frame rate differences, and what specific mechanism does it use to avoid padding contamination and statistical drift?",
@@ -774,7 +774,7 @@
    "paper": "2609.11680",
    "arxiv_id": "2609.11680",
    "filename": "2609.11680.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the relative drop in NaturalBench VQA accuracy for LORA at the rank matching its peak detection accuracy on Roboflow20-VL, and how does SOFTPROMPT compare in this metric?",
@@ -857,7 +857,7 @@
    "paper": "0812.5111",
    "arxiv_id": "0812.5111",
    "filename": "0812.5111.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How do single-component SED-\ufb01tting methods systematically bias the derived star formation rates (SFRs) and mean stellar population ages in Lyman break galaxies, and what is the primary reason for these biases according to the paper?",
@@ -874,7 +874,7 @@
    "paper": "0812.5111",
    "arxiv_id": "0812.5111",
    "filename": "0812.5111.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the radiative transfer framework used in the study to model resonantly scattered C IV emission profiles in local star-forming galaxies?",
@@ -951,7 +951,7 @@
    "paper": "2609.11675",
    "arxiv_id": "2609.11675",
    "filename": "2609.11675.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "For the O(2) (XY) CFT realized on a fuzzy sphere, what is the accuracy of the ground-state energy criterion in locating the critical coupling compared to prior results in Ref. 7, and how does the \u03c7 extremum point compare in sharpness?",
@@ -968,7 +968,7 @@
    "paper": "2609.11675",
    "arxiv_id": "2609.11675",
    "filename": "2609.11675.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the power conversion efficiency (PCE) achieved by the Al/AZO/In2S3/CNGS/MoTe2/Au solar cell under AM1.5G illumination at 300 K, as predicted by the SCAPS-1D simulation?",
@@ -1049,7 +1049,7 @@
    "paper": "2609.11056",
    "arxiv_id": "2609.11056",
    "filename": "2609.11056.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How does the axion EFT formalism differ from the axionCAMB approach in terms of the equation of state and sound speed of the effective fluid, and what is the source of these calibrations?",
@@ -1065,7 +1065,7 @@
    "paper": "2609.11056",
    "arxiv_id": "2609.11056",
    "filename": "2609.11056.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "By what percentage did fine-tuned Chronos-Bolt reduce RMSE in the non-diabetes/T2D cohort compared to the CGM-only baseline, and how did this improvement compare across in-distribution and out-of-distribution test settings?",
@@ -1147,7 +1147,7 @@
    "paper": "2609.11487",
    "arxiv_id": "2609.11487",
    "filename": "2609.11487.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In extended C IV haloes around AGNs, how does resonance scattering compare to simple photoionization models in reproducing the observed C IV emission and spatial distribution?",
@@ -1164,7 +1164,7 @@
    "paper": "2609.11487",
    "arxiv_id": "2609.11487",
    "filename": "2609.11487.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In the circuit of Ref. [38], what is the exact condition under which every temporal word reduces to its empirical layer fraction \u03b7 = N\u2081/t, and what specific algebraic identity confirms this reduction?",
@@ -1245,7 +1245,7 @@
    "paper": "2609.11473",
    "arxiv_id": "2609.11473",
    "filename": "2609.11473.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What specific neural network-based method is used to find efficient erasure protocols in underdamped memories, and how does it enable the discovery of protocols that outperform the simple 1/\u03c4 scaling of Eq. (1) in fast erasures?",
@@ -1262,7 +1262,7 @@
    "paper": "2609.11473",
    "arxiv_id": "2609.11473",
    "filename": "2609.11473.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What factor improves the Figure of Merit of option A in the spectroscopic survey by a factor of 1.5, and what specific redshift pair is associated with catastrophic failures that induce bias in dark energy parameter estimates?",
@@ -1345,7 +1345,7 @@
    "paper": "2609.11867",
    "arxiv_id": "2609.11867",
    "filename": "2609.11867.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In AdamX, how does the bounded cosine-similarity controller modulate update magnitudes based on consecutive gradient alignment?",
@@ -1362,7 +1362,7 @@
    "paper": "2609.11867",
    "arxiv_id": "2609.11867",
    "filename": "2609.11867.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the method that characterizes asymptotic conversion rates between arbitrary mixed-state asymmetry under any compact Lie group symmetry, and how does it relate to the quantum Fisher information family?",
@@ -1446,7 +1446,7 @@
    "paper": "2609.11927",
    "arxiv_id": "2609.11927",
    "filename": "2609.11927.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In Sn-doped RbV3Sb5, what experimental measurement shows a systematic increase with doping level, and what does this reveal about the local magnetic moments in the material?",
@@ -1462,7 +1462,7 @@
    "paper": "2609.11927",
    "arxiv_id": "2609.11927",
    "filename": "2609.11927.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the change in median \ud835\udf05 ext across 11 time delay lens systems after applying the updated weighted number counts method, and how does this compare to the previous estimate?",
@@ -1542,7 +1542,7 @@
    "paper": "2609.11917",
    "arxiv_id": "2609.11917",
    "filename": "2609.11917.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which regularization technique enables MoE models to outperform dense models at 64\u00d7 data repetition, and what is the key mechanism behind this improvement?",
@@ -1558,7 +1558,7 @@
    "paper": "2609.11917",
    "arxiv_id": "2609.11917",
    "filename": "2609.11917.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the Spearman correlation value of CoRA-Refine on the TransNAS-Bench-101 dataset, and how does it compare to the worst-performing space among the four vision spaces?",
@@ -1638,7 +1638,7 @@
    "paper": "2609.11879",
    "arxiv_id": "2609.11879",
    "filename": "2609.11879.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How does the multi-modal representation learned by FM-JADES-v1 improve photometric redshift estimates compared to template fitting?",
@@ -1654,7 +1654,7 @@
    "paper": "2609.11879",
    "arxiv_id": "2609.11879",
    "filename": "2609.11879.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In the Starobinsky supergravity coupled to the MSSM, what is the value of the gaugino mass at the matching scale when the gauge kinetic function is set to f_a = c(a)(1 + c(a)S/S_M_P) and the inflationary mass scale is m \u2248 1.80 \u00d7 10^13 GeV?",
@@ -1735,7 +1735,7 @@
    "paper": "2609.11340",
    "arxiv_id": "2609.11340",
    "filename": "2609.11340.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "For the modified CS14 model with N=3 species and R=7 reactions, what is the sum of the positive Lyapunov exponents that equals the Kolmogorov\u2013Sinai entropy in the deterministic limit?",
@@ -1751,7 +1751,7 @@
    "paper": "2609.11340",
    "arxiv_id": "2609.11340",
    "filename": "2609.11340.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What specific loss function and training strategy does the paper introduce to enforce physiologically consistent cyclic motion in myocardial tracking, and how does it differ from existing deep learning models?",
@@ -1835,7 +1835,7 @@
    "paper": "2609.11908",
    "arxiv_id": "2609.11908",
    "filename": "2609.11908.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What method is used in this paper to extract the non-QNM component from the gravitational waveform, and how does it differ from QNM filtering?",
@@ -1852,7 +1852,7 @@
    "paper": "2609.11908",
    "arxiv_id": "2609.11908",
    "filename": "2609.11908.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What was the speed of the CME associated with the M3.9 flare from NOAA AR 10501 on November 18, 2003, and how did it compare to the speed of CMEs linked to super-storms with D ST \u223c -300 nT?",
@@ -1935,7 +1935,7 @@
    "paper": "2609.11640",
    "arxiv_id": "2609.11640",
    "filename": "2609.11640.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which reactive element is predicted by the macroscopic atom model to have the highest segregation tendency and adhesion enhancement at the Al2O3 interface in the CoCrFeMnNiAl system?",
@@ -1951,7 +1951,7 @@
    "paper": "2609.11640",
    "arxiv_id": "2609.11640",
    "filename": "2609.11640.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What specific method is used in the paper to reconstruct SPM images by combining physical models with machine learning, and how does it evaluate the contributions of different components?",
@@ -2036,7 +2036,7 @@
    "paper": "2609.11929",
    "arxiv_id": "2609.11929",
    "filename": "2609.11929.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What strategy does SenseNova-U1.5 employ to unify distinct visual generation capabilities using specialized reinforcement learning experts?",
@@ -2053,7 +2053,7 @@
    "paper": "2609.11929",
    "arxiv_id": "2609.11929",
    "filename": "2609.11929.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the method that models the probability of an answer containing a specified feature and combines it with market query counts and notice probabilities to obtain the expected number of noticed occurrences under each source state?",
@@ -2136,7 +2136,7 @@
    "paper": "2609.11873",
    "arxiv_id": "2609.11873",
    "filename": "2609.11873.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How many expert-hours were required in total for OpenAI's GDPval to complete 1,320 professional tasks, and what was the average years of experience of the contributors?",
@@ -2153,7 +2153,7 @@
    "paper": "2609.11873",
    "arxiv_id": "2609.11873",
    "filename": "2609.11873.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the specific architecture proposed in the paper for making bounded, evidence-based claims about responsibility, inclusivity, safety, and empowerment in AI systems?",
@@ -2236,7 +2236,7 @@
    "paper": "2609.11306",
    "arxiv_id": "2609.11306",
    "filename": "2609.11306.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In which inflationary scenarios does the curvature perturbation acquire local-type non-Gaussian statistics that lead to initial PBH clustering, according to this paper?",
@@ -2253,7 +2253,7 @@
    "paper": "2609.11306",
    "arxiv_id": "2609.11306",
    "filename": "2609.11306.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the scheme that enables progressive reconstruction by reusing a compact set of knowledge bases across multiple residual refinement stages, and how does it reduce storage overhead compared to MKBQ?",
@@ -2337,7 +2337,7 @@
    "paper": "2609.11717",
    "arxiv_id": "2609.11717",
    "filename": "2609.11717.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "On which dataset and with which metric does MC-DeTra achieve the best performance for dynamic trajectory forecasting, while preserving detection accuracy and maintaining a 2 Hz inference budget?",
@@ -2354,7 +2354,7 @@
    "paper": "2609.11717",
    "arxiv_id": "2609.11717",
    "filename": "2609.11717.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the four-stage pipeline proposed in the paper for audio-to-tablature transcription, and what specific technique does Stage 2 use to label expressive techniques in guitar notes?",
@@ -2435,7 +2435,7 @@
    "paper": "2609.11838",
    "arxiv_id": "2609.11838",
    "filename": "2609.11838.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How did the glass-box explainable boosting machine perform in terms of discrimination and inference speed compared to the strongest tabular foundation model in the study?",
@@ -2451,7 +2451,7 @@
    "paper": "2609.11838",
    "arxiv_id": "2609.11838",
    "filename": "2609.11838.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the range of PBH masses that GW observations can probe, according to the paper's analysis of the gravitational wave background?",
@@ -2531,7 +2531,7 @@
    "paper": "2609.11811",
    "arxiv_id": "2609.11811",
    "filename": "2609.11811.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the ground state energy of the 10\u00d710 spinless tt\u2019V model at t\u2032/t = 0.4 and V/t = 0.8 achieved by the gradBEA method when using bond dimension D = 80?",
@@ -2548,7 +2548,7 @@
    "paper": "2609.11811",
    "arxiv_id": "2609.11811",
    "filename": "2609.11811.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the name of the dataset used to create the rule-based and LLM-based labeled datasets for three-language code-mixing, and how many sentences does it contain?",
@@ -2630,7 +2630,7 @@
    "paper": "0812.5078",
    "arxiv_id": "0812.5078",
    "filename": "0812.5078.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "How many stars in the M35 and M34 open clusters have measured rotational periods, and what are their respective total numbers including both radial-velocity and photometric members?",
@@ -2647,7 +2647,7 @@
    "paper": "0812.5078",
    "arxiv_id": "0812.5078",
    "filename": "0812.5078.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the factor range by which the mechanistic and empirical extrapolations differ in predicting the oxide thickness at ten years for AISI 347 stainless steel in simulated BWR hydrothermal water, according to the paper's analysis?",
@@ -2729,7 +2729,7 @@
    "paper": "2609.11864",
    "arxiv_id": "2609.11864",
    "filename": "2609.11864.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which two latency-reduction techniques from prior work are combined with retrospective thinking in RetroThinker, and what is the name of the post-training framework that enables real-time retrospective thinking in SpeechLLMs?",
@@ -2745,7 +2745,7 @@
    "paper": "2609.11864",
    "arxiv_id": "2609.11864",
    "filename": "2609.11864.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the record high Curie temperature achieved in the Fe N GeTe 2 system at N = 5 with nickel substitution, and which specific compound is identified as the source of this high temperature?",
@@ -2828,7 +2828,7 @@
    "paper": "2609.11804",
    "arxiv_id": "2609.11804",
    "filename": "2609.11804.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "On which dataset and model scales does the Logit Refiner consistently improve generative performance, and by what factor does it enable a smaller model to surpass a larger one?",
@@ -2844,7 +2844,7 @@
    "paper": "2609.11804",
    "arxiv_id": "2609.11804",
    "filename": "2609.11804.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which method produces larger gains on reasoning tasks compared to planning tasks when applied to the Qwen3-VL-2B-Instruct model?",
@@ -2923,7 +2923,7 @@
    "paper": "2609.10988",
    "arxiv_id": "2609.10988",
    "filename": "2609.10988.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "Which machine learning method is used in the proposed system to classify the EPIFF features, and what performance metrics does it achieve in diagnosing Respiratory Disorders?",
@@ -2939,7 +2939,7 @@
    "paper": "2609.10988",
    "arxiv_id": "2609.10988",
    "filename": "2609.10988.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What specific metric is used in the paper to model gravitational collapse of a spherically symmetric dust cloud, and how does it relate to the study of singularities in FRW universes?",
@@ -3019,7 +3019,7 @@
    "paper": "2609.11870",
    "arxiv_id": "2609.11870",
    "filename": "2609.11870.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "In which specific model and training setup does visual initialization lead to a persistent effect on word embeddings that survives training and is measurable only in a tailored benchmark?",
@@ -3035,7 +3035,7 @@
    "paper": "2609.11870",
    "arxiv_id": "2609.11870",
    "filename": "2609.11870.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the total number of Arabic speech instruction-following samples in the Nuha-Speech training dataset?",
@@ -3116,7 +3116,7 @@
    "paper": "2609.11899",
    "arxiv_id": "2609.11899",
    "filename": "2609.11899.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "On which datasets does the CFD framework achieve accuracy competitive with prior agent-based methods while using roughly an order of magnitude fewer frames per question?",
@@ -3132,7 +3132,7 @@
    "paper": "2609.11899",
    "arxiv_id": "2609.11899",
    "filename": "2609.11899.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the performance gain of ASSAYLOOP over random selection on temporally held-out screens, and what percentage of hits does it recover after testing only 5% of the candidate library?",
@@ -3214,7 +3214,7 @@
    "paper": "2609.09579",
    "arxiv_id": "2609.09579",
    "filename": "2609.09579.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What specific video correction method does AMVOTS use to handle image enhancements such as brightness or color changes introduced by the OS or GPU in video applications?",
@@ -3230,7 +3230,7 @@
    "paper": "2609.09579",
    "arxiv_id": "2609.09579",
    "filename": "2609.09579.pdf",
-   "generated_from": "current"
+   "generated_from": "recrystal"
   },
   {
    "question": "What is the speed-up factor achieved by the spherical shear-based pixel-based approach at NSIDE = 4096 compared to the brute-force method, and how does it compare in precision to existing state-of-the-art methods?",
@@ -3522,7 +3522,7 @@
    "paper": "2609.10858",
    "arxiv_id": "2609.10858",
    "filename": "2609.10858.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -3626,7 +3626,7 @@
    "paper": "0812.5111",
    "arxiv_id": "0812.5111",
    "filename": "0812.5111.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -3643,7 +3643,7 @@
    "paper": "2609.11675",
    "arxiv_id": "2609.11675",
    "filename": "2609.11675.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -3746,7 +3746,7 @@
    "paper": "2609.11473",
    "arxiv_id": "2609.11473",
    "filename": "2609.11473.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -3834,7 +3834,7 @@
    "paper": "2609.11867",
    "arxiv_id": "2609.11867",
    "filename": "2609.11867.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -3869,7 +3869,7 @@
    "paper": "2609.11927",
    "arxiv_id": "2609.11927",
    "filename": "2609.11927.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -3920,7 +3920,7 @@
    "paper": "2609.11917",
    "arxiv_id": "2609.11917",
    "filename": "2609.11917.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4009,7 +4009,7 @@
    "paper": "2609.11908",
    "arxiv_id": "2609.11908",
    "filename": "2609.11908.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4044,7 +4044,7 @@
    "paper": "2609.11306",
    "arxiv_id": "2609.11306",
    "filename": "2609.11306.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4147,7 +4147,7 @@
    "paper": "0812.5078",
    "arxiv_id": "0812.5078",
    "filename": "0812.5078.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4199,7 +4199,7 @@
    "paper": "2609.11864",
    "arxiv_id": "2609.11864",
    "filename": "2609.11864.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4216,7 +4216,7 @@
    "paper": "2609.11864",
    "arxiv_id": "2609.11864",
    "filename": "2609.11864.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4268,7 +4268,7 @@
    "paper": "2609.10988",
    "arxiv_id": "2609.10988",
    "filename": "2609.10988.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4319,7 +4319,7 @@
    "paper": "2609.11899",
    "arxiv_id": "2609.11899",
    "filename": "2609.11899.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   },
   {
@@ -4372,7 +4372,7 @@
    "paper": "2609.09579",
    "arxiv_id": "2609.09579",
    "filename": "2609.09579.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "why": "span not found verbatim in the PDF"
   }
  ]

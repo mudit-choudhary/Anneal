@@ -10,7 +10,7 @@ Two evaluations. A **chunk-shape run** crossed five parsers with four chunkers o
 
 **Keep Grain-Growth, but for narrower reasons than the shape run suggested.** On retrieval it beats semantic chunking on 2 of 3 parsers after correction for multiple comparisons, and beats the simple splitters on 0 of 6. Its lead over `fixed_token` and `recursive_char` is consistent in direction but not statistically established at this sample size.
 
-**On retrieval the three parsers cannot be told apart.** Questions written from `current`'s own output inflate its scores: 86.5% of its own questions find the answer in the top five, against 57.1% of everyone else's. Scored only on neutral questions, 0 of 6 pairwise parser comparisons reach significance. What separates the parsers is what reaches the index at all, plus speed: `oss_docling` loses 5, `oss_pymupdf4llm` loses 3, `current` loses 1 of the answers in parsing, allowing for text-engine differences, and `current` parses 2.81x faster than Docling.
+**On retrieval the three parsers cannot be told apart.** Questions written from `recrystal`'s own output inflate its scores: 86.5% of its own questions find the answer in the top five, against 57.1% of everyone else's. Scored only on neutral questions, 0 of 6 pairwise parser comparisons reach significance. What separates the parsers is what reaches the index at all, plus speed: `oss_docling` loses 5, `oss_pymupdf4llm` loses 3, `recrystal` loses 1 of the answers in parsing, allowing for text-engine differences, and `recrystal` parses 2.81x faster than Docling.
 
 ## Corpora
 
@@ -32,7 +32,7 @@ Chunk-shape run, 15 papers:
 | `legacy` | 401 | 1.07 MB | 0.0320 | 0 MB | 0 | commit `057ce0e9`, page dump plus regex paragraph rules |
 | `oss_docling` | 401 | 1.34 MB | 0.4462 | 1,380 MB | 406 | Docling layout, our stage-2 assembler |
 | `oss_pymupdf4llm` | 401 | 1.22 MB | 0.9146 | 0 MB | 393 | PyMuPDF4LLM markdown mapped to typed blocks |
-| `current` | 401 | 1.20 MB | 0.1557 | 1,044 MB | 399 | YOLOv11 layout, column-aware reading order |
+| `recrystal` | 401 | 1.20 MB | 0.1557 | 1,044 MB | 399 | YOLOv11 layout, column-aware reading order |
 
 `VRAM rise` is peak memory above what was already resident when the parser started; models loaded earlier stay on the card, so an absolute peak would credit every later parser with their footprint. Three of the five use no GPU.
 
@@ -44,9 +44,9 @@ Chunk-shape run, 15 papers:
 |---|---|---|---|---|---|
 | `oss_docling` | 2,291 | 0.3747 | 14.3 min | 1,386 MB | 0 |
 | `oss_pymupdf4llm` | 2,291 | 0.7422 | 28.3 min | 0 MB | 0 |
-| `current` | 2,291 | 0.1334 | 5.1 min | 1,044 MB | 0 |
+| `recrystal` | 2,291 | 0.1334 | 5.1 min | 1,044 MB | 0 |
 
-| Corpus | `current` | `oss_docling` | Saved |
+| Corpus | `recrystal` | `oss_docling` | Saved |
 |---|---|---|---|
 | 2,291 pages | 5.1 min | 14.3 min | 9.2 min |
 | 5,000 pages | 11.1 min | 31.2 min | 20.1 min |
@@ -74,10 +74,10 @@ Chunk-shape run, 15 papers:
 | `oss_pymupdf4llm` | `recursive_char` | 1,070 | 1,205 | 1,315 | 18 | 1,499 | 54.6% | 72 | 149 | 11.9% | 53.7% | 5.9% |
 | `oss_pymupdf4llm` | `semantic` | 588 | 2,136 | 2,098 | 86 | 6,949 | 99.3% | 2 | 2 | 0.0% | 1.7% | 5.9% |
 | `oss_pymupdf4llm` | `grain_growth` | 1,103 | 1,123 | 1,245 | 2 | 2,000 | 97.5% | 3 | 243 | 6.3% | 24.0% | 5.9% |
-| `current` | `fixed_token` | 1,633 | 885 | 875 | 205 | 1,547 | 15.4% | 108 | 237 | 57.0% | 92.7% | 0.0% |
-| `current` | `recursive_char` | 1,094 | 1,149 | 1,262 | 9 | 1,499 | 53.9% | 79 | 149 | 7.4% | 32.9% | 11.8% |
-| `current` | `semantic` | 587 | 2,071 | 2,061 | 100 | 4,662 | 93.2% | 3 | 3 | 0.7% | 1.5% | 11.8% |
-| `current` | `grain_growth` | 1,163 | 1,023 | 1,068 | 1 | 2,000 | 94.4% | 3 | 210 | 2.0% | 7.1% | 11.8% |
+| `recrystal` | `fixed_token` | 1,633 | 885 | 875 | 205 | 1,547 | 15.4% | 108 | 237 | 57.0% | 92.7% | 0.0% |
+| `recrystal` | `recursive_char` | 1,094 | 1,149 | 1,262 | 9 | 1,499 | 53.9% | 79 | 149 | 7.4% | 32.9% | 11.8% |
+| `recrystal` | `semantic` | 587 | 2,071 | 2,061 | 100 | 4,662 | 93.2% | 3 | 3 | 0.7% | 1.5% | 11.8% |
+| `recrystal` | `grain_growth` | 1,163 | 1,023 | 1,068 | 1 | 2,000 | 94.4% | 3 | 210 | 2.0% | 7.1% | 11.8% |
 
 ⚠ **DEGENERATE**: `raw_dump`, `legacy` with `grain_growth`. The strategy nucleates at section headings and stops at structural barriers; these parsers recover none, so it collapses to next-fit packing over blank-line-separated blocks. Run for completeness, **not a fair comparison**.
 
@@ -101,7 +101,7 @@ The assembler is written against our twelve YOLO classes, and it runs on Docling
 
 > **A bug of mine, found while writing this.** Docling leaves `.text` empty on formula items and puts the content in `.orig`. The adapter read only `.text`, so it discarded every equation. Fixed and re-run: Docling now recovers 1,388 formula blocks.
 
-| Block type | `raw_dump` | `legacy` | `oss_docling` | `oss_pymupdf4llm` | `current` |
+| Block type | `raw_dump` | `legacy` | `oss_docling` | `oss_pymupdf4llm` | `recrystal` |
 |---|---|---|---|---|---|
 | **title** | **0** | **0** | **0** | **0** | **16** |
 | **authors** | **0** | **0** | **0** | **0** | **27** |
@@ -116,9 +116,9 @@ The assembler is written against our twelve YOLO classes, and it runs on Docling
 - `legacy`: title found in 0 of 15 documents
 - `oss_docling`: title found in 0 of 15 documents
 - `oss_pymupdf4llm`: title found in 0 of 15 documents
-- `current`: title found in 15 of 15 documents
+- `recrystal`: title found in 15 of 15 documents
 
-**The heading path breaks.** Share of chunks whose heading path is the arXiv id rather than the paper title: `current` 0.0%, `oss_docling` 100.0%.
+**The heading path breaks.** Share of chunks whose heading path is the arXiv id rather than the paper title: `recrystal` 0.0%, `oss_docling` 100.0%.
 
 **Author names get embedded as body prose.** `SKIP_TYPES` excludes `authors` from embedding; with no authors label, Docling's names fall through as `Text`.
 
@@ -141,7 +141,7 @@ Everything above measures what chunks look like. A well-formed chunk is only wor
 ### How the run was built
 
 - **Questions.** 200 candidates were generated by `qwen3:4b-instruct` from 100 papers, 1-2 per paper. Each carries a reference answer, a verbatim answer span, keywords, filename and arXiv id. 136 survived verification against raw PDF text; 64 rejected because span not found verbatim in the PDF. The 100 most complex were shortlisted, spread over 87 papers.
-- **Question sources.** Papers were split roughly 33/34/33 across the three parsers, and the question writer saw that parser's output. Final split: `oss_docling` 30, `current` 37, `oss_pymupdf4llm` 33. Splitting was meant to make any home advantage symmetric; Finding 3 shows it was not.
+- **Question sources.** Papers were split roughly 33/34/33 across the three parsers, and the question writer saw that parser's output. Final split: `oss_docling` 30, `recrystal` 37, `oss_pymupdf4llm` 33. Splitting was meant to make any home advantage symmetric; Finding 3 shows it was not.
 - **Pipeline.** Each cell chunks the cached parse, embeds it with `BAAI/bge-base-en-v1.5` into an isolated vector store, retrieves the top 10, hands the top 6 to the product's own `rag.build_context` and `rag.answer`, then judges. The collection is dropped before the next cell; the production store is never touched.
 - **Completeness.** 12 of 12 cells ran, 1200 question runs, 2 generation errors.
 
@@ -181,10 +181,10 @@ Three conclusions follow, and they decide how the rest of this section reads.
 | `oss_pymupdf4llm` | `recursive_char` | 6,738 | 0.21 | 0.61 | **0.54** | 0.365 | 0.854 | 0.775 | **0.695** | 0.740 | 7,413 | 93 |
 | `oss_pymupdf4llm` | `semantic` | 3,561 | 0.34 | 0.65 | **0.47** | 0.478 | 0.849 | 0.600 | **0.530** | 0.580 | 12,861 | 197 |
 | `oss_pymupdf4llm` | `grain_growth` | 6,977 | 0.23 | 0.68 | **0.62** | 0.412 | 0.862 | 0.845 | **0.760** | 0.820 | 7,411 | 93 |
-| `current` | `fixed_token` | 8,506 | 0.19 | 0.56 | **0.49** | 0.346 | 0.859 | 0.825 | **0.675** | 0.755 | 7,052 | 84 |
-| `current` | `recursive_char` | 6,333 | 0.19 | 0.62 | **0.56** | 0.369 | 0.855 | 0.820 | **0.725** | 0.775 | 7,155 | 89 |
-| `current` | `semantic` | 3,356 | 0.27 | 0.67 | **0.41** | 0.431 | 0.838 | 0.640 | **0.565** | 0.600 | 12,620 | 201 |
-| `current` | `grain_growth` | 7,095 | 0.23 | 0.68 | **0.61** | 0.414 | 0.868 | 0.810 | **0.690** | 0.775 | 6,672 | 87 |
+| `recrystal` | `fixed_token` | 8,506 | 0.19 | 0.56 | **0.49** | 0.346 | 0.859 | 0.825 | **0.675** | 0.755 | 7,052 | 84 |
+| `recrystal` | `recursive_char` | 6,333 | 0.19 | 0.62 | **0.56** | 0.369 | 0.855 | 0.820 | **0.725** | 0.775 | 7,155 | 89 |
+| `recrystal` | `semantic` | 3,356 | 0.27 | 0.67 | **0.41** | 0.431 | 0.838 | 0.640 | **0.565** | 0.600 | 12,620 | 201 |
+| `recrystal` | `grain_growth` | 7,095 | 0.23 | 0.68 | **0.61** | 0.414 | 0.868 | 0.810 | **0.690** | 0.775 | 6,672 | 87 |
 
 ![answer retrieved within 4,000 characters](assets/fig5_rag_span4k.svg)
 
@@ -212,9 +212,9 @@ Every cell answers the same questions, so each comparison is **paired**: the tab
 | `oss_pymupdf4llm` | `fixed_token` | 21 / 15 | 0.405 | no | 24 / 14 | 0.143 | no |
 | `oss_pymupdf4llm` | `recursive_char` | 18 / 10 | 0.185 | no | 16 / 8 | 0.152 | no |
 | `oss_pymupdf4llm` | `semantic` | 25 / 10 | 0.017 | no | 34 / 6 | <0.001 | yes |
-| `current` | `fixed_token` | 23 / 11 | 0.058 | no | 21 / 18 | 0.749 | no |
-| `current` | `recursive_char` | 11 / 6 | 0.332 | no | 13 / 19 | 0.377 | no |
-| `current` | `semantic` | 31 / 11 | 0.003 | yes | 29 / 12 | 0.012 | no |
+| `recrystal` | `fixed_token` | 23 / 11 | 0.058 | no | 21 / 18 | 0.749 | no |
+| `recrystal` | `recursive_char` | 11 / 6 | 0.332 | no | 13 / 19 | 0.377 | no |
+| `recrystal` | `semantic` | 31 / 11 | 0.003 | yes | 29 / 12 | 0.012 | no |
 
 **Against semantic the result is real.** Grain-Growth retrieves better on 2 of 3 parsers and answers better on 1 of 3, after correction.
 
@@ -226,7 +226,7 @@ Every cell answers the same questions, so each comparison is **paired**: the tab
 |---|---|---|---|
 | `oss_docling` | 0.56 [0.46, 0.66] | 0.69 [0.61, 0.78] | 0.79 [0.71, 0.86] |
 | `oss_pymupdf4llm` | 0.62 [0.53, 0.71] | 0.76 [0.68, 0.84] | 0.84 [0.78, 0.91] |
-| `current` | 0.61 [0.51, 0.71] | 0.69 [0.61, 0.77] | 0.81 [0.74, 0.88] |
+| `recrystal` | 0.61 [0.51, 0.71] | 0.69 [0.61, 0.77] | 0.81 [0.74, 0.88] |
 
 With 100 questions an interval is about ±10 points wide, which is larger than most gaps between the three non-semantic chunkers.
 
@@ -234,13 +234,13 @@ With 100 questions an interval is about ±10 points wide, which is larger than m
 
 Each Grain-Growth cell, scored separately on the questions each parser's output produced (answer in the top five):
 
-| Questions written from | n | `oss_docling` | `oss_pymupdf4llm` | `current` |
+| Questions written from | n | `oss_docling` | `oss_pymupdf4llm` | `recrystal` |
 |---|---|---|---|---|
 | `oss_docling` | 30 | **56.7%** | 63.3% | 56.7% |
 | `oss_pymupdf4llm` | 33 | 57.6% | **63.6%** | 57.6% |
-| `current` | 37 | 64.9% | 75.7% | **86.5%** |
+| `recrystal` | 37 | 64.9% | 75.7% | **86.5%** |
 
-The bold diagonal is each parser on its own questions. `current` averages +20 points on its own questions across its four cells; `oss_docling` -4, `oss_pymupdf4llm` -5. The 33/34/33 split was supposed to make the home advantage symmetric so it cancels between parsers. It did not cancel, because the advantage is concentrated in `current`.
+The bold diagonal is each parser on its own questions. `recrystal` averages +20 points on its own questions across its four cells; `oss_docling` -4, `oss_pymupdf4llm` -5. The 33/34/33 split was supposed to make the home advantage symmetric so it cancels between parsers. It did not cancel, because the advantage is concentrated in `recrystal`.
 
 ![home advantage](assets/fig8_home_advantage.svg)
 
@@ -252,28 +252,28 @@ For each pair of parsers, the comparison is repeated on only the third parser's 
 
 | Pair | Metric | All questions W / L, p | Neutral questions | n | W / L | p | Holm |
 |---|---|---|---|---|---|---|---|
-| `current` vs `oss_docling` | span_hit@4000ch | 11 / 6, 0.332 | from `oss_pymupdf4llm` | 33 | 3 / 3 | 1.000 | no |
-| `current` vs `oss_docling` | correctness | 14 / 13, 1.000 | from `oss_pymupdf4llm` | 33 | 3 / 5 | 0.727 | no |
-| `current` vs `oss_pymupdf4llm` | span_hit@4000ch | 12 / 13, 1.000 | from `oss_docling` | 30 | 3 / 6 | 0.508 | no |
-| `current` vs `oss_pymupdf4llm` | correctness | 5 / 15, 0.041 | from `oss_docling` | 30 | 2 / 1 | 1.000 | no |
-| `oss_pymupdf4llm` vs `oss_docling` | span_hit@4000ch | 12 / 6, 0.238 | from `current` | 37 | 5 / 0 | 0.062 | no |
-| `oss_pymupdf4llm` vs `oss_docling` | correctness | 19 / 10, 0.136 | from `current` | 37 | 6 / 1 | 0.125 | no |
+| `recrystal` vs `oss_docling` | span_hit@4000ch | 11 / 6, 0.332 | from `oss_pymupdf4llm` | 33 | 3 / 3 | 1.000 | no |
+| `recrystal` vs `oss_docling` | correctness | 14 / 13, 1.000 | from `oss_pymupdf4llm` | 33 | 3 / 5 | 0.727 | no |
+| `recrystal` vs `oss_pymupdf4llm` | span_hit@4000ch | 12 / 13, 1.000 | from `oss_docling` | 30 | 3 / 6 | 0.508 | no |
+| `recrystal` vs `oss_pymupdf4llm` | correctness | 5 / 15, 0.041 | from `oss_docling` | 30 | 2 / 1 | 1.000 | no |
+| `oss_pymupdf4llm` vs `oss_docling` | span_hit@4000ch | 12 / 6, 0.238 | from `recrystal` | 37 | 5 / 0 | 0.062 | no |
+| `oss_pymupdf4llm` vs `oss_docling` | correctness | 19 / 10, 0.136 | from `recrystal` | 37 | 6 / 1 | 0.125 | no |
 
-**0 of 6 neutral comparisons are significant.** The one nominal difference on all questions, `current` against `oss_pymupdf4llm` on correctness (5 / 15, p=0.041), disappears on neutral questions (2 / 1). Neutral subsets are small, about thirty questions, so this is absence of evidence rather than evidence of equality: a real difference of a few points would not be detected. Retrieval quality does not justify choosing one parser over another.
+**0 of 6 neutral comparisons are significant.** The one nominal difference on all questions, `recrystal` against `oss_pymupdf4llm` on correctness (5 / 15, p=0.041), disappears on neutral questions (2 / 1). Neutral subsets are small, about thirty questions, so this is absence of evidence rather than evidence of equality: a real difference of a few points would not be detected. Retrieval quality does not justify choosing one parser over another.
 
 ### Finding 5: parse losses are real, but smaller than an exact match suggests
 
-An answer span missing from a parser's output caps every chunker behind it. Counting those losses needs care, because the spans were verified against PyMuPDF text and **two of the three parsers read their words through PyMuPDF**: `current` fills YOLO boxes with `page.get_text("words")`, and PyMuPDF4LLM is built on it. Docling uses its own text engine. An exact match therefore counts Docling's differences in maths symbols, spacing and stray line numbers as lost text, even where it extracted the passage. A near match, a span-length window holding at least 90% of the span's words, tolerates those differences and still rejects a passage that is really missing.
+An answer span missing from a parser's output caps every chunker behind it. Counting those losses needs care, because the spans were verified against PyMuPDF text and **two of the three parsers read their words through PyMuPDF**: `recrystal` fills YOLO boxes with `page.get_text("words")`, and PyMuPDF4LLM is built on it. Docling uses its own text engine. An exact match therefore counts Docling's differences in maths symbols, spacing and stray line numbers as lost text, even where it extracted the passage. A near match, a span-length window holding at least 90% of the span's words, tolerates those differences and still rejects a passage that is really missing.
 
 | Parser | Text engine | exact | >= 95% of words | >= 90% of words | >= 80% of words | Really missing, retrieved anyway |
 |---|---|---|---|---|---|---|
 | `oss_docling` | Docling | 10 | 7 | **5** | 1 | 0 |
 | `oss_pymupdf4llm` | PyMuPDF | 6 | 3 | **3** | 2 | 0 |
-| `current` | PyMuPDF | 2 | 2 | **1** | 0 | 0 |
+| `recrystal` | PyMuPDF | 2 | 2 | **1** | 0 | 0 |
 
 ![answers lost before retrieval](assets/fig10_coverage.svg)
 
-Half the gap was the engine. Docling's exact-match losses fall from 10 to 5 at the 90% threshold. `current` loses the fewest answers at every threshold, so the ordering survives the correction, but the margin is a handful of questions out of 100, not a decisive difference. No really-missing answer was retrieved by any chunker in any cell: a parse loss is unrecoverable downstream.
+Half the gap was the engine. Docling's exact-match losses fall from 10 to 5 at the 90% threshold. `recrystal` loses the fewest answers at every threshold, so the ordering survives the correction, but the margin is a handful of questions out of 100, not a decisive difference. No really-missing answer was retrieved by any chunker in any cell: a parse loss is unrecoverable downstream.
 
 **The same effect reaches the retrieval metrics.** Every span-hit figure in this report, including MRR and nDCG, uses the exact match, so Docling's retrieval scores carry the same penalty and are probably understated in every cell. The run did not save the text of retrieved chunks, so they cannot be re-scored without re-running retrieval; that needs no answer generation or judging, only re-indexing. This strengthens rather than weakens Finding 4: Docling was level with the others despite the handicap.
 
@@ -319,7 +319,7 @@ Semantic cells took about 2.2x as long as Grain-Growth: embedding every sentence
 - **Self-judging.** The answering model and the judge are the same model, so correctness and faithfulness may favour its own phrasing. They are consistent with the judge-free span metrics in direction, which is some reassurance.
 - **Question bias.** Questions were written by the same small model from one parser's output, which introduced the home advantage in Finding 3. Neutral-subset analysis removes it at the cost of sample size.
 - **Corpus.** 103 papers rather than the planned 201, after arXiv rate-limited the build. A larger corpus would make paper-level retrieval harder and stop those metrics saturating.
-- **Text-engine bias.** Answer spans were verified against PyMuPDF, the engine behind `current` and PyMuPDF4LLM, and span hits use an exact match. Docling is scored down for character-level differences (Finding 5). The next run should verify against a third engine and score with a near match.
+- **Text-engine bias.** Answer spans were verified against PyMuPDF, the engine behind `recrystal` and PyMuPDF4LLM, and span hits use an exact match. Docling is scored down for character-level differences (Finding 5). The next run should verify against a third engine and score with a near match.
 - **Two runs, two corpora.** Shape metrics come from the smaller corpus, so Finding 6 correlates measurements taken on different papers.
 
 ## Recommendation
@@ -330,15 +330,15 @@ Semantic cells took about 2.2x as long as Grain-Growth: embedding every sentence
 - **It is not proven better than the simple splitters on retrieval.** The direction favours it and the shape evidence is strong, but a retrieval win over `recursive_char` is not established.
 - **Its remaining case rests on what the span metrics do not score:** tables and formulas that never split, heading paths that make a citation readable, and chunks that stay inside the embedder's window by construction.
 
-### Parsing: keep `current`, for fidelity and speed, not retrieval
+### Parsing: keep `recrystal`, for fidelity and speed, not retrieval
 
 - **Retrieval does not separate the parsers** once question bias is removed (Finding 4).
-- **It loses the fewest answers before retrieval:** `oss_docling` 5, `oss_pymupdf4llm` 3, `current` 1, allowing for text-engine differences (Finding 5). The margin is small.
+- **It loses the fewest answers before retrieval:** `oss_docling` 5, `oss_pymupdf4llm` 3, `recrystal` 1, allowing for text-engine differences (Finding 5). The margin is small.
 - **It is 2.81x faster than Docling and lighter on VRAM**, and it recovers `title` and `authors`, which Docling does not deliver.
 
 ### The strongest argument against it
 
-**On retrieval evidence alone, neither the fine-tuned layout model nor structure-aware chunking is justified.** `recursive_char`, a character splitter any library ships, reaches 0.56 span retrieval and 0.725 correctness on `current`, against Grain-Growth's 0.61 and 0.690, and the difference is not significant. Docling and PyMuPDF4LLM, which need no training data at all, retrieve as well as our parser on neutral questions. If the only goal were getting the right passage in front of the model on arXiv preprints, the simplest stack would do.
+**On retrieval evidence alone, neither the fine-tuned layout model nor structure-aware chunking is justified.** `recursive_char`, a character splitter any library ships, reaches 0.56 span retrieval and 0.725 correctness on `recrystal`, against Grain-Growth's 0.61 and 0.690, and the difference is not significant. Docling and PyMuPDF4LLM, which need no training data at all, retrieve as well as our parser on neutral questions. If the only goal were getting the right passage in front of the model on arXiv preprints, the simplest stack would do.
 
 The case for the current stack is therefore a case about **fidelity rather than ranking**: fewer answers lost in parsing, tables and formulas kept whole, readable citations, a 4 GB card shared without contention. Those are real, but they are arguments the next evaluation should measure directly, with harder corpora such as published journal PDFs with running heads, table-heavy papers and questions that need a table or an equation to answer, where fidelity should start to show up in retrieval scores rather than only in chunk shape.
 
@@ -362,7 +362,7 @@ python evals/scripts/make_main_report.py
 
 Everything above is round 1, unchanged. This half continues it: the same three parsers and three of the same chunkers, but with four times the questions, written from text no parser under test produces, and answers scored by something other than the model that wrote them. It closes two of round 1's open questions and leaves one open for a reason round 1 could not have known.
 
-Generated by `evals/scripts/make_round2_report.py` on 2026-09-17 06:20:54 +0530. Every number is read from the result files; every verdict is computed by `round2_analysis.py` using the rules fixed in `round2_preregistration.json` before the run started (2026-09-14 16:55:27 +0530), with 5 logged amendments.
+Generated by `evals/scripts/make_round2_report.py` on 2026-09-17 06:20:54 +0530. Every number is read from the result files; every verdict is computed by `round2_analysis.py` using the rules fixed in `round2_preregistration.json` before the run started (2026-09-14 16:55:27 +0530), with 6 logged amendments.
 
 ## In short
 
@@ -371,8 +371,8 @@ Generated by `evals/scripts/make_round2_report.py` on 2026-09-17 06:20:54 +0530.
 | Does Grain-Growth retrieve better than `fixed_token`? | **Yes** |
 | Does Grain-Growth retrieve better than `recursive_char`? | **No established difference** — the gap is real in direction but below the threshold fixed before the run |
 | Does Grain-Growth produce better answers? | **No established difference** against either splitter |
-| Does the parser matter for retrieval? | **Yes.** `current` beats both open-source parsers under every chunker; Docling beats PyMuPDF4LLM |
-| Which parser loses the fewest answers? | `current` (24 of 400), then Docling (48), then PyMuPDF4LLM (61) |
+| Does the parser matter for retrieval? | **Yes.** `recrystal` beats both open-source parsers under every chunker; Docling beats PyMuPDF4LLM |
+| Which parser loses the fewest answers? | `recrystal` (24 of 400), then Docling (48), then PyMuPDF4LLM (61) |
 | Can this run measure faithfulness or context sufficiency? | **No.** Both methods failed their checks, and both were demoted before any comparison was run |
 
 ## What round 1 left unanswered
@@ -385,7 +385,7 @@ Round 1 crossed 20 parser-chunker cells for chunk shape over 15 papers, and ran 
 | Scoring at a fixed top-k | **Settled**: it flatters large chunks | — |
 | Answers lost in parsing | **Settled in direction** | Exact text matching penalised Docling, whose text engine differs |
 | Grain-Growth vs the simple splitters | **Open** | 100 questions was too few; about 350-400 needed |
-| Does the parser change retrieval | **Open** | Questions written from `current`'s own output inflated its score by 23-29 points, leaving ~30 neutral questions per pair |
+| Does the parser change retrieval | **Open** | Questions written from `recrystal`'s own output inflated its score by 23-29 points, leaving ~30 neutral questions per pair |
 | Are answer scores trustworthy | **Open** | The answering model judged its own answers |
 
 ## What round 2 changed
@@ -416,9 +416,9 @@ Every cell answered the same 400 questions, so all comparisons are paired.
 | `oss_pymupdf4llm` | `fixed_token` | 38,696 | **0.532** | 0.560 | 0.698 | 0.572 | 0.720 |
 | `oss_pymupdf4llm` | `recursive_char` | 25,928 | **0.515** | 0.552 | 0.669 | 0.599 | 0.755 |
 | `oss_pymupdf4llm` | `grain_growth` | 28,708 | **0.560** | 0.565 | 0.663 | 0.610 | 0.759 |
-| `current` | `fixed_token` | 30,770 | **0.610** | 0.625 | 0.694 | 0.576 | 0.743 |
-| `current` | `recursive_char` | 24,225 | **0.662** | 0.688 | 0.670 | 0.592 | 0.797 |
-| `current` | `grain_growth` | 29,429 | **0.700** | 0.700 | 0.695 | 0.616 | 0.794 |
+| `recrystal` | `fixed_token` | 30,770 | **0.610** | 0.625 | 0.694 | 0.576 | 0.743 |
+| `recrystal` | `recursive_char` | 24,225 | **0.662** | 0.688 | 0.670 | 0.592 | 0.797 |
+| `recrystal` | `grain_growth` | 29,429 | **0.700** | 0.700 | 0.695 | 0.616 | 0.794 |
 
 ![nine cells](assets/fig_r2_cells.svg)
 
@@ -448,10 +448,10 @@ Per-parser tests behind the primary retrieval metric (`span_hit_near@4000ch`):
 |---|---|---|---|---|---|---|---|
 | `recursive_char` | `oss_docling` | 400 | 37 / 19 | 0.022 | no | +0.045 | [+0.007, +0.083] |
 | `recursive_char` | `oss_pymupdf4llm` | 400 | 43 / 25 | 0.038 | no | +0.045 | [+0.005, +0.085] |
-| `recursive_char` | `current` | 400 | 43 / 28 | 0.096 | no | +0.037 | [-0.003, +0.080] |
+| `recursive_char` | `recrystal` | 400 | 43 / 28 | 0.096 | no | +0.037 | [-0.003, +0.080] |
 | `fixed_token` | `oss_docling` | 400 | 55 / 23 | <0.001 | yes | +0.080 | [+0.037, +0.122] |
 | `fixed_token` | `oss_pymupdf4llm` | 400 | 49 / 38 | 0.284 | no | +0.028 | [-0.018, +0.072] |
-| `fixed_token` | `current` | 400 | 67 / 31 | <0.001 | yes | +0.090 | [+0.043, +0.138] |
+| `fixed_token` | `recrystal` | 400 | 67 / 31 | <0.001 | yes | +0.090 | [+0.043, +0.138] |
 
 ### Parsers
 
@@ -464,12 +464,12 @@ Applying the same rule to parser pairs, under all three chunkers:
 | Pair | Verdict | Detail |
 |---|---|---|
 | oss_docling vs oss_pymupdf4llm | **better** | significant on 2 of 3 chunkers, pooled +0.057 |
-| oss_docling vs current | **worse** | significant loss on 3 of 3 chunkers, pooled -0.064 |
-| oss_pymupdf4llm vs current | **worse** | significant loss on 3 of 3 chunkers, pooled -0.122 |
+| oss_docling vs recrystal | **worse** | significant loss on 3 of 3 chunkers, pooled -0.064 |
+| oss_pymupdf4llm vs recrystal | **worse** | significant loss on 3 of 3 chunkers, pooled -0.122 |
 
 ![parser differences](assets/fig_r2_parsers.svg)
 
-Round 1 could not rank the parsers at all. Round 2 can, and the ordering is consistent across chunkers: `current` retrieves best, `oss_docling` second, `oss_pymupdf4llm` last.
+Round 1 could not rank the parsers at all. Round 2 can, and the ordering is consistent across chunkers: `recrystal` retrieves best, `oss_docling` second, `oss_pymupdf4llm` last.
 
 ### Answers lost before retrieval
 
@@ -477,11 +477,11 @@ Round 1 could not rank the parsers at all. Round 2 can, and the ordering is cons
 |---|---|---|---|
 | `oss_docling` | 81 | **48** | 400 |
 | `oss_pymupdf4llm` | 88 | **61** | 400 |
-| `current` | 51 | **24** | 400 |
+| `recrystal` | 51 | **24** | 400 |
 
 ![answers lost in parsing](assets/fig_r2_parse_loss.svg)
 
-Paired tests between parsers on the near-match counts: oss_docling vs oss_pymupdf4llm p=0.041; oss_docling vs current p=<0.001; oss_pymupdf4llm vs current p=<0.001. A span the parser never produced cannot be retrieved by any chunker, so this caps every cell behind it.
+Paired tests between parsers on the near-match counts: oss_docling vs oss_pymupdf4llm p=0.041; oss_docling vs recrystal p=<0.001; oss_pymupdf4llm vs recrystal p=<0.001. A span the parser never produced cannot be retrieved by any chunker, so this caps every cell behind it.
 
 ## Chunk shape on the same corpus
 
@@ -495,9 +495,9 @@ Round 1 measured shape on 15 papers and retrieval on 103, so its shape-versus-re
 | `oss_pymupdf4llm` | `fixed_token` | 38,696 | 951 | 13.2% | 54.4% | 93.7% |
 | `oss_pymupdf4llm` | `recursive_char` | 25,928 | 1,300 | 60.1% | 10.2% | 49.1% |
 | `oss_pymupdf4llm` | `grain_growth` | 28,708 | 1,104 | 97.8% | 4.5% | 19.1% |
-| `current` | `fixed_token` | 30,770 | 1,057 | 15.5% | 63.9% | 91.9% |
-| `current` | `recursive_char` | 24,225 | 1,254 | 63.5% | 5.9% | 34.6% |
-| `current` | `grain_growth` | 29,429 | 912 | 98.0% | 1.9% | 7.5% |
+| `recrystal` | `fixed_token` | 30,770 | 1,057 | 15.5% | 63.9% | 91.9% |
+| `recrystal` | `recursive_char` | 24,225 | 1,254 | 63.5% | 5.9% | 34.6% |
+| `recrystal` | `grain_growth` | 29,429 | 912 | 98.0% | 1.9% | 7.5% |
 
 ### Does chunk shape predict the outcome?
 
@@ -538,9 +538,9 @@ The two answer metrics were built independently, a 184M-parameter entailment cla
 |---|---|---|---|---|---|
 | `oss_docling` | 6,076 | 0.3958 | 40 min | 1,386 MB | 0 |
 | `oss_pymupdf4llm` | 6,076 | 0.8454 | 86 min | 0 MB | 0 |
-| `current` | 6,076 | 0.1375 | 14 min | 1,046 MB | 0 |
+| `recrystal` | 6,076 | 0.1375 | 14 min | 1,046 MB | 0 |
 
-`current` parses **2.88x faster than Docling** per page on this corpus.
+`recrystal` parses **2.88x faster than Docling** per page on this corpus.
 
 ## What this evaluation could not measure
 
@@ -564,6 +564,10 @@ The two answer metrics were built independently, a 184M-parameter entailment cla
 
 > *Why:* Found while explaining the correction to the user after the report was written. Both were computed on the primary retrieval metric and give identical outcomes: grain_growth vs fixed_token is significant on 2 of 3 parsers either way, and grain_growth vs recursive_char on 0 of 3 either way.
 
+**Amendment 6** (2026-09-21, record-keeping only. A label was renamed. No metric, test, threshold, verdict or datum changed.) — The parser previously labelled 'current' is renamed 'recrystal' everywhere: result files, per-question rows, the parse cache, the figures, the code and this pre-registration's comparison names.
+
+> *Why:* Verified as a pure relabel: with 'recrystal' mapped back to 'current', the regenerated Report.md and Report_round1.md are byte-identical to the published versions, and 15 of 16 figures are byte-identical; the sixteenth differs only in a point label drawn from the parser's initial.
+
 **Faithfulness and context sufficiency are not measured in this round.** The NLI versions produce false negatives on answers that are plainly supported, and depend mechanically on how many windows the context is split into; the judge's versions are identical to its correctness call for 93% of answers. Both were demoted before any comparison was run (amendments 3 and 4).
 
 Metrics whose spread across the nine cells is under 5 points cannot separate the systems, whatever their pedigree: `answer_similarity` (0.9 pts), `paper_hit@10` (1.8 pts), `mrr_paper` (2.6 pts), `paper_hit@5` (2.8 pts), `rouge_l` (2.9 pts), `token_f1` (3.0 pts), `paper_hit@3` (3.2 pts), `chrf` (3.5 pts).
@@ -571,7 +575,7 @@ Metrics whose spread across the nine cells is under 5 points cannot separate the
 ## What to do
 
 - **Keep Grain-Growth, on narrower evidence than round 1 suggested.** It beats `fixed_token` on retrieval under the pre-registered rule, and against `recursive_char` the difference is **not established**: +4.3 points pooled, below the 5-point threshold fixed before the run, and significant on no parser. Round 1 predicted 350-400 questions would settle this; at 400 the answer is that the gap is real in direction and too small to establish.
-- **Keep `current` for parsing, and this time retrieval supports it.** It retrieves significantly better than both open-source parsers under every chunker, and loses the fewest answer spans in parsing.
+- **Keep `recrystal` for parsing, and this time retrieval supports it.** It retrieves significantly better than both open-source parsers under every chunker, and loses the fewest answer spans in parsing.
 - **Answer quality does not separate the chunkers.** Neither fact recall nor the judge establishes a difference, and the judge's numbers were never reached in the priority order.
 
 ### The strongest argument against

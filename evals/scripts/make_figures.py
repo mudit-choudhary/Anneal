@@ -28,13 +28,13 @@ PARSER_COLOUR = {
     "legacy": "#eb6834",
     "oss_docling": "#a87bd6",
     "oss_pymupdf4llm": "#eda100",
-    "current": "#2a78d6",
+    "recrystal": "#2a78d6",
 }
 # sequential ramp for the heatmap: one hue, light to dark, monotonic lightness
 RAMP = ["#eaf2fb", "#c5dcf5", "#94bfec", "#5f9ade", "#3576c4", "#1d4f8f"]
 BAD = "#97382a"
 
-PARSERS = ["raw_dump", "legacy", "oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["raw_dump", "legacy", "oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "semantic", "grain_growth"]
 
 
@@ -301,11 +301,11 @@ def fig_size_ranges(r):
 RAG = REPO / "evals" / "Reports" / "rag_results.json"
 DATASET = REPO / "evals" / "questions" / "dataset.json"
 PARSED = REPO / "evals" / "parsed"
-RAG_PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+RAG_PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 # grain_growth takes the blue that marks "ours" elsewhere; the baseline is grey
 CHUNKER_COLOUR = {"fixed_token": "#9aa3ab", "recursive_char": "#1baf7a",
                   "semantic": "#e87ba4", "grain_growth": "#2a78d6"}
-SHORT = {"oss_docling": "docling", "oss_pymupdf4llm": "pymupdf4llm", "current": "current"}
+SHORT = {"oss_docling": "docling", "oss_pymupdf4llm": "pymupdf4llm", "recrystal": "recrystal"}
 
 
 def rag_cell(R, p, c):
@@ -539,7 +539,7 @@ def fig_shape_vs_retrieval(r, R):
     mid = (y0 + y1) / 2
     s.append(text(18, mid, "answer within 4,000 ch", 10, INK, "middle")
              .replace("<text ", f'<text transform="rotate(-90 18 {mid:.0f})" '))
-    offset = {"oss_docling": (9, 4, "start"), "oss_pymupdf4llm": (-9, 4, "end"), "current": (0, -10, "middle")}
+    offset = {"oss_docling": (9, 4, "start"), "oss_pymupdf4llm": (-9, 4, "end"), "recrystal": (0, -10, "middle")}
     for p, c, xv, yv in pts:
         cx, cy = sx(xv), sy(yv)
         dx, dy, anchor = offset[p]
@@ -623,4 +623,9 @@ if __name__ == "__main__":
     if {"-h", "--help"} & set(sys.argv[1:]):
         print(__doc__)
         raise SystemExit(0)
+    if "--round1" in sys.argv[1:]:
+        # Round 2 took over questions/dataset.json. The round-1 figures must be
+        # drawn from round 1's own question set, or the ones that read
+        # `generated_from` (fig8, fig10) come out empty.
+        DATASET = REPO / "evals" / "questions" / "round1" / "dataset.json"
     main()

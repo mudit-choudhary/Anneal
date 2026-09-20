@@ -185,7 +185,7 @@ class RawDumpParser:
 class CurrentParser:
     """Today's pipeline: YOLO layout detection, then typed blocks."""
 
-    name = "current"
+    name = "recrystal"
     label = "current (YOLO layout + typed blocks)"
 
     def __init__(self):
@@ -567,7 +567,7 @@ def run(args):
         pages = parse_stats[parser.name]["pages"]
         corpus_bytes = parse_stats[parser.name]["text_bytes"]
         for chunker in chunkers:
-            if isinstance(chunker, (StructureChunker, ProductionChunker)) and parser.name != "current":
+            if isinstance(chunker, (StructureChunker, ProductionChunker)) and parser.name != "recrystal":
                 # runs, but on untyped single-type blocks; that IS the finding
                 pass
             started = time.time()

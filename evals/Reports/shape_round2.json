@@ -8,7 +8,7 @@
  "parsers": [
   "oss_docling",
   "oss_pymupdf4llm",
-  "current"
+  "recrystal"
  ],
  "cells": {
   "oss_docling|fixed_token": {
@@ -115,7 +115,7 @@
    "seconds": 132.7,
    "title_fallback_pct": 1.0
   },
-  "current|fixed_token": {
+  "recrystal|fixed_token": {
    "chunks": 30770,
    "avg_chars": 1028.6,
    "median_chars": 1057,
@@ -132,7 +132,7 @@
    "captions_separated_pct": 1.0,
    "seconds": 232.0
   },
-  "current|recursive_char": {
+  "recrystal|recursive_char": {
    "chunks": 24225,
    "avg_chars": 1136.9,
    "median_chars": 1254,
@@ -149,7 +149,7 @@
    "captions_separated_pct": 0.8139183055975794,
    "seconds": 125.8
   },
-  "current|grain_growth": {
+  "recrystal|grain_growth": {
    "chunks": 29429,
    "avg_chars": 891.9,
    "median_chars": 912,

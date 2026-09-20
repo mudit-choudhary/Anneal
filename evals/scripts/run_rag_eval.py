@@ -1,7 +1,7 @@
 """End-to-end retrieval evaluation, round 2: 3 parsers x 3 chunkers, 9 cells.
 
     python evals/scripts/run_rag_eval.py                # all 9, checkpointed
-    python evals/scripts/run_rag_eval.py --cells current:grain_growth
+    python evals/scripts/run_rag_eval.py --cells recrystal:grain_growth
     python evals/scripts/run_rag_eval.py --no-generate  # retrieval metrics only
 
 For each cell: chunk the cached parse, embed into an isolated vector store,
@@ -63,7 +63,7 @@ REPORTS = REPO / "evals" / "Reports"
 RESULTS = REPORTS / "rag_results_round2.json"
 ROWS = REPORTS / "rag_round2_rows"
 
-PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
 KS = (1, 3, 5, 10)
 BUDGETS = (2000, 4000, 8000)

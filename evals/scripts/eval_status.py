@@ -19,7 +19,7 @@ RESULTS = REPO / "evals" / "Reports" / "rag_results_round2.json"
 ROWS = REPO / "evals" / "Reports" / "rag_round2_rows"
 LOG = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO / "evals" / "Reports" / "round2_run.log"
 
-PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
 TOTAL = len(PARSERS) * len(CHUNKERS)
 QUESTIONS = 400

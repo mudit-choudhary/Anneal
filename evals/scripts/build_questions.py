@@ -13,7 +13,7 @@ the best. Writes:
 Which text does the question writer see?
 ----------------------------------------
 Poppler's `pdftotext` output (evals/text/<stem>.txt). None of the parsers under
-test uses poppler: `current` and PyMuPDF4LLM read text through PyMuPDF and
+test uses poppler: `recrystal` and PyMuPDF4LLM read text through PyMuPDF and
 Docling has its own engine. Writing questions from any parser's output gave that
 parser a home advantage in round 1; neutral text removes it at the source.
 

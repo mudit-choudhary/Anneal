@@ -1,6 +1,6 @@
 """Parse every corpus PDF with every parser once, and cache the blocks.
 
-    python evals/scripts/parse_cache.py [--only current] [--limit N]
+    python evals/scripts/parse_cache.py [--only recrystal] [--limit N]
 
 The retrieval matrix runs 4 chunking strategies against 3 parsers. Parsing
 inside that loop would parse each paper 4 times per parser for no reason —
@@ -25,7 +25,7 @@ sys.path.insert(0, str(REPO / "evals" / "scripts"))
 CORPUS = REPO / "evals" / "corpus"
 PARSED = REPO / "evals" / "parsed"
 
-PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 
 
 def main():

@@ -238,7 +238,7 @@ python scripts/retrieval_eval.py --device cpu run --judge     # the slow, meanin
 |---|---|---|---|
 | `original` | PyMuPDF page dump | recursive 512/103 chars | all-MiniLM-L6-v2 |
 | `rechunked` | PyMuPDF page dump | recursive 512/103 chars | bge-base-en-v1.5 |
-| `current` | YOLO layout parse | structure-aware | bge-base-en-v1.5 |
+| `current` | `recrystal` layout parse | grain-growth | bge-base-en-v1.5 |
 
 `original` and `rechunked` are reconstructed from commit `c41e756`, so the
 baseline is the code that actually ran, not an approximation of it.

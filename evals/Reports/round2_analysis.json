@@ -336,7 +336,7 @@
    "span_hit_near@8000ch": 0.635,
    "token_f1": 0.3534809938185879
   },
-  "current|fixed_token": {
+  "recrystal|fixed_token": {
    "answer_keyword_recall": 0.756875,
    "answer_similarity": 0.8310619860887527,
    "answer_words": 85.9025,
@@ -389,7 +389,7 @@
    "span_hit_near@8000ch": 0.6775,
    "token_f1": 0.34480902226124427
   },
-  "current|recursive_char": {
+  "recrystal|recursive_char": {
    "answer_keyword_recall": 0.7892916666666666,
    "answer_similarity": 0.835742983520031,
    "answer_words": 83.1325,
@@ -442,7 +442,7 @@
    "span_hit_near@8000ch": 0.735,
    "token_f1": 0.362680873279334
   },
-  "current|grain_growth": {
+  "recrystal|grain_growth": {
    "answer_keyword_recall": 0.7770833333333332,
    "answer_similarity": 0.8379601080715656,
    "answer_words": 85.9125,
@@ -588,7 +588,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 43,
        "losses": 28,
@@ -641,7 +641,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 35,
        "losses": 30,
@@ -694,7 +694,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 98,
        "losses": 59,
@@ -749,7 +749,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 67,
        "losses": 31,
@@ -802,7 +802,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 63,
        "losses": 33,
@@ -855,7 +855,7 @@
        "pending": false,
        "holm": true
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 80,
        "losses": 69,
@@ -940,7 +940,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 375,
        "wins": 70,
        "losses": 60,
@@ -993,7 +993,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 34,
        "losses": 35,
@@ -1046,7 +1046,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 36,
        "losses": 54,
@@ -1099,7 +1099,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 194,
        "losses": 180,
@@ -1154,7 +1154,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 375,
        "wins": 77,
        "losses": 60,
@@ -1207,7 +1207,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 55,
        "losses": 32,
@@ -1260,7 +1260,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 77,
        "losses": 53,
@@ -1313,7 +1313,7 @@
        "pending": false,
        "holm": false
       },
-      "current": {
+      "recrystal": {
        "n": 400,
        "wins": 204,
        "losses": 182,
@@ -1405,7 +1405,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 31,
      "losses": 53,
@@ -1422,7 +1422,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 21,
      "losses": 50,
@@ -1439,7 +1439,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 17,
      "losses": 43,
@@ -1456,7 +1456,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 37,
      "losses": 68,
@@ -1473,7 +1473,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 22,
      "losses": 81,
@@ -1490,7 +1490,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 20,
      "losses": 76,
@@ -1560,7 +1560,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 31,
      "losses": 49,
@@ -1577,7 +1577,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 21,
      "losses": 47,
@@ -1594,7 +1594,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 18,
      "losses": 37,
@@ -1611,7 +1611,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 38,
      "losses": 64,
@@ -1628,7 +1628,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 29,
      "losses": 83,
@@ -1645,7 +1645,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 21,
      "losses": 75,
@@ -1715,7 +1715,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 68,
      "losses": 55,
@@ -1732,7 +1732,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 63,
      "losses": 53,
@@ -1749,7 +1749,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 47,
      "losses": 48,
@@ -1766,7 +1766,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 73,
      "losses": 64,
@@ -1783,7 +1783,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 65,
      "losses": 71,
@@ -1800,7 +1800,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 40,
      "losses": 82,
@@ -1872,7 +1872,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 375,
      "wins": 61,
      "losses": 56,
@@ -1889,7 +1889,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 375,
      "wins": 55,
      "losses": 66,
@@ -1906,7 +1906,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 375,
      "wins": 49,
      "losses": 48,
@@ -1923,7 +1923,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 375,
      "wins": 72,
      "losses": 70,
@@ -1940,7 +1940,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 375,
      "wins": 78,
      "losses": 75,
@@ -1957,7 +1957,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 375,
      "wins": 54,
      "losses": 59,
@@ -2027,7 +2027,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 32,
      "losses": 36,
@@ -2044,7 +2044,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 26,
      "losses": 32,
@@ -2061,7 +2061,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 25,
      "losses": 20,
@@ -2078,7 +2078,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 39,
      "losses": 48,
@@ -2095,7 +2095,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 35,
      "losses": 53,
@@ -2112,7 +2112,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 27,
      "losses": 41,
@@ -2182,7 +2182,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 49,
      "losses": 68,
@@ -2199,7 +2199,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 31,
      "losses": 63,
@@ -2216,7 +2216,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 40,
      "losses": 40,
@@ -2233,7 +2233,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 55,
      "losses": 66,
@@ -2250,7 +2250,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 46,
      "losses": 83,
@@ -2267,7 +2267,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 46,
      "losses": 55,
@@ -2337,7 +2337,7 @@
      "pending": false,
      "holm": true
     },
-    "oss_docling vs current [fixed_token]": {
+    "oss_docling vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 213,
      "losses": 164,
@@ -2354,7 +2354,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [recursive_char]": {
+    "oss_docling vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 192,
      "losses": 182,
@@ -2371,7 +2371,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_docling vs current [grain_growth]": {
+    "oss_docling vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 181,
      "losses": 175,
@@ -2388,7 +2388,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [fixed_token]": {
+    "oss_pymupdf4llm vs recrystal [fixed_token]": {
      "n": 400,
      "wins": 185,
      "losses": 195,
@@ -2405,7 +2405,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [recursive_char]": {
+    "oss_pymupdf4llm vs recrystal [recursive_char]": {
      "n": 400,
      "wins": 176,
      "losses": 209,
@@ -2422,7 +2422,7 @@
      "pending": false,
      "holm": false
     },
-    "oss_pymupdf4llm vs current [grain_growth]": {
+    "oss_pymupdf4llm vs recrystal [grain_growth]": {
      "n": 400,
      "wins": 167,
      "losses": 208,
@@ -2469,7 +2469,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "worse",
      "reason": "significant loss on 3 of 3 chunkers, pooled -0.064",
      "per_chunker": {
@@ -2493,7 +2493,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "worse",
      "reason": "significant loss on 3 of 3 chunkers, pooled -0.122",
      "per_chunker": {
@@ -2543,7 +2543,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 1 of 3 chunkers",
      "per_chunker": {
@@ -2567,7 +2567,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "worse",
      "reason": "significant loss on 2 of 3 chunkers, pooled -0.112",
      "per_chunker": {
@@ -2617,7 +2617,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect +0.005 below the 0.2 threshold",
      "per_chunker": {
@@ -2641,7 +2641,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 1 of 3 chunkers; pooled effect -0.009 below the 0.2 threshold",
      "per_chunker": {
@@ -2693,7 +2693,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect -0.003 below the 0.05 threshold",
      "per_chunker": {
@@ -2717,7 +2717,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect -0.001 below the 0.05 threshold",
      "per_chunker": {
@@ -2767,7 +2767,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect -0.003 below the 0.05 threshold",
      "per_chunker": {
@@ -2791,7 +2791,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect -0.033 below the 0.05 threshold",
      "per_chunker": {
@@ -2841,7 +2841,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 1 of 3 chunkers; pooled effect -0.014 below the 0.05 threshold",
      "per_chunker": {
@@ -2865,7 +2865,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 1 of 3 chunkers; pooled effect -0.021 below the 0.05 threshold",
      "per_chunker": {
@@ -2915,7 +2915,7 @@
       }
      }
     },
-    "oss_docling vs current": {
+    "oss_docling vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect +0.001 below the 0.2 threshold",
      "per_chunker": {
@@ -2939,7 +2939,7 @@
       }
      }
     },
-    "oss_pymupdf4llm vs current": {
+    "oss_pymupdf4llm vs recrystal": {
      "verdict": "no established difference",
      "reason": "significant on only 0 of 3 chunkers; pooled effect -0.003 below the 0.2 threshold",
      "per_chunker": {
@@ -2978,7 +2978,7 @@
     "missing_near": 61,
     "of": 400
    },
-   "current": {
+   "recrystal": {
     "missing_exact": 51,
     "missing_near": 24,
     "of": 400
@@ -2991,13 +2991,13 @@
     "p": 0.04095959151163697,
     "holm": true
    },
-   "oss_docling vs current": {
+   "oss_docling vs recrystal": {
     "a_only_missing": 31,
     "b_only_missing": 7,
     "p": 0.00011616700794547796,
     "holm": true
    },
-   "oss_pymupdf4llm vs current": {
+   "oss_pymupdf4llm vs recrystal": {
     "a_only_missing": 44,
     "b_only_missing": 7,
     "p": 1.2115257419509362e-07,

@@ -62,7 +62,7 @@
 <circle cx="300.0" cy="227.6" r="3.5" fill="#2a78d6"/>
 <circle cx="410.0" cy="176.0" r="3.5" fill="#2a78d6"/>
 <circle cx="520.0" cy="140.7" r="3.5" fill="#2a78d6"/>
-<text x="554.0" y="88.0" font-size="11" fill="#8b949e" text-anchor="start" font-weight="600">current</text>
+<text x="554.0" y="88.0" font-size="11" fill="#8b949e" text-anchor="start" font-weight="600">recrystal</text>
 <line x1="554" y1="290.0" x2="774" y2="290.0" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
 <line x1="554" y1="235.7" x2="774" y2="235.7" stroke="#8b949e" stroke-width="1" opacity="0.18"/>
 <line x1="554" y1="181.4" x2="774" y2="181.4" stroke="#8b949e" stroke-width="1" opacity="0.18"/>

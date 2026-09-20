@@ -10,8 +10,9 @@ stage can be resumed or re-run:
 
 ```
 download ──▶ parse ──▶ chunk ──▶ embed ──▶ answer
-  arXiv      YOLOv11      grain_growth   bge-base   retrieval + local LLM
-  or a URL   + assembler  (library)      in Chroma  with citations
+  arXiv      recrystal    grain_growth   bge-base   retrieval + local LLM
+  or a URL   (YOLOv11 +   (library)      in Chroma  with citations
+             assembler)
 ```
 
 The chunking stage is [grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking), developed here and

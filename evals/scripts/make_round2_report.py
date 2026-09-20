@@ -35,9 +35,9 @@ QUALITY1 = R / "parser_quality.json"
 DS1 = REPO / "evals" / "questions" / "round1" / "dataset.json"
 MANIFEST1 = REPO / "evals" / "corpus" / "manifest_103.json"
 
-PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
-SHORT = {"oss_docling": "Docling", "oss_pymupdf4llm": "PyMuPDF4LLM", "current": "current"}
+SHORT = {"oss_docling": "Docling", "oss_pymupdf4llm": "PyMuPDF4LLM", "recrystal": "recrystal"}
 
 
 def pct(v, nd=1):
@@ -166,11 +166,11 @@ def build(final):
         "the gap is real in direction but below the threshold fixed before the run |")
     add("| Does Grain-Growth produce better answers? | **No established difference** against either splitter |")
     if pv_top:
-        add("| Does the parser matter for retrieval? | **Yes.** `current` beats both open-source parsers "
+        add("| Does the parser matter for retrieval? | **Yes.** `recrystal` beats both open-source parsers "
             "under every chunker; Docling beats PyMuPDF4LLM |")
     if pl_top:
-        add(f"| Which parser loses the fewest answers? | `current` ({pl_top['current']['missing_near']} of "
-            f"{pl_top['current']['of']}), then Docling ({pl_top['oss_docling']['missing_near']}), then "
+        add(f"| Which parser loses the fewest answers? | `recrystal` ({pl_top['recrystal']['missing_near']} of "
+            f"{pl_top['recrystal']['of']}), then Docling ({pl_top['oss_docling']['missing_near']}), then "
             f"PyMuPDF4LLM ({pl_top['oss_pymupdf4llm']['missing_near']}) |")
     add("| Can this run measure faithfulness or context sufficiency? | **No.** Both methods failed their "
         "checks, and both were demoted before any comparison was run |")
@@ -192,7 +192,7 @@ def build(final):
     add("| Answers lost in parsing | **Settled in direction** | Exact text matching penalised Docling, "
         "whose text engine differs |")
     add("| Grain-Growth vs the simple splitters | **Open** | 100 questions was too few; about 350-400 needed |")
-    add("| Does the parser change retrieval | **Open** | Questions written from `current`'s own output "
+    add("| Does the parser change retrieval | **Open** | Questions written from `recrystal`'s own output "
         "inflated its score by 23-29 points, leaving ~30 neutral questions per pair |")
     add("| Are answer scores trustworthy | **Open** | The answering model judged its own answers |")
     add("")
@@ -310,7 +310,7 @@ def build(final):
         add("")
         order = [p for p in PARSERS]
         add(f"Round 1 could not rank the parsers at all. Round 2 can, and the ordering is "
-            f"consistent across chunkers: `current` retrieves best, `oss_docling` second, "
+            f"consistent across chunkers: `recrystal` retrieves best, `oss_docling` second, "
             f"`oss_pymupdf4llm` last.")
         add("")
 
@@ -410,9 +410,9 @@ def build(final):
         add(f"| `{p}` | {num(s['pages'])} | {num(s['sec_per_page'], 4)} | {s['seconds'] / 60:.0f} min "
             f"| {num(s['vram_rise_mb'])} MB | {s['failures']} |")
     add("")
-    if stats["current"]["sec_per_page"] and stats["oss_docling"]["sec_per_page"]:
-        x = stats["oss_docling"]["sec_per_page"] / stats["current"]["sec_per_page"]
-        add(f"`current` parses **{x:.2f}x faster than Docling** per page on this corpus.")
+    if stats["recrystal"]["sec_per_page"] and stats["oss_docling"]["sec_per_page"]:
+        x = stats["oss_docling"]["sec_per_page"] / stats["recrystal"]["sec_per_page"]
+        add(f"`recrystal` parses **{x:.2f}x faster than Docling** per page on this corpus.")
         add("")
 
     # ---------------------------------------------------------------- 7
@@ -508,7 +508,7 @@ def build(final):
         "5-point threshold fixed before the run, and significant on no parser. Round 1 predicted 350-400 "
         "questions would settle this; at 400 the answer is that the gap is real in direction and too "
         "small to establish.")
-    add("- **Keep `current` for parsing, and this time retrieval supports it.** It retrieves "
+    add("- **Keep `recrystal` for parsing, and this time retrieval supports it.** It retrieves "
         "significantly better than both open-source parsers under every chunker, and loses the fewest "
         "answer spans in parsing.")
     add("- **Answer quality does not separate the chunkers.** Neither fact recall nor the judge "

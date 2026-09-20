@@ -104,8 +104,8 @@ already have questions, finished cells and answered questions are all skipped,
 and every file is written through a temporary file, so a crash cannot leave a
 half-written one. A machine failure during round 2 cost two hours, not the run.
 
-**Round 1 needs a second worktree.** `run_matrix.py` compares the current parser
-against the legacy one by checking that commit out beside the repo. The path is
+**Round 1 needs a second worktree.** `run_matrix.py` compares `recrystal`
+against the legacy parser by checking that commit out beside the repo. The path is
 gitignored, so a fresh clone has to create it once:
 
 ```bash

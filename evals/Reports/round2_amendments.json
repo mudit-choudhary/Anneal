@@ -49,6 +49,14 @@
    "reason": "Found while explaining the correction to the user after the report was written. Both were computed on the primary retrieval metric and give identical outcomes: grain_growth vs fixed_token is significant on 2 of 3 parsers either way, and grain_growth vs recursive_char on 0 of 3 either way. Under the registered family of 6, the Holm ladder is p=0.0004 vs 0.0083 (pass), p=0.0004 vs 0.0100 (pass), p=0.0222 vs 0.0125 (stop). So the stricter reading that was actually registered supports the same verdicts as the looser one that was run.",
    "not_done": "The code was deliberately not changed. Editing the analysis after results exist is a worse failure than the mismatch itself; the record is corrected instead.",
    "decided_by": "the user, on Claude's recommendation, after Claude found and disclosed the mismatch"
+  },
+  {
+   "id": 6,
+   "made_at": "2026-09-21 02:22:32 +0530",
+   "results_existing_at_the_time": "all results complete; verdicts computed, reported and published",
+   "affects": "record-keeping only. A label was renamed. No metric, test, threshold, verdict or datum changed.",
+   "change": "The parser previously labelled 'current' is renamed 'recrystal' everywhere: result files, per-question rows, the parse cache, the figures, the code and this pre-registration's comparison names. 'current' described the parser only in relation to the repository it lived in, which stops being true once the work is published; 'recrystal' names what it does — in annealing, recrystallisation is the stage that forms new strain-free grains, and it precedes grain growth, which is the chunker it feeds.",
+   "reason": "Verified as a pure relabel: with 'recrystal' mapped back to 'current', the regenerated Report.md and Report_round1.md are byte-identical to the published versions, and 15 of 16 figures are byte-identical; the sixteenth differs only in a point label drawn from the parser's initial."
   }
  ]
 }

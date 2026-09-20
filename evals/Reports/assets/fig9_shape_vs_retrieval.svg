@@ -41,13 +41,13 @@
 <circle cx="123.5" cy="113.1" r="6" fill="#2a78d6" opacity="0.9"/>
 <text x="114.5" y="117.1" font-size="10" fill="#8b949e" text-anchor="end" font-weight="600">P</text>
 <circle cx="475.7" cy="220.9" r="6" fill="#9aa3ab" opacity="0.9"/>
-<text x="475.7" y="210.9" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">C</text>
+<text x="475.7" y="210.9" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">R</text>
 <circle cx="131.4" cy="162.9" r="6" fill="#1baf7a" opacity="0.9"/>
-<text x="131.4" y="152.9" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">C</text>
+<text x="131.4" y="152.9" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">R</text>
 <circle cx="84.7" cy="287.1" r="6" fill="#e87ba4" opacity="0.9"/>
-<text x="84.7" y="277.1" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">C</text>
+<text x="84.7" y="277.1" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">R</text>
 <circle cx="93.7" cy="121.4" r="6" fill="#2a78d6" opacity="0.9"/>
-<text x="93.7" y="111.4" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">C</text>
+<text x="93.7" y="111.4" font-size="10" fill="#8b949e" text-anchor="middle" font-weight="600">R</text>
 <circle cx="564" cy="86" r="5" fill="#9aa3ab"/>
 <text x="576.0" y="90.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">fixed_token</text>
 <circle cx="564" cy="106" r="5" fill="#1baf7a"/>
@@ -58,5 +58,5 @@
 <text x="576.0" y="150.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">grain_growth</text>
 <text x="560.0" y="182.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">D  docling</text>
 <text x="560.0" y="200.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">P  pymupdf4llm</text>
-<text x="560.0" y="218.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">C  current</text>
+<text x="560.0" y="218.0" font-size="10" fill="#8b949e" text-anchor="start" font-weight="normal">R  recrystal</text>
 </svg>

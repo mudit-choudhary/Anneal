@@ -103,7 +103,7 @@ def training_ids():
     """arXiv ids of every PDF in the YOLO training directory.
 
     Those papers may have contributed pages to round_03 training, so evaluating
-    the `current` parser on them would flatter it by an unknown margin. The ids
+    the `recrystal` parser on them would flatter it by an unknown margin. The ids
     are read from the arXiv stamp on page 1 rather than the filenames, which
     carry titles only.
     """

@@ -17,7 +17,7 @@ from make_figures import CHUNKER_COLOUR, INK, PARSER_COLOUR, SHORT, svg_open, te
 
 R = REPO / "evals" / "Reports"
 ASSETS = R / "assets"
-PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "grain_growth"]
 PRIMARY = "span_hit_near@4000ch"
 
@@ -73,7 +73,7 @@ def fig_parsers(A):
     y = top
     for name, v in sorted(rows, key=lambda x: x[1]["diff"]):
         lo, hi = v["ci95"]
-        colour = PARSER_COLOUR["current"] if v.get("holm") else INK
+        colour = PARSER_COLOUR["recrystal"] if v.get("holm") else INK
         s.append(text(zero - 250, y + 4, label(name), 10, INK, "end"))
         s.append(f'<line x1="{zero + lo * scale:.1f}" y1="{y}" x2="{zero + hi * scale:.1f}" y2="{y}" '
                  f'stroke="{colour}" stroke-width="2" opacity="{1 if v.get("holm") else 0.45}"/>')

@@ -10,7 +10,7 @@ Three arms, so the two changes can be separated instead of confounded:
 
     original   PyMuPDF page dump   recursive 512/103 chars   all-MiniLM-L6-v2
     rechunked  PyMuPDF page dump   recursive 512/103 chars   bge-base-en-v1.5
-    current    YOLO layout parse   structure-aware chunks    bge-base-en-v1.5
+    current    recrystal parse     grain-growth chunks       bge-base-en-v1.5
 
   original vs rechunked  → what the embedding-model change alone bought
   rechunked vs current   → what layout parsing + structure chunking bought
@@ -79,7 +79,7 @@ ARMS = {
         "collection": "eval_rechunked",
     },
     "current": {
-        "label": "current (YOLO layout + structure-aware chunks + bge-base)",
+        "label": "current stack (recrystal layout parse + grain-growth chunks + bge-base)",
         "text": "layout",
         "chunker": "structure",
         "model": "BAAI/bge-base-en-v1.5",

@@ -2,7 +2,7 @@
 
     python evals/scripts/run_matrix.py                 # full run, checkpointed
     python evals/scripts/run_matrix.py --limit 3       # pilot
-    python evals/scripts/run_matrix.py --only current  # one parser
+    python evals/scripts/run_matrix.py --only recrystal  # one parser
 
 Writes evals/Reports/results.json after every cell, so a crash costs at most
 one cell. Nothing here estimates or interpolates: a cell that fails records its
@@ -13,7 +13,7 @@ Parsers
   legacy            the parser as of commit 057ce0e9, loaded from a git worktree
   oss_docling       Docling layout -> our stage-2 assembler
   oss_pymupdf4llm   PyMuPDF4LLM markdown -> blocks
-  current           YOLOv11 layout + column-aware reading order
+  recrystal         YOLOv11 layout + column-aware reading order
 
 Chunkers
   fixed_token       fixed token window with stride overlap (bge tokenizer)
@@ -184,7 +184,7 @@ _DOCLING_DIRS = {}
 def parse_oss_docling(pdf):
     """Docling layout detection feeding our stage-2 assembler.
 
-    Stage 2 is deliberately shared with `current`, so the cell isolates the
+    Stage 2 is deliberately shared with `recrystal`, so the cell isolates the
     difference in layout detection rather than in block assembly.
     """
     import tempfile
@@ -258,7 +258,7 @@ def parse_oss_pymupdf4llm(pdf):
 _DETECTOR = {}
 
 
-def parse_current(pdf):
+def parse_recrystal(pdf):
     import tempfile
     sys.path.insert(0, str(REPO / "app" / "parse_manager"))
     import pdf_parser
@@ -282,7 +282,7 @@ PARSERS = {
     "legacy": parse_legacy,
     "oss_docling": parse_oss_docling,
     "oss_pymupdf4llm": parse_oss_pymupdf4llm,
-    "current": parse_current,
+    "recrystal": parse_recrystal,
 }
 
 

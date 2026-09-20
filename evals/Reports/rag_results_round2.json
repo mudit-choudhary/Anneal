@@ -350,7 +350,7 @@
     }
    }
   },
-  "current|fixed_token": {
+  "recrystal|fixed_token": {
    "paper_hit@1": 0.85,
    "paper_hit@3": 0.885,
    "paper_hit@5": 0.9025,
@@ -405,7 +405,7 @@
     }
    }
   },
-  "current|recursive_char": {
+  "recrystal|recursive_char": {
    "paper_hit@1": 0.8575,
    "paper_hit@3": 0.895,
    "paper_hit@5": 0.915,
@@ -460,7 +460,7 @@
     }
    }
   },
-  "current|grain_growth": {
+  "recrystal|grain_growth": {
    "paper_hit@1": 0.8575,
    "paper_hit@3": 0.9175,
    "paper_hit@5": 0.9225,

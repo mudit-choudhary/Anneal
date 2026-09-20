@@ -96,8 +96,8 @@
   },
   "parsers": {
    "comparisons": [
-    "current vs oss_docling",
-    "current vs oss_pymupdf4llm",
+    "recrystal vs oss_docling",
+    "recrystal vs oss_pymupdf4llm",
     "oss_pymupdf4llm vs oss_docling"
    ],
    "family_per_metric": "3 pairs x 3 chunkers = 9 tests, Holm",

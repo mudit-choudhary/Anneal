@@ -56,22 +56,22 @@
 <circle cx="523.6" cy="260" r="5" fill="#eda100"/>
 <circle cx="498.2" cy="260" r="4.5" fill="none" stroke="#eda100" stroke-width="2"/>
 <text x="668.0" y="264.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.70 → 0.64  (-0.07)</text>
-<text x="240.0" y="288.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · fixed_token</text>
+<text x="240.0" y="288.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · fixed_token</text>
 <line x1="435.7" y1="284" x2="524.1" y2="284" stroke="#2a78d6" stroke-width="3" opacity="0.4"/>
 <circle cx="435.7" cy="284" r="5" fill="#2a78d6"/>
 <circle cx="524.1" cy="284" r="4.5" fill="none" stroke="#2a78d6" stroke-width="2"/>
 <text x="668.0" y="288.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.48 → 0.70  (+0.23)</text>
-<text x="240.0" y="312.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · recursive_char</text>
+<text x="240.0" y="312.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · recursive_char</text>
 <line x1="454.3" y1="308" x2="555.7" y2="308" stroke="#2a78d6" stroke-width="3" opacity="0.4"/>
 <circle cx="454.3" cy="308" r="5" fill="#2a78d6"/>
 <circle cx="555.7" cy="308" r="4.5" fill="none" stroke="#2a78d6" stroke-width="2"/>
 <text x="668.0" y="312.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.52 → 0.78  (+0.26)</text>
-<text x="240.0" y="336.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · semantic</text>
+<text x="240.0" y="336.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · semantic</text>
 <line x1="510.0" y1="332" x2="513.5" y2="332" stroke="#2a78d6" stroke-width="3" opacity="0.4"/>
 <circle cx="510.0" cy="332" r="5" fill="#2a78d6"/>
 <circle cx="513.5" cy="332" r="4.5" fill="none" stroke="#2a78d6" stroke-width="2"/>
 <text x="668.0" y="336.0" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">0.67 → 0.68  (+0.01)</text>
-<text x="240.0" y="360.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · grain_growth</text>
+<text x="240.0" y="360.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · grain_growth</text>
 <line x1="472.9" y1="356" x2="587.3" y2="356" stroke="#2a78d6" stroke-width="3" opacity="0.4"/>
 <circle cx="472.9" cy="356" r="5" fill="#2a78d6"/>
 <circle cx="587.3" cy="356" r="4.5" fill="none" stroke="#2a78d6" stroke-width="2"/>

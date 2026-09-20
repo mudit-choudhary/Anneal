@@ -10,7 +10,7 @@
  },
  "source_split": {
   "oss_docling": 30,
-  "current": 37,
+  "recrystal": 37,
   "oss_pymupdf4llm": 33
  },
  "questions": [
@@ -48,7 +48,7 @@
    "paper": "2609.11675",
    "arxiv_id": "2609.11675",
    "filename": "2609.11675.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 8.0,
    "qid": "q001"
   },
@@ -85,7 +85,7 @@
    "paper": "2609.11917",
    "arxiv_id": "2609.11917",
    "filename": "2609.11917.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 7.917,
    "qid": "q003"
   },
@@ -123,7 +123,7 @@
    "paper": "2609.11473",
    "arxiv_id": "2609.11473",
    "filename": "2609.11473.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 7.0,
    "qid": "q005"
   },
@@ -160,7 +160,7 @@
    "paper": "2609.11927",
    "arxiv_id": "2609.11927",
    "filename": "2609.11927.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 7.0,
    "qid": "q007"
   },
@@ -178,7 +178,7 @@
    "paper": "2609.11640",
    "arxiv_id": "2609.11640",
    "filename": "2609.11640.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 7.0,
    "qid": "q008"
   },
@@ -197,7 +197,7 @@
    "paper": "2609.11873",
    "arxiv_id": "2609.11873",
    "filename": "2609.11873.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 7.0,
    "qid": "q009"
   },
@@ -216,7 +216,7 @@
    "paper": "2609.11717",
    "arxiv_id": "2609.11717",
    "filename": "2609.11717.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 7.0,
    "qid": "q010"
   },
@@ -252,7 +252,7 @@
    "paper": "2609.11929",
    "arxiv_id": "2609.11929",
    "filename": "2609.11929.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.583,
    "qid": "q012"
   },
@@ -270,7 +270,7 @@
    "paper": "2609.11465",
    "arxiv_id": "2609.11465",
    "filename": "2609.11465.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.5,
    "qid": "q013"
   },
@@ -325,7 +325,7 @@
    "paper": "2609.11056",
    "arxiv_id": "2609.11056",
    "filename": "2609.11056.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.5,
    "qid": "q016"
   },
@@ -344,7 +344,7 @@
    "paper": "2609.11487",
    "arxiv_id": "2609.11487",
    "filename": "2609.11487.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.5,
    "qid": "q017"
   },
@@ -399,7 +399,7 @@
    "paper": "2609.11804",
    "arxiv_id": "2609.11804",
    "filename": "2609.11804.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.5,
    "qid": "q020"
   },
@@ -453,7 +453,7 @@
    "paper": "2609.11870",
    "arxiv_id": "2609.11870",
    "filename": "2609.11870.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.5,
    "qid": "q023"
   },
@@ -471,7 +471,7 @@
    "paper": "2609.11879",
    "arxiv_id": "2609.11879",
    "filename": "2609.11879.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.333,
    "qid": "q024"
   },
@@ -544,7 +544,7 @@
    "paper": "2609.11340",
    "arxiv_id": "2609.11340",
    "filename": "2609.11340.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.0,
    "qid": "q028"
   },
@@ -563,7 +563,7 @@
    "paper": "2609.11908",
    "arxiv_id": "2609.11908",
    "filename": "2609.11908.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.0,
    "qid": "q029"
   },
@@ -674,7 +674,7 @@
    "paper": "2609.11602",
    "arxiv_id": "2609.11602",
    "filename": "2609.11602.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.5,
    "qid": "q035"
   },
@@ -711,7 +711,7 @@
    "paper": "0812.5111",
    "arxiv_id": "0812.5111",
    "filename": "0812.5111.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.5,
    "qid": "q037"
   },
@@ -823,7 +823,7 @@
    "paper": "2609.11899",
    "arxiv_id": "2609.11899",
    "filename": "2609.11899.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.5,
    "qid": "q043"
   },
@@ -860,7 +860,7 @@
    "paper": "2609.09579",
    "arxiv_id": "2609.09579",
    "filename": "2609.09579.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.367,
    "qid": "q045"
   },
@@ -914,7 +914,7 @@
    "paper": "2609.11838",
    "arxiv_id": "2609.11838",
    "filename": "2609.11838.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.333,
    "qid": "q048"
   },
@@ -970,7 +970,7 @@
    "paper": "2609.10825",
    "arxiv_id": "2609.10825",
    "filename": "2609.10825.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.0,
    "qid": "q051"
   },
@@ -988,7 +988,7 @@
    "paper": "0812.4582",
    "arxiv_id": "0812.4582",
    "filename": "0812.4582.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.0,
    "qid": "q052"
   },
@@ -1097,7 +1097,7 @@
    "paper": "2609.11860",
    "arxiv_id": "2609.11860",
    "filename": "2609.11860.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 4.75,
    "qid": "q058"
   },
@@ -1135,7 +1135,7 @@
    "paper": "2609.11457",
    "arxiv_id": "2609.11457",
    "filename": "2609.11457.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 4.5,
    "qid": "q060"
   },
@@ -1393,7 +1393,7 @@
    "paper": "2609.11811",
    "arxiv_id": "2609.11811",
    "filename": "2609.11811.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 4.0,
    "qid": "q074"
   },
@@ -1412,7 +1412,7 @@
    "paper": "0812.5078",
    "arxiv_id": "0812.5078",
    "filename": "0812.5078.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 3.917,
    "qid": "q075"
   },
@@ -1501,7 +1501,7 @@
    "paper": "2609.11306",
    "arxiv_id": "2609.11306",
    "filename": "2609.11306.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 3.5,
    "qid": "q080"
   },
@@ -1537,7 +1537,7 @@
    "paper": "2609.11680",
    "arxiv_id": "2609.11680",
    "filename": "2609.11680.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 3.167,
    "qid": "q082"
   },
@@ -1555,7 +1555,7 @@
    "paper": "2609.10858",
    "arxiv_id": "2609.10858",
    "filename": "2609.10858.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 3.117,
    "qid": "q083"
   },
@@ -1574,7 +1574,7 @@
    "paper": "2609.11867",
    "arxiv_id": "2609.11867",
    "filename": "2609.11867.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 2.5,
    "qid": "q084"
   },
@@ -1609,7 +1609,7 @@
    "paper": "2609.10988",
    "arxiv_id": "2609.10988",
    "filename": "2609.10988.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 2.333,
    "qid": "q086"
   },
@@ -1683,7 +1683,7 @@
    "paper": "2609.11929",
    "arxiv_id": "2609.11929",
    "filename": "2609.11929.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.333,
    "qid": "q090"
   },
@@ -1738,7 +1738,7 @@
    "paper": "2609.11487",
    "arxiv_id": "2609.11487",
    "filename": "2609.11487.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.0,
    "qid": "q093"
   },
@@ -1756,7 +1756,7 @@
    "paper": "2609.11340",
    "arxiv_id": "2609.11340",
    "filename": "2609.11340.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 6.0,
    "qid": "q094"
   },
@@ -1793,7 +1793,7 @@
    "paper": "2609.11873",
    "arxiv_id": "2609.11873",
    "filename": "2609.11873.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 5.733,
    "qid": "q096"
   },
@@ -1849,7 +1849,7 @@
    "paper": "2609.10825",
    "arxiv_id": "2609.10825",
    "filename": "2609.10825.pdf",
-   "generated_from": "current",
+   "generated_from": "recrystal",
    "complexity": 4.917,
    "qid": "q099"
   }

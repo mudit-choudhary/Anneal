@@ -77,19 +77,19 @@
 <rect x="250" y="359" width="370.3" height="14" rx="3" fill="#eda100" opacity="0.9"/>
 <text x="614.3" y="369.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">97.5%</text>
 <text x="700.0" y="369.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
-<text x="240.0" y="389.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · fixed_token</text>
+<text x="240.0" y="389.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · fixed_token</text>
 <rect x="250" y="378" width="58.7" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
 <text x="302.7" y="388.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">15.4%</text>
 <text x="700.0" y="388.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">108 ch</text>
-<text x="240.0" y="408.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · recursive_char</text>
+<text x="240.0" y="408.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · recursive_char</text>
 <rect x="250" y="397" width="204.8" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
 <text x="448.8" y="407.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">53.9%</text>
 <text x="700.0" y="407.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">79 ch</text>
-<text x="240.0" y="427.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · semantic</text>
+<text x="240.0" y="427.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · semantic</text>
 <rect x="250" y="416" width="354.1" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
 <text x="598.1" y="426.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">93.2%</text>
 <text x="700.0" y="426.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>
-<text x="240.0" y="446.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">current · grain_growth</text>
+<text x="240.0" y="446.0" font-size="9.5" fill="#8b949e" text-anchor="end" font-weight="normal">recrystal · grain_growth</text>
 <rect x="250" y="435" width="358.7" height="14" rx="3" fill="#2a78d6" opacity="0.9"/>
 <text x="602.7" y="445.5" font-size="9.5" fill="#ffffff" text-anchor="end" font-weight="600">94.4%</text>
 <text x="700.0" y="445.5" font-size="9.5" fill="#8b949e" text-anchor="start" font-weight="normal">3 ch</text>

@@ -31,9 +31,9 @@ DATASET = REPO / "evals" / "questions" / "dataset.json"
 STATS_NAME = "_stats.json"
 sys.path.insert(0, str(REPO / "evals" / "scripts"))
 
-PARSERS = ["raw_dump", "legacy", "oss_docling", "oss_pymupdf4llm", "current"]
+PARSERS = ["raw_dump", "legacy", "oss_docling", "oss_pymupdf4llm", "recrystal"]
 CHUNKERS = ["fixed_token", "recursive_char", "semantic", "grain_growth"]
-RAG_PARSERS = ["oss_docling", "oss_pymupdf4llm", "current"]
+RAG_PARSERS = ["oss_docling", "oss_pymupdf4llm", "recrystal"]
 OTHERS = ["fixed_token", "recursive_char", "semantic"]
 ALPHA = 0.05
 
@@ -42,7 +42,7 @@ PARSER_NOTE = {
     "legacy": "commit `057ce0e9`, page dump plus regex paragraph rules",
     "oss_docling": "Docling layout, our stage-2 assembler",
     "oss_pymupdf4llm": "PyMuPDF4LLM markdown mapped to typed blocks",
-    "current": "YOLOv11 layout, column-aware reading order",
+    "recrystal": "YOLOv11 layout, column-aware reading order",
 }
 
 METRICS = [  # key, label, lineage
@@ -145,7 +145,7 @@ def rag_analysis(RR, ds, r):
     # parsers head to head under grain_growth: all questions, then only the third
     # parser's questions, where neither side has a home advantage
     fam = []
-    for a, b in (("current", "oss_docling"), ("current", "oss_pymupdf4llm"),
+    for a, b in (("recrystal", "oss_docling"), ("recrystal", "oss_pymupdf4llm"),
                  ("oss_pymupdf4llm", "oss_docling")):
         if f"{a}|grain_growth" not in rows or f"{b}|grain_growth" not in rows:
             continue
@@ -199,7 +199,7 @@ def build():
 
     P, C, cfg = r["parsers"], r["cells"], r["config"]
     cell = lambda p, c: C.get(f"{p}|{c}")            # noqa: E731
-    cur, doc = P.get("current"), P.get("oss_docling")
+    cur, doc = P.get("recrystal"), P.get("oss_docling")
     shape = r.get("corpus", {}).get("manifest_totals", {})
     sp_papers = shape.get("papers", "—")
     stats = {}
@@ -208,8 +208,8 @@ def build():
         if f.exists():
             stats[p] = json.loads(f.read_text())
     # parse speed from the larger retrieval corpus when available
-    spd = (stats["oss_docling"]["sec_per_page"] / stats["current"]["sec_per_page"]
-           if "current" in stats and "oss_docling" in stats
+    spd = (stats["oss_docling"]["sec_per_page"] / stats["recrystal"]["sec_per_page"]
+           if "recrystal" in stats and "oss_docling" in stats
            else (doc["sec_per_page"] / cur["sec_per_page"] if cur and doc else None))
 
     o = []
@@ -234,7 +234,7 @@ def build():
         beat_sem = sum(1 for _, c, t in span_fam if c == "semantic" and t["holm"] and t["w"] > t["l"])
         beat_simple = sum(1 for _, c, t in span_fam if c != "semantic" and t["holm"] and t["w"] > t["l"])
         n_simple = sum(1 for _, c, _ in span_fam if c != "semantic")
-        home_cur = ra["home"].get("current|grain_growth")
+        home_cur = ra["home"].get("recrystal|grain_growth")
         neutral_sig = sum(1 for t in ra["parser"] if t["neutral"]["holm"])
         A(f"Two evaluations. A **chunk-shape run** crossed five parsers with four chunkers over "
           f"{sp_papers} papers and measured what the chunks look like. A **retrieval run** put "
@@ -249,14 +249,14 @@ def build():
           f"statistically established at this sample size.")
         A("")
         A(f"**On retrieval the three parsers cannot be told apart.** Questions written from "
-          f"`current`'s own output inflate its scores: {pct(home_cur[0])} of its own questions "
+          f"`recrystal`'s own output inflate its scores: {pct(home_cur[0])} of its own questions "
           f"find the answer in the top five, against {pct(home_cur[1])} of everyone else's. "
           f"Scored only on neutral questions, {neutral_sig} of {len(ra['parser'])} pairwise "
           f"parser comparisons reach significance. What separates the parsers is what reaches "
           f"the index at all, plus speed: "
           + ", ".join(f"`{p}` loses {ra['coverage'][p][0]}" for p in RAG_PARSERS)
           + " of the answers in parsing, allowing for text-engine differences"
-          + (f", and `current` parses {spd:.2f}x faster than Docling." if spd else "."))
+          + (f", and `recrystal` parses {spd:.2f}x faster than Docling." if spd else "."))
         A("")
     elif cur and doc:
         A(f"Five parsers crossed with four chunking strategies over {sp_papers} papers. "
@@ -325,17 +325,17 @@ def build():
                 A(f"| `{p}` | {num(s_['pages'])} | {num(s_.get('sec_per_page'), 4)} "
                   f"| {s_['seconds'] / 60:.1f} min | {num(s_['vram_rise_mb'])} MB | {len(s_['failures'])} |")
         A("")
-        if "current" in stats and "oss_docling" in stats:
-            c_, d_ = stats["current"]["sec_per_page"], stats["oss_docling"]["sec_per_page"]
-            A("| Corpus | `current` | `oss_docling` | Saved |")
+        if "recrystal" in stats and "oss_docling" in stats:
+            c_, d_ = stats["recrystal"]["sec_per_page"], stats["oss_docling"]["sec_per_page"]
+            A("| Corpus | `recrystal` | `oss_docling` | Saved |")
             A("|---|---|---|---|")
             for n in (m["totals"]["pages"], 5000, 20000):
                 A(f"| {num(n)} pages | {n * c_ / 60:.1f} min | {n * d_ / 60:.1f} min "
                   f"| {n * (d_ - c_) / 60:.1f} min |")
             A("")
-            A(f"**{spd:.2f}x faster per page**, on {num(stats['current']['pages'])} pages. Parsing "
+            A(f"**{spd:.2f}x faster per page**, on {num(stats['recrystal']['pages'])} pages. Parsing "
               "is a one-off cost per paper, so the saving is minutes on an ingest of this size. "
-              f"The {stats['oss_docling']['vram_rise_mb'] - stats['current']['vram_rise_mb']:.0f} MB "
+              f"The {stats['oss_docling']['vram_rise_mb'] - stats['recrystal']['vram_rise_mb']:.0f} MB "
               "of VRAM it saves is the more durable advantage on a 4 GB card shared with the embedder and "
               "the answering model.")
             A("")
@@ -422,10 +422,10 @@ def build():
             A(f"- `{p}`: title found in {num(P[p].get('documents_with_title'))} of "
               f"{num(P[p].get('documents'))} documents")
         A("")
-    ggc, ggd = cell("current", "grain_growth"), cell("oss_docling", "grain_growth")
+    ggc, ggd = cell("recrystal", "grain_growth"), cell("oss_docling", "grain_growth")
     if ggc and ggd and ggc.get("title_fallback_pct") is not None:
         A(f"**The heading path breaks.** Share of chunks whose heading path is the arXiv id "
-          f"rather than the paper title: `current` {pct(ggc['title_fallback_pct'])}, "
+          f"rather than the paper title: `recrystal` {pct(ggc['title_fallback_pct'])}, "
           f"`oss_docling` {pct(ggd['title_fallback_pct'])}.")
         A("")
     A("**Author names get embedded as body prose.** `SKIP_TYPES` excludes `authors` from "
@@ -691,7 +691,7 @@ def build():
         A("")
         A("An answer span missing from a parser's output caps every chunker behind it. Counting "
           "those losses needs care, because the spans were verified against PyMuPDF text and "
-          "**two of the three parsers read their words through PyMuPDF**: `current` fills YOLO "
+          "**two of the three parsers read their words through PyMuPDF**: `recrystal` fills YOLO "
           "boxes with `page.get_text(\"words\")`, and PyMuPDF4LLM is built on it. Docling uses "
           "its own text engine. An exact match therefore counts Docling's differences in maths "
           "symbols, spacing and stray line numbers as lost text, even where it extracted the "
@@ -712,11 +712,11 @@ def build():
         A("![answers lost before retrieval](assets/fig10_coverage.svg)")
         A("")
         d_ex, d_nr = ra["coverage"]["oss_docling"][2], ra["coverage"]["oss_docling"][0]
-        cur_low = all(ra["cov_sweep"][t]["current"] <= min(ra["cov_sweep"][t][p] for p in RAG_PARSERS)
+        cur_low = all(ra["cov_sweep"][t]["recrystal"] <= min(ra["cov_sweep"][t][p] for p in RAG_PARSERS)
                       for t in ths)
         A(f"Half the gap was the engine. Docling's exact-match losses fall from {d_ex} to {d_nr} at "
           f"the {int(ra['near_match'] * 100)}% threshold. "
-          + ("`current` loses the fewest answers at every threshold, so the ordering survives the "
+          + ("`recrystal` loses the fewest answers at every threshold, so the ordering survives the "
              "correction, but the margin is a handful of questions out of "
              f"{len(ds['questions'])}, not a decisive difference. " if cur_low else
              "The ordering between parsers changes with the threshold, so no parser can be said "
@@ -792,7 +792,7 @@ def build():
           "rate-limited the build. A larger corpus would make paper-level retrieval harder and "
           "stop those metrics saturating.")
         A("- **Text-engine bias.** Answer spans were verified against PyMuPDF, the engine behind "
-          "`current` and PyMuPDF4LLM, and span hits use an exact match. Docling is scored down "
+          "`recrystal` and PyMuPDF4LLM, and span hits use an exact match. Docling is scored down "
           "for character-level differences (Finding 5). The next run should verify against a "
           "third engine and score with a near match.")
         A("- **Two runs, two corpora.** Shape metrics come from the smaller corpus, so Finding 6 "
@@ -815,7 +815,7 @@ def build():
           "formulas that never split, heading paths that make a citation readable, and chunks "
           "that stay inside the embedder's window by construction.")
         A("")
-        A("### Parsing: keep `current`, for fidelity and speed, not retrieval")
+        A("### Parsing: keep `recrystal`, for fidelity and speed, not retrieval")
         A("")
         A(f"- **Retrieval does not separate the parsers** once question bias is removed (Finding 4).")
         A(f"- **It loses the fewest answers before retrieval:** "
@@ -826,13 +826,13 @@ def build():
         A("")
         A("### The strongest argument against it")
         A("")
-        rec = rc("current", "recursive_char")
-        cgg = gcs.get("current")
+        rec = rc("recrystal", "recursive_char")
+        cgg = gcs.get("recrystal")
         A("**On retrieval evidence alone, neither the fine-tuned layout model nor structure-aware "
           "chunking is justified.** `recursive_char`, a character splitter any library ships, "
           "reaches "
           + (f"{rec['span_hit@4000ch']:.2f} span retrieval and {rec['correctness']:.3f} correctness "
-             f"on `current`, against Grain-Growth's {cgg['span_hit@4000ch']:.2f} and "
+             f"on `recrystal`, against Grain-Growth's {cgg['span_hit@4000ch']:.2f} and "
              f"{cgg['correctness']:.3f}, " if rec and cgg else "")
           + "and the difference is not significant. Docling and PyMuPDF4LLM, which need no "
           "training data at all, retrieve as well as our parser on neutral questions. If the "

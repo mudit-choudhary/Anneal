@@ -100,7 +100,7 @@
    },
    "documents_with_title": 0
   },
-  "current": {
+  "recrystal": {
    "pages": 401,
    "corpus_bytes": 1259555,
    "seconds": 62.4,
@@ -414,7 +414,7 @@
    "degenerate": false,
    "title_fallback_pct": 1.0
   },
-  "current|fixed_token": {
+  "recrystal|fixed_token": {
    "chunks": 1633,
    "avg_chars": 885.2,
    "median_chars": 875,
@@ -432,7 +432,7 @@
    "seconds": 1.7,
    "degenerate": false
   },
-  "current|recursive_char": {
+  "recrystal|recursive_char": {
    "chunks": 1094,
    "avg_chars": 1148.6,
    "median_chars": 1262,
@@ -450,7 +450,7 @@
    "seconds": 0.4,
    "degenerate": false
   },
-  "current|semantic": {
+  "recrystal|semantic": {
    "chunks": 587,
    "avg_chars": 2070.6,
    "median_chars": 2061,
@@ -468,7 +468,7 @@
    "seconds": 618.8,
    "degenerate": false
   },
-  "current|grain_growth": {
+  "recrystal|grain_growth": {
    "chunks": 1163,
    "avg_chars": 1023.0,
    "median_chars": 1068,

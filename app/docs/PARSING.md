@@ -6,6 +6,19 @@
 > set — so `data/raw_pdfs/`, `vector_db/`, `models/`, `registry/` and `run/`
 > below all mean `<data home>/…`.
 
+> **`recrystal`** names the *combination* documented here: the fine-tuned
+> YOLOv11 detector (stage 1) feeding the column-aware assembler (stage 2). The
+> name appears wherever parsers are compared — the harness, the report, the
+> paper. In annealing, recrystallisation forms new grains; grain growth, the
+> chunker it feeds, is the stage after it.
+>
+> The **assembler is not part of that name**. It is parser-agnostic and shared:
+> the `oss_docling` arm runs Docling's layout through this same stage 2, which
+> is what makes the parser comparison a comparison of *detectors* rather than
+> of whole pipelines. Docling's own assembly was measured separately, and leaves
+> 17.4% of paragraphs beginning mid-sentence against 2.9% through this one.
+
+
 How a PDF becomes structured text, in two stages: **stage 1** decides *where*
 things are on a page; **stage 2**, the assembler, decides *what order they are
 read in and where one thought ends*. This replaces the former
