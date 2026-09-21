@@ -76,9 +76,16 @@ The harness runs in the app's venv plus its own extras (Docling, PyMuPDF4LLM,
 LangChain splitters, feedparser), which the app does not need:
 
 ```bash
-virtual_environments/annealenv/bin/pip install -r evals/requirements.txt
-virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
+python3.12 -m venv virtual_environments/probeenv
+virtual_environments/probeenv/bin/pip install -r evals/requirements.txt
+virtual_environments/probeenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
 ```
+
+**Its own virtualenv, not the app's.** Docling requires `requests>=2.34.2` and
+the app's `arxiv` pins `requests~=2.32.0`; the two cannot coexist, and
+installing the harness over the app environment leaves `pip check` broken. The
+harness venv is large (about 9 GB, mostly CUDA torch), so delete it when the
+run is done.
 
 The `grain_growth` arm under test is the published library
 ([grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking),

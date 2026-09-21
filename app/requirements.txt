@@ -45,6 +45,12 @@ pymupdf==1.28.2                   # AGPL-3.0, or a paid Artifex licence
 # other. https://doi.org/10.5281/zenodo.22862100
 grain-growth-chunking==1.0.0
 
+# assembly (layout regions -> typed blocks): the other half of the recrystal
+# parser, extracted from parse_manager/txt_processor.py the same way
+# (Apache-2.0, no dependencies). Pinned exactly: any change to reading order or
+# paragraph merging changes the processed text the corpus was embedded from.
+textreflow==1.0.0
+
 # embedding and retrieval; torch also supplies the CUDA 12 libraries
 # (nvidia-*-cu12 wheels) that onnxruntime-gpu loads
 torch==2.9.1

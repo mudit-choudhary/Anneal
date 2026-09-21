@@ -50,6 +50,9 @@ def score(paragraphs):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--papers", type=int, default=5)
+    # The round-1 report reads the default file; a bigger probe must not
+    # overwrite the 5-paper numbers it was published with.
+    ap.add_argument("--out", help="write here instead of Reports/parser_quality.json")
     args = ap.parse_args()
 
     import docling_backend as db
@@ -127,12 +130,13 @@ def main():
         "yolo_labels": dict(labels["yolo"].most_common()),
         "page_furniture": furniture,
     }
-    OUT.write_text(json.dumps(result, indent=1), encoding="utf-8")
+    out_path = Path(args.out) if args.out else OUT
+    out_path.write_text(json.dumps(result, indent=1), encoding="utf-8")
     print(f"\n{'pipeline':<22}{'paragraphs':>12}{'start lowercase':>18}")
     for k, v in summary.items():
         print(f"{k:<22}{v['paragraphs']:>12}{v['start_lowercase']:>10} "
               f"({100 * (v['start_lowercase_pct'] or 0):.1f}%)")
-    print(f"\nwrote {OUT}")
+    print(f"\nwrote {out_path}")
 
 
 if __name__ == "__main__":

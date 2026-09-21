@@ -81,6 +81,7 @@ The last install line matters: see the note at the top of `app/requirements.txt`
 - [app/docs/USER_GUIDE.md](app/docs/USER_GUIDE.md) — testing and tuning each RAG stage
 - [app/docs/BUILD_LOG.md](app/docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
 - [app/docs/PENDING_IMPROVEMENTS.md](app/docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
+- [app/docs/RECRYSTAL.md](app/docs/RECRYSTAL.md) — the layout parser: what it is measured to do, and why it stays AGPL
 - [evals/README.md](evals/README.md) — how the evaluation was run and how to reproduce it
 - [app/diagrams/system_architecture_detailed.drawio](app/diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
 

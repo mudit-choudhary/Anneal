@@ -13,28 +13,10 @@ Docling is imported lazily: it's heavy and downloads its models on first use.
 import os
 from pathlib import Path
 
-# Docling item labels -> our YOLO class names
-LABEL_MAP = {
-    "title": "Title",
-    "section_header": "Section-header",
-    "paragraph": "Text",
-    "text": "Text",
-    "list_item": "List-item",
-    "caption": "Caption",
-    "table": "Table",
-    "formula": "Formula",
-    "footnote": "Footnote",
-    "page_header": "Page-header",
-    "page_footer": "Page-footer",
-    "picture": "Picture",
-    "code": "Text",
-    "reference": "List-item",
-    "checkbox_selected": "Text",
-    "checkbox_unselected": "Text",
-    "document_index": "Table",
-    "key_value_region": "Text",
-    "form": "Text",
-}
+# Docling item labels -> our YOLO class names. The mapping and the conversion
+# live in the `textreflow` library's Docling adapter; LABEL_MAP is re-exported
+# because the published report cites it by this path.
+from textreflow.adapters.docling import LABEL_MAP, from_docling  # noqa: F401
 
 _converter = None
 
@@ -70,51 +52,11 @@ def detect_pdf(pdf_path, max_pages=None):
     from docling_core.types.doc import DocItemLabel  # noqa: F401  (ensures docling_core present)
 
     result = get_converter().convert(str(pdf_path))
-    doc = result.document
-
-    pages = {}
-    for page_no, page in doc.pages.items():
-        if max_pages is not None and page_no > max_pages:
-            continue
-        pages[page_no] = {"page": page_no - 1, "width": page.size.width, "height": page.size.height,
-                          "regions": [], "swallowed_text": []}
-
-    for item, _level in doc.iterate_items():
-        label = LABEL_MAP.get(str(getattr(item, "label", "")).split(".")[-1].lower(), "Text")
-        if not getattr(item, "prov", None):
-            continue
-        prov = item.prov[0]
-        page = pages.get(prov.page_no)
-        if page is None:
-            continue
-        bb = prov.bbox
-        # Docling boxes are bottom-left origin; ours are top-left.
-        if str(getattr(bb, "coord_origin", "")).lower().endswith("bottomleft"):
-            y0, y1 = page["height"] - bb.t, page["height"] - bb.b
-        else:
-            y0, y1 = bb.t, bb.b
-        bbox = [round(bb.l, 2), round(min(y0, y1), 2), round(bb.r, 2), round(max(y0, y1), 2)]
-
-        if label == "Table":
-            try:
-                md = item.export_to_markdown(doc)
-            except Exception:
-                md = getattr(item, "text", "") or ""
-            lines = [ln for ln in md.splitlines() if ln.strip()]
-        elif label == "Picture":
-            lines = []
-        else:
-            # Docling leaves `.text` empty on some item types and puts the
-            # content in `.orig` — formulas are the case that matters here.
-            # Reading only `.text` silently discarded every equation.
-            text = (getattr(item, "text", "") or "").strip() or \
-                   (getattr(item, "orig", "") or "").strip()
-            lines = [ln for ln in text.splitlines() if ln.strip()] or ([text] if text else [])
-
-        page["regions"].append({"label": label, "conf": 1.0, "bbox": bbox, "lines": lines,
-                                "backend": "docling"})
-
-    return [pages[k] for k in sorted(pages)]
+    pages = from_docling(result.document, max_pages=max_pages)["pages"]
+    for page in pages:
+        for region in page["regions"]:
+            region["backend"] = "docling"
+    return pages
 
 
 def export_markdown(pdf_path) -> str:

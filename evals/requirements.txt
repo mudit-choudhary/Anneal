@@ -1,10 +1,28 @@
 # Evaluation harness: the app's dependencies plus what only the harness imports.
-#   virtual_environments/annealenv/bin/pip install -r evals/requirements.txt
-#   virtual_environments/annealenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
+#   python3.12 -m venv virtual_environments/probeenv     # NOT the app venv, see the warning below
+#   virtual_environments/probeenv/bin/pip install -r evals/requirements.txt
+#   virtual_environments/probeenv/bin/pip install --force-reinstall --no-deps onnxruntime-gpu==1.23.2
 -r ../app/requirements.txt
 docling-slim==2.126.0             # the oss_docling parser arm
+# docling-slim ships without the pieces its PDF path actually imports, so the
+# oss_docling arm fails at import without these. Found the hard way, 2026-09-21,
+# when a clean environment could not reproduce the arm.
+docling-parse                     # docling.backend.docling_parse_backend
+docling-ibm-models                # TableFormer (do_table_structure=True)
+pypdfium2                         # docling's PDF backend
+rtree                             # docling.datamodel.spatial
+scipy                             # docling.models.base_ocr_model
+torchvision                       # the layout model's image processor
 pymupdf4llm==1.28.2               # the oss_pymupdf4llm parser arm
 langchain-text-splitters==1.1.2   # the recursive_char chunker arm
 transformers==4.57.6              # tokenizer for the fixed_token chunker arm
 feedparser==6.0.10                # arXiv API responses (build_corpus.py)
-# optional: scipy lets round2_stats.py cross-check its Wilcoxon in the self-test
+# scipy is required above for docling; round2_stats.py also uses it, optionally,
+# to cross-check its own Wilcoxon in the self-test.
+#
+# WARNING: docling-core requires requests>=2.34.2 while arxiv (in the app
+# requirements) pins requests~=2.32.0. The two cannot be satisfied together, so
+# installing this file over a working app environment breaks `pip check`. Build
+# the harness in its own virtualenv:
+#   python3.12 -m venv virtual_environments/probeenv
+#   virtual_environments/probeenv/bin/pip install -r evals/requirements.txt
