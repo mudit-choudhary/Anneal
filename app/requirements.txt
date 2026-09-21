@@ -49,6 +49,7 @@ grain-growth-chunking==1.0.0
 # parser, extracted from parse_manager/txt_processor.py the same way
 # (Apache-2.0, no dependencies). Pinned exactly: any change to reading order or
 # paragraph merging changes the processed text the corpus was embedded from.
+# https://doi.org/10.5281/zenodo.22872013
 textreflow==1.0.0
 
 # embedding and retrieval; torch also supplies the CUDA 12 libraries

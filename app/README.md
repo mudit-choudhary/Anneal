@@ -12,14 +12,17 @@ stage can be resumed or re-run:
 download ──▶ parse ──▶ chunk ──▶ embed ──▶ answer
   arXiv      recrystal    grain_growth   bge-base   retrieval + local LLM
   or a URL   (YOLOv11 +   (library)      in Chroma  with citations
-             assembler)
+             textreflow)
 ```
 
-The chunking stage is [grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking), developed here and
-published separately (Apache-2.0, no dependencies,
-[10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)). Anneal installs it like any other
-dependency and pins the major version: a later major would move chunk
-boundaries, and a vector store built under one is not comparable with the other.
+The assembly half of parsing is [textreflow](https://github.com/mudit-choudhary/textreflow) and the chunking stage is
+[grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking), both developed here and
+published separately (Apache-2.0, no dependencies; DOIs
+[10.5281/zenodo.22872013](https://doi.org/10.5281/zenodo.22872013) and
+[10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)). Anneal installs them like any
+other dependency and pins both exactly: a different version could move paragraph
+or chunk boundaries, and a vector store built under one is not comparable with
+the other.
 
 ## Quick start
 

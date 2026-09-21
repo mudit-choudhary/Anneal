@@ -37,8 +37,9 @@ From `evals/Reports/Report.md` (514 papers, 400 questions, pre-registered):
   and PyMuPDF4LLM's 61
 - parses **2.88× faster than Docling** per page (0.1375 s/page against 0.3958)
 - the assembler, not the detector, is what repairs prose: Docling's own model
-  leaves 17.4% of paragraphs starting mid-sentence, 2.9% through this assembler
-  (5 papers; a 60-paper re-run may exist as `parser_quality_60.json`)
+  leaves 12.5% of paragraphs starting mid-sentence, 2.4% through this assembler
+  (60 papers, 7,409 paragraphs, `evals/Reports/parser_quality_60.json`; an
+  earlier 5-paper run gave 17.4% and 2.9%, which overstated Docling's rate)
 
 ## Licensing — why this cannot become a permissive library
 
@@ -56,7 +57,7 @@ an ONNX export, not a PyPI package.
 
 The pieces that link nothing are published permissively instead:
 `grain-growth-chunking` (Apache-2.0, on PyPI, DOI 10.5281/zenodo.22862100) and
-`textreflow` (Apache-2.0, extracted; pinned in `app/requirements.txt`, not yet on PyPI).
+`textreflow` (Apache-2.0, pinned in `app/requirements.txt`, DOI 10.5281/zenodo.22872013).
 
 ## Open items
 

@@ -16,7 +16,9 @@
 > the `oss_docling` arm runs Docling's layout through this same stage 2, which
 > is what makes the parser comparison a comparison of *detectors* rather than
 > of whole pipelines. Docling's own assembly was measured separately, and leaves
-> 17.4% of paragraphs beginning mid-sentence against 2.9% through this one.
+> 12.5% of paragraphs beginning mid-sentence against 2.4% through this one
+> (60 papers). The assembler is published as
+> [textreflow](https://github.com/mudit-choudhary/textreflow).
 
 
 How a PDF becomes structured text, in two stages: **stage 1** decides *where*
@@ -26,8 +28,9 @@ read in and where one thought ends*. This replaces the former
 
 The assembler is the highest-value piece of the pipeline, on the evidence of
 [../../evals/Reports/Report.md](../../evals/Reports/Report.md): feeding **Docling's**
-layout through it cut Docling's own mid-sentence paragraph rate from 17.4% to
-2.9% (5 papers, `evals/Reports/parser_quality.json`). It is parser-agnostic —
+layout through it cut Docling's own mid-sentence paragraph rate from 12.5% to
+2.4% (60 papers, `evals/Reports/parser_quality_60.json`; the round-1 report's
+5-paper figures, 17.4% and 2.9%, overstated Docling's rate). It is parser-agnostic —
 it improves any layout detector's output, including ones we did not write.
 
 ```
@@ -339,7 +342,7 @@ terms, which in a technical corpus are common and load-bearing.
 
 #### Paragraph reconstruction — `LayoutAssembler`
 
-This is the core, and the part that produced the 17.4% → 2.9% improvement.
+This is the core, and the part that produced the 12.5% → 2.4% improvement.
 
 The assembler keeps **one open paragraph buffer** and walks regions in reading
 order. A paragraph stays open across region, column and page boundaries. It

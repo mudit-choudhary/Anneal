@@ -17,9 +17,11 @@ Anneal relieves it. A fine-tuned YOLOv11 model recovers twelve region types per
 page, and a parser-agnostic assembler rebuilds reading order and rejoins prose
 across columns, pages and interruptions. The clearest measure of the assembler's
 worth is what it does to *someone else's* layout: run Docling's output through
-it and Docling's own mid-sentence paragraph rate falls from **17.4% to 2.9%**
-(5 papers, `evals/Reports/parser_quality.json`) — the gain belongs to the
-assembler, not to any one detector. Chunking then grows along the document's own
+it and Docling's own mid-sentence paragraph rate falls from **12.5% to 2.4%**
+(60 papers, 7,409 paragraphs, `evals/Reports/parser_quality_60.json`) — the gain
+belongs to the assembler, not to any one detector. That assembler is published
+on its own as [textreflow](https://github.com/mudit-choudhary/textreflow) (`pip install textreflow`, Apache-2.0,
+[10.5281/zenodo.22872013](https://doi.org/10.5281/zenodo.22872013)). Chunking then grows along the document's own
 grain instead of a character count: `grain_growth` nucleates at section headings
 and expands until it meets a structural barrier, keeping tables and equations
 whole. That chunker is published on its own as
@@ -126,9 +128,11 @@ it are entitled to the source of your version.
 
 AGPL rather than something permissive because Anneal links **PyMuPDF**, which is
 AGPL: the licence is inherited, not chosen. The pieces that do not link it are
-freer — the chunking algorithm is published separately as
-[grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking) under **Apache-2.0**, with no dependencies, so it
-can be used in closed-source work.
+freer — the assembler and the chunker are published separately as
+[textreflow](https://github.com/mudit-choudhary/textreflow) and
+[grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking),
+both under **Apache-2.0** with no dependencies, so they can be used in
+closed-source work.
 
 The papers you ingest are yours and are never uploaded anywhere; the
 [data home](#layout) sits outside this repository.
