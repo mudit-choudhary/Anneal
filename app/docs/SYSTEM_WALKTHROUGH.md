@@ -333,14 +333,15 @@ classes: Text, Title, Section-header, Authors, List-item, Caption, Table,
 Formula, Footnote, Picture, Page-header, Page-footer) labels every region
 with a box. Text is then read *through* those boxes.
 
-**Inside** (`layout_detector.py`, `pdf_parser.py`):
+**Inside** (`layout_detector.py`, `pdf_parser.py`, and the `recrystal` library
+they call):
 
 1. `LayoutDetector.__init__` picks the first existing path in
    `MODEL_CANDIDATES` (fine-tuned small → fine-tuned nano → pretrained) and
    CUDA if available.
-2. `detect_pdf()` renders pages with PyMuPDF at `RENDER_DPI` 150, runs the
-   model in batches of `YOLO_BATCH` 4 at `imgsz` 1024 (must match the
-   fine-tuning size), `conf` 0.30. On a CUDA out-of-memory error
+2. `detect_pdf()` renders pages with PyMuPDF at 150 DPI, runs the model in
+   batches of 4 at `imgsz` 1024 (must match the fine-tuning size), `conf`
+   0.30 — all fixed in `recrystal.detector`. On a CUDA out-of-memory error
    (`_predict`) it switches to CPU and continues — *why*: the 4 GB card is
    often shared with a training job or Qwen. Box pixels × 72/150 → PDF
    points, so they can be compared with PyMuPDF's word coordinates.
@@ -564,9 +565,9 @@ one. Hence the orphan sweep by process name **and** by port, and the
 | file | knob | default | effect |
 |---|---|---|---|
 | `parse_manager/config.py` | `MODEL_CANDIDATES` | small → nano → pretrained | which YOLO weights |
-| | `RENDER_DPI` / `YOLO_IMGSZ` / `YOLO_CONF` / `YOLO_IOU` / `YOLO_BATCH` | 150 / 1024 / 0.30 / 0.70 / 4 | raster resolution, model input size (must match training), detection threshold, NMS IoU, pages per batch (also the fixed shape short batches pad to) |
 | | `FULL_WIDTH_FRACTION` / `SINGLE_COLUMN_FRACTION` | 0.6 / 0.7 | reading-order heuristics |
-| | `SWALLOW_LABELS` | Picture, Page-header, Page-footer | whose words are excluded from the flow |
+| `recrystal.detector` (library) | `RENDER_DPI` / `IMGSZ` / `CONF` / `IOU` / `BATCH` | 150 / 1024 / 0.30 / 0.70 / 4 | raster resolution, model input size (must match training), detection threshold, NMS IoU, pages per batch (also the fixed shape short batches pad to) |
+| `recrystal.parser` (library) | `SWALLOW_LABELS` | Picture, Page-header, Page-footer | whose words are excluded from the flow |
 | `embedding_manager/config.py` | `MODEL_NAME` / `QUERY_INSTRUCTION` / `COLLECTION_NAME` | bge-base-en-v1.5 / bge instruction / `papers_bge_base_v1` | embedder, query-side prefix, Chroma collection |
 | | `CHUNK_TARGET_CHARS` / `CHUNK_MAX_CHARS` | 1500 / 2000 | chunk packing budget / split threshold |
 | env | `EMBED_DEVICE` | `cuda` | where the embedder runs (`cpu` for daytime) |

@@ -11,18 +11,24 @@ stage can be resumed or re-run:
 ```
 download ──▶ parse ──▶ chunk ──▶ embed ──▶ answer
   arXiv      recrystal    grain_growth   bge-base   retrieval + local LLM
-  or a URL   (YOLOv11 +   (library)      in Chroma  with citations
+  or a URL   (recrystal + (library)      in Chroma  with citations
              textreflow)
 ```
 
-The assembly half of parsing is [textreflow](https://github.com/mudit-choudhary/textreflow) and the chunking stage is
-[grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking), both developed here and
-published separately (Apache-2.0, no dependencies; DOIs
+Three stages are libraries developed here and published separately. Parsing is
+[recrystal](https://github.com/mudit-choudhary/recrystal) for detection
+(AGPL-3.0, like this project: it links PyMuPDF and its weights derive from
+YOLO11, with the weights in a Hugging Face repository under the same licence)
+and [textreflow](https://github.com/mudit-choudhary/textreflow) for assembly;
+chunking is [grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking).
+recrystal is AGPL-3.0 (DOI
+[10.5281/zenodo.22920257](https://doi.org/10.5281/zenodo.22920257)); the latter
+two are Apache-2.0 with no dependencies (DOIs
 [10.5281/zenodo.22872013](https://doi.org/10.5281/zenodo.22872013) and
-[10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)). Anneal installs them like any
-other dependency and pins both exactly: a different version could move paragraph
-or chunk boundaries, and a vector store built under one is not comparable with
-the other.
+[10.5281/zenodo.22862100](https://doi.org/10.5281/zenodo.22862100)). Anneal
+installs all three like any other dependency and pins them exactly: a different
+version could move region, paragraph or chunk boundaries, and a vector store
+built under one is not comparable with the other.
 
 ## Quick start
 
@@ -100,6 +106,7 @@ docs/  diagrams/
 - [docs/USER_GUIDE.md](docs/USER_GUIDE.md) — testing and tuning each RAG stage
 - [docs/BUILD_LOG.md](docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
 - [docs/PENDING_IMPROVEMENTS.md](docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
+- [docs/GLOSSARY.md](docs/GLOSSARY.md) — every concept, technique and tool, explained, with references
 - [diagrams/system_architecture_detailed.drawio](diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
 
 ## Licence

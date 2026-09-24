@@ -42,9 +42,8 @@ the side-by-side benchmark. Figures still contribute only their captions.
 
 Text drawn *inside* a `Picture` region (figure labels, diagram text) is
 correctly excluded from the body text flow — this was the original goal of
-the YOLO-based parser and it works. See `SWALLOW_LABELS` in
-[parse_manager/config.py](../parse_manager/config.py) and the `swallowed`
-handling in [pdf_parser.py](../parse_manager/pdf_parser.py).
+the YOLO-based parser and it works. See `SWALLOW_LABELS` and the
+`swallowed` handling in the `recrystal` library's `parser` module.
 
 ### What's not good enough
 
@@ -108,7 +107,7 @@ was never captured faithfully in the first place.
 Rather than trying to reconstruct table structure from word coordinates
 (fragile, diminishing returns), crop the region's bounding box from the
 already-rendered page image (the pipeline already rasterizes every page for
-YOLO at `RENDER_DPI` — see `layout_detector.py`) and send the crop to a small
+YOLO at 150 DPI — see `recrystal.detector`) and send the crop to a small
 vision-language model for:
 
 - **Tables** → a markdown table (preserves column alignment properly) or a
@@ -227,7 +226,7 @@ A cheap heuristic safety net, applied regardless of the model's label:
 - Detect page-number-shaped `Text` regions — short (e.g. ≤ 4 chars),
   purely numeric (optionally with `Page N` / `N of M` patterns), positioned
   near the top or bottom margin of the page — and swallow them the same way
-  `SWALLOW_LABELS` regions are swallowed in `pdf_parser.py`, instead of
+  `SWALLOW_LABELS` regions are swallowed in `recrystal.parser`, instead of
   letting them enter the paragraph assembler as `Text`.
 - Belt-and-braces alternative: never let a *single, very short, non-alphabetic*
   region become or extend an open paragraph across a page boundary — treat it

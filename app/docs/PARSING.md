@@ -91,7 +91,7 @@ it in shipped software would impose copyleft on the whole product
 - `scripts/export_onnx.py` converts each `best.pt` to `best.onnx` **once, at
   build time**. Running ultralytics privately to produce a file is not
   distribution, so the AGPL places no restriction on it.
-- `onnx_detector.py` loads the `.onnx` with **onnxruntime** (MIT) and does
+- `recrystal.detector` loads the `.onnx` with **onnxruntime** (MIT) and does
   preprocessing, decoding and NMS in numpy. Class names, `imgsz` and `stride`
   travel inside the ONNX metadata, so a `.onnx` file is self-describing.
 - `layout_detector.py` refuses to start if only a `.pt` is present, telling
@@ -105,7 +105,7 @@ exactly to get there, each of which silently shifted results when wrong:
 
 | Detail | Wrong version | Effect |
 |---|---|---|
-| Resampler | Pillow BILINEAR (antialiases when downscaling) | confidences moved up to 0.35 — enough to drop a real region below `YOLO_CONF` |
+| Resampler | Pillow BILINEAR (antialiases when downscaling) | confidences moved up to 0.35 — enough to drop a real region below the confidence threshold |
 | Padding | full 1024 square | ultralytics pads only to the next stride multiple when a batch is uniformly shaped, so a page runs at 1024x800 and the model sees different context |
 | Inverse transform | float half-difference | boxes off by half a pixel; small regions (page footers) fell to IoU 0.94 |
 
@@ -118,7 +118,7 @@ short tail batch by repeating its last page and discards the extra results.
 Speed is unchanged by the migration: **10–14 pages/s** end to end on the
 GTX 1650, the same as the ultralytics path. GPU use needs `onnxruntime-gpu`
 plus CUDA 12.x / cuDNN 9.x; when those come from the `nvidia-*-cu12` wheels
-rather than a system install, `onnx_detector.py` preloads them so the CUDA
+rather than a system install, `recrystal.detector` preloads them so the CUDA
 provider can resolve them (otherwise it silently falls back to CPU, ~2
 pages/s).
 
@@ -546,13 +546,13 @@ abstract, would recover both — see the recommendation in
 |---|---|---|
 | `MODEL_CANDIDATES` | s → v2224 → n | layout weights, first existing wins |
 | `PARSER_BACKEND` | `"yolo"` | `"docling"` to use Docling for stage 1 |
-| `RENDER_DPI` | 150 | page raster resolution |
-| `YOLO_IMGSZ` | 1024 | must match fine-tuning imgsz |
-| `YOLO_CONF` | 0.30 | detection confidence threshold |
-| `YOLO_IOU` | 0.70 | NMS IoU threshold (ultralytics' `predict` default, which is what the corpus was parsed with) |
-| `YOLO_BATCH` | 4 | pages per batch (4GB GPU); also the fixed shape short batches are padded to |
 | `FULL_WIDTH_FRACTION` | 0.6 | band-separator width threshold |
 | `SINGLE_COLUMN_FRACTION` | 0.7 | single-column page detection |
+
+Detection itself has no knobs here. Render DPI (150), `imgsz` (1024),
+confidence (0.30), NMS IoU (0.70) and batch size (4) are fixed in
+`recrystal.detector`, at the values the evaluation corpus was parsed with;
+changing them means changing the library.
 
 Column splitting has no config knob: its gutter threshold is derived from
 each region's own font size (see stage 1, step 5).
@@ -562,10 +562,10 @@ each region's own font size (see stage 1, step 5).
 | File | Role |
 |---|---|
 | **`parse_manager/txt_processor.py`** | **the assembler itself** — `order_regions`, `join_lines`, `join_hyphenated`, `collect_hyphenated_vocab`, `LayoutAssembler`, `render_txt`, `process_layout_json` |
-| `parse_manager/config.py` | `FULL_WIDTH_FRACTION` (0.6), `SINGLE_COLUMN_FRACTION` (0.7), `SWALLOW_LABELS`, `PROCESSED_DIR` |
-| `parse_manager/pdf_parser.py` | stage 1: renders pages, assigns words to regions, produces the layout JSON and `swallowed_text` |
-| `parse_manager/layout_detector.py` | the YOLOv11 detector behind stage 1 |
-| `parse_manager/onnx_detector.py` | ONNX Runtime inference: letterboxing, DFL decode, per-class NMS |
+| `parse_manager/config.py` | `FULL_WIDTH_FRACTION` (0.6), `SINGLE_COLUMN_FRACTION` (0.7), `MODEL_CANDIDATES`, `PROCESSED_DIR` |
+| [`recrystal`](https://github.com/mudit-choudhary/recrystal) (library) | **stage 1 itself** — ONNX inference (letterboxing, decode, per-class NMS), word-to-region assignment, column splitting, line building, `SWALLOW_LABELS` |
+| `parse_manager/pdf_parser.py` | stage 1 glue: calls `recrystal.extract_pages`, writes the layout JSON, runs the Docling arm and the registry update |
+| `parse_manager/layout_detector.py` | picks the weights out of `MODEL_CANDIDATES` and hands them to the library's detector |
 | `parse_manager/docling_backend.py` | the adapter that lets Docling feed this assembler (section 5) |
 | `parse_manager/main.py` | the service loop that calls stage 1 then stage 2 |
 | [`grain_growth`](https://github.com/mudit-choudhary/grain-growth-chunking) (library) | the consumer — Grain-Growth chunking over these blocks |
@@ -595,9 +595,11 @@ yolo detect train \
 ```
 
 Base model: `Armaggheddon/yolo11-document-layout` (nano). The deployed run
-(`yolo11n_doc_layout_imgsz_1024`) was trained at **imgsz 1024** — inference in
-`parse_manager` must use the same size (`YOLO_IMGSZ` in
-`parse_manager/config.py`). Classes include the standard DocLayNet 11 plus a
+(`yolo11n_doc_layout_imgsz_1024`) was trained at **imgsz 1024** — inference must
+use the same size (`IMGSZ` in `recrystal.detector`). The export must keep a
+**dynamic** batch axis (`scripts/export_onnx.py` passes `dynamic=True`): the
+library runs 4 pages per batch and pads to a stride multiple, which a
+fixed-shape export rejects. Classes include the standard DocLayNet 11 plus a
 fine-tuned `Authors` class.
 
 ### Dataset housekeeping

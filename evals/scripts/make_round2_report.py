@@ -90,6 +90,18 @@ def build(final):
     o.append("")
     add = o.append
 
+    # A reader opening this file meets round 1 first, whose parser conclusions
+    # round 2 overturned. Say so above it rather than inside it: round 1 stays
+    # exactly as published.
+    add(f"> **Two evaluations, in order.** Round 1, below, ran on "
+        f"{m1['totals']['papers']} papers and {len(ds1['questions'])} questions written from each "
+        f"parser's own output. **[Round 2](#round-2-what-the-harness-above-could-not-settle)**, "
+        f"further down, repeated it on {m2['totals']['papers']} papers and "
+        f"{len(ds2['questions'])} neutral questions, and **supersedes round 1 wherever the two "
+        f"disagree** — in particular on ranking the parsers, which round 1 could not do, and on "
+        f"per-page speed. Round 1 is kept below unchanged, as published.")
+    add("")
+
     # Round 1's report opens the document, exactly as it was published. Round 2
     # continues below it rather than replacing it.
     r1 = R / "Report_round1.md"

@@ -1,3 +1,5 @@
+> **Two evaluations, in order.** Round 1, below, ran on 103 papers and 100 questions written from each parser's own output. **[Round 2](#round-2-what-the-harness-above-could-not-settle)**, further down, repeated it on 514 papers and 400 neutral questions, and **supersedes round 1 wherever the two disagree** — in particular on ranking the parsers, which round 1 could not do, and on per-page speed. Round 1 is kept below unchanged, as published.
+
 # Anneal — RAG Evaluation Harness
 
 **Round 1 — parser and chunking: results**

@@ -22,12 +22,9 @@ MODEL_CANDIDATES = [
 # parse_manager/docling_backend.py — same processed-JSON output contract).
 PARSER_BACKEND = "yolo"
 
-RENDER_DPI = 150          # page raster resolution fed to the layout model
-YOLO_IMGSZ = 1024         # must match fine-tuning imgsz
-YOLO_CONF = 0.30          # detection confidence threshold
-YOLO_IOU = 0.70           # NMS IoU threshold (ultralytics' predict default,
-                          # which is what the corpus was parsed with)
-YOLO_BATCH = 4            # pages per inference batch (fits a 4GB GPU)
+# Render DPI, imgsz, confidence/IoU thresholds and batch size live in the
+# `recrystal` library (recrystal.detector), fixed to what the corpus was
+# parsed with.
 
 # --- Reading-order / assembly heuristics ---
 # A region wider than this fraction of the page is treated as full-width
@@ -36,6 +33,3 @@ FULL_WIDTH_FRACTION = 0.6
 # If at least this fraction of body regions are full-width, the page is
 # treated as single-column.
 SINGLE_COLUMN_FRACTION = 0.7
-# Words whose center falls in no detected region are grouped into fallback
-# Text regions unless they sit inside one of these region types.
-SWALLOW_LABELS = {"Picture", "Page-header", "Page-footer"}

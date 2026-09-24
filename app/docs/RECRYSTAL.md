@@ -9,10 +9,11 @@
 The name covers **two stages together**:
 
 1. **the detector** — a fine-tuned YOLOv11 model, 12 region classes, run through
-   `onnxruntime-gpu` (never `ultralytics` at runtime, which is AGPL);
-   `app/parse_manager/pdf_parser.py`, `layout_detector.py`, `onnx_detector.py`
+   `onnxruntime-gpu` (never `ultralytics` at runtime, which is AGPL); the
+   `recrystal` library, with `app/parse_manager/{pdf_parser,layout_detector}.py`
+   keeping only Anneal's paths, the Docling arm and the registry glue
 2. **the assembler** — column-aware reading order and paragraph reconstruction;
-   `app/parse_manager/txt_processor.py`
+   the `textreflow` library, behind `app/parse_manager/txt_processor.py`
 
 In annealing, recrystallisation is the stage that forms new strain-free grains,
 and it precedes grain growth — the chunker this parser feeds. The evaluation,
@@ -50,23 +51,30 @@ Two independent AGPL sources, either one sufficient:
 - the **weights** are fine-tuned from Ultralytics YOLO11, which is AGPL, so the
   weights are a derivative
 
-Anneal is therefore AGPL-3.0 (see `LICENSE` at the repository root), and the
-detector stays inside it. If the detector is ever to be shared, the honest form
-is a **Hugging Face model repository under AGPL-3.0**, carrying the weights plus
-an ONNX export, not a PyPI package.
+Anneal is therefore AGPL-3.0 (see `LICENSE` at the repository root), and so is
+the library: `recrystal` is published under AGPL-3.0, with the weights in a
+**Hugging Face model repository under the same licence**
+(`darkdwine/yolo11-doc-layout-research-papers`), downloaded on first use.
+Anneal passes its own weights from `MODELS_DIR`, so it never downloads.
 
 The pieces that link nothing are published permissively instead:
 `grain-growth-chunking` (Apache-2.0, on PyPI, DOI 10.5281/zenodo.22862100) and
 `textreflow` (Apache-2.0, pinned in `app/requirements.txt`, DOI 10.5281/zenodo.22872013).
+The detector itself is published as `recrystal` (AGPL-3.0, on PyPI, DOI
+10.5281/zenodo.22920257), with the weights in a Hugging Face repository under
+the same licence.
 
 ## Open items
 
-- **Reserve the PyPI name `recrystal`** — free as of 2026-09-21. The clean way
-  is a *pending publisher* at <https://pypi.org/manage/account/publishing/>,
-  which holds the name without uploading anything. A placeholder release also
-  works but PyPI discourages holding unused names.
-- **Decide whether to publish the weights** on Hugging Face under AGPL, with the
-  ONNX export and the 12-class label map.
+- **The library tracks the Hugging Face `main` branch** for its weights
+  download, so re-uploading them changes what installed copies fetch. Anneal is
+  unaffected — it passes its own weights from `MODELS_DIR` — but pinning the URL
+  to a commit would make a published version reproducible.
+- **Keep the ONNX export dynamic.** The library batches 4 pages and pads to a
+  stride multiple, which a fixed-shape export rejects; `scripts/export_onnx.py`
+  passes `dynamic=True`. A re-export from a newer ultralytics was verified
+  text-identical over the 523-paper corpus, differing only in the last digit of
+  rounded coordinates.
 - **Fine-tuning is documented** in [PARSING.md](PARSING.md); training output
   lives outside the repo, in `$ANNEAL_HOME/runs/`.
 
@@ -74,9 +82,9 @@ The pieces that link nothing are published permissively instead:
 
 | | |
 |---|---|
-| Detector code | `app/parse_manager/{pdf_parser,layout_detector,onnx_detector}.py` |
-| Assembler code | `app/parse_manager/txt_processor.py` |
+| Detector code | the [`recrystal`](https://github.com/mudit-choudhary/recrystal) library; Anneal's glue in `app/parse_manager/{pdf_parser,layout_detector}.py` |
+| Assembler code | the [`textreflow`](https://github.com/mudit-choudhary/textreflow) library; Anneal's glue in `app/parse_manager/txt_processor.py` |
 | Weights | `~/.local/share/anneal/models/` (`.pt` and `.onnx`, 141 MB) |
 | Parse cache used by the evaluation | `evals/parsed/recrystal/` |
-| Tests | `tests/test_pdf_parser.py`, `tests/test_onnx_detector.py`, `tests/test_txt_processor.py` |
+| Tests | `tests/test_pdf_parser.py`, `tests/test_txt_processor.py`; the detector's own tests moved into `recrystal` |
 | Venv | `virtual_environments/annealenv` — app requirements exactly; use `probeenv` for anything needing Docling |

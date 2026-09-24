@@ -192,7 +192,7 @@ roughly 6× slower, no error.
 
 On this machine CUDA comes from the `nvidia-*-cu12` wheels that PyTorch pulls
 in (`site-packages/nvidia/*/lib`), not a system install. The dynamic linker
-does not search there, so `onnx_detector.py` preloads those libraries at
+does not search there, so `recrystal.detector` preloads those libraries at
 startup. The consequence: **if PyTorch is removed from this environment,
 layout detection quietly drops to CPU** unless a system CUDA is installed.
 

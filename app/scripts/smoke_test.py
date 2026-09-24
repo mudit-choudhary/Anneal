@@ -76,7 +76,7 @@ class SkipStage(Exception):
 # one in the same process would pick up the first's. Clear the shared names
 # and put the wanted package first on the path before each stage imports.
 FLAT_MODULES = ("config", "chunking", "embeddings", "pdf_parser", "txt_processor",
-                "layout_detector", "onnx_detector", "rag", "websearch")
+                "layout_detector", "rag", "websearch")
 
 
 def use_package(name):

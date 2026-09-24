@@ -52,6 +52,13 @@ grain-growth-chunking==1.0.0
 # https://doi.org/10.5281/zenodo.22872013
 textreflow==1.0.0
 
+# detection (PDF -> layout regions): the YOLO half of the recrystal parser,
+# extracted from parse_manager/{pdf_parser,layout_detector,onnx_detector}.py
+# (AGPL-3.0, like this project). Pinned exactly for the same reason. Anneal
+# passes its own weights from MODELS_DIR, so the library never downloads here.
+# https://doi.org/10.5281/zenodo.22920257
+recrystal==1.0.0
+
 # embedding and retrieval; torch also supplies the CUDA 12 libraries
 # (nvidia-*-cu12 wheels) that onnxruntime-gpu loads
 torch==2.9.1

@@ -84,6 +84,7 @@ The last install line matters: see the note at the top of `app/requirements.txt`
 - [app/docs/BUILD_LOG.md](app/docs/BUILD_LOG.md) — how the system got here: decisions, benchmarks, what was rejected
 - [app/docs/PENDING_IMPROVEMENTS.md](app/docs/PENDING_IMPROVEMENTS.md) — known gaps, deliberately deferred
 - [app/docs/RECRYSTAL.md](app/docs/RECRYSTAL.md) — the layout parser: what it is measured to do, and why it stays AGPL
+- [app/docs/GLOSSARY.md](app/docs/GLOSSARY.md) — every concept, technique and tool used across the app, the harness and both libraries
 - [evals/README.md](evals/README.md) — how the evaluation was run and how to reproduce it
 - [app/diagrams/system_architecture_detailed.drawio](app/diagrams/system_architecture_detailed.drawio) — multi-page: system + one page per module
 
@@ -127,8 +128,13 @@ distribute it — or run a modified version as a network service — those who u
 it are entitled to the source of your version.
 
 AGPL rather than something permissive because Anneal links **PyMuPDF**, which is
-AGPL: the licence is inherited, not chosen. The pieces that do not link it are
-freer — the assembler and the chunker are published separately as
+AGPL: the licence is inherited, not chosen. The layout parser inherits it twice
+over — PyMuPDF again, and weights fine-tuned from Ultralytics YOLO11 — so it is
+published under the same licence, as
+[recrystal](https://github.com/mudit-choudhary/recrystal) (**AGPL-3.0**), with
+its weights in a Hugging Face repository under that licence. The pieces that
+link neither are freer — the assembler and the chunker are published separately
+as
 [textreflow](https://github.com/mudit-choudhary/textreflow) and
 [grain-growth-chunking](https://github.com/mudit-choudhary/grain-growth-chunking),
 both under **Apache-2.0** with no dependencies, so they can be used in

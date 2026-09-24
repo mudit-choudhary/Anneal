@@ -73,12 +73,13 @@ python scripts/rag_inspect.py parse Some_Paper.pdf --show 20  # print more block
 | Signal | Healthy | Suspicious |
 |---|---|---|
 | Region detections | mostly `Text`, one `Title`, several `Section-header` | many `fallback` regions → YOLO missing content |
-| Fallback Text regions | 0–2 per doc | high count → consider lowering `YOLO_CONF` (0.30 → 0.25) |
+| Fallback Text regions | 0–2 per doc | high count → the detector's 0.30 confidence threshold, fixed in `recrystal` |
 | Words swallowed | small (figure labels, running headers) | huge count → body text eaten by an oversized `Picture` box |
 | Blocks of text | headings marked `##`, abstract one paragraph | paragraphs split mid-sentence, figure text in body, interleaved columns |
 
-**Knobs** (`parse_manager/config.py`): `YOLO_CONF`, `RENDER_DPI`,
-`FULL_WIDTH_FRACTION`, `SINGLE_COLUMN_FRACTION`, `MODEL_CANDIDATES`. See
+**Knobs** (`parse_manager/config.py`): `FULL_WIDTH_FRACTION`,
+`SINGLE_COLUMN_FRACTION`, `MODEL_CANDIDATES`. Detection settings (DPI,
+`imgsz`, confidence, NMS IoU, batch) are fixed in the `recrystal` library. See
 [PARSING.md](PARSING.md).
 
 Outputs: `data/parsed/<name>.json` (raw regions) and
