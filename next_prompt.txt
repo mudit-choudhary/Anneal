@@ -1,9 +1,0 @@
-List all the different concepts, techniques, frameworks that we have used in any segment of:
-1. Anneal - Local First RAG
-2. Anneal - Evaluation Harness
-3. Grain Growth Chunking
-
-Even the smallest concept that may be common technical knowledge or something you might have already explained, I want you to prepare a full document listing and explaining everything.
-In the same format list every concept that might not have been utilized but we discussed them or you had mentioned them.
-You may add reference links or youtube links to the concepts for my better understanding.
-Ask questions if anything is unclear.
