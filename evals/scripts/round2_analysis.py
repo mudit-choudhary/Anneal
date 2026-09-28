@@ -58,6 +58,7 @@ def load():
                     if qid in rec:
                         rec[qid].update({k: v for k, v in s.items() if k != "gemma_raw"})
             cells[f"{p}|{c}"] = rec
+    
     return qs, cells, ds
 
 
@@ -73,6 +74,7 @@ def paired(a, b, metric):
             xs.append(float(x))
             ys.append(float(y))
             papers.append(ra.get("paper", qid))
+    
     return xs, ys, papers
 
 
@@ -89,6 +91,7 @@ def compare(a, b, metric, binary):
         _, _, p = wilcoxon(xs, ys)
         test = "wilcoxon signed-rank"
     point, lo, hi = bootstrap_diff(xs, ys, papers, n=10000)
+    
     return {"n": len(xs), "wins": w, "losses": l, "p": p, "test": test,
             "mean_a": sum(xs) / len(xs), "mean_b": sum(ys) / len(ys),
             "diff": point, "ci95": [lo, hi], "dz": dz(xs, ys), "pending": False}
@@ -104,6 +107,7 @@ def metric_family(cells, metric, binary, pairs):
     keep = holm([out[k]["p"] for k in live]) if live else []
     for k, ok in zip(live, keep):
         out[k]["holm"] = ok
+    
     return out
 
 
